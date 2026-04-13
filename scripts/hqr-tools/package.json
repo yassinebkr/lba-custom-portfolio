@@ -1,0 +1,17 @@
+{
+  "name": "lba-hqr-tools",
+  "version": "1.0.0",
+  "description": "Node.js tools for extracting and repacking LBA1 HQR archives",
+  "scripts": {
+    "extract": "node extract-all.js",
+    "repack": "node repack-hqr.js",
+    "text:extract": "node edit-text.js extract",
+    "text:repack": "node edit-text.js repack"
+  },
+  "dependencies": {
+    "@lbalab/hqr": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

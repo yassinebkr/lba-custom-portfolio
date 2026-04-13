@@ -1,0 +1,34 @@
+# Game files (copyrighted - do not commit)
+base_game/
+*.HQR
+*.hqr
+*.EXE
+*.exe
+
+# Build outputs
+output/
+web_deploy/*.jsdos
+web_deploy/bundle/
+
+# Extracted assets (large, regeneratable)
+modded_assets/
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Tools (cloned repos)
+tools/twin-e/
+tools/lba-packager/
+tools/LBArchitect/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# IDE
+.vscode/
+.idea/
+.claude/

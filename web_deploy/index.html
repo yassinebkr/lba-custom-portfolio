@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - LBA1 Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+        #jsdos {
+            width: 100%;
+            height: 100%;
+        }
+        /* Loading overlay */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #eee;
+            font-family: monospace;
+            z-index: 1000;
+        }
+        #loading.hidden {
+            display: none;
+        }
+        #loading h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #loading p {
+            font-size: 14px;
+            color: #888;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #333;
+            border-top-color: #0ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <h1>Loading Portfolio...</h1>
+        <p>Initializing DOSBox emulator</p>
+    </div>
+
+    <div id="jsdos"></div>
+
+    <!-- js-dos v8 from CDN -->
+    <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+    <script>
+        // Configure js-dos
+        Dos(document.getElementById("jsdos"), {
+            // Path to your .jsdos bundle
+            url: "./lba1_portfolio.jsdos",
+
+            // Optional: auto-start without user interaction
+            autoStart: true,
+
+            // Backend selection (use "dosboxX" for better compatibility if needed)
+            backend: "dosbox",
+
+            // Event handlers
+            onEvent: (event, ci) => {
+                if (event === "ci-ready") {
+                    // Command interface ready - game is loaded
+                    document.getElementById("loading").classList.add("hidden");
+                    console.log("LBA1 Portfolio loaded successfully");
+                }
+
+                if (event === "error") {
+                    console.error("js-dos error:", ci);
+                    document.getElementById("loading").innerHTML = `
+                        <h1>Error Loading Game</h1>
+                        <p>Check console for details. Make sure lba1_portfolio.jsdos exists.</p>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
