@@ -3,104 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio - LBA1 Edition</title>
+    <title>Yassine Benkhira — Portfolio</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a14;
+            color: #ddd;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        html, body {
+
+        header {
             width: 100%;
-            height: 100%;
-            background: #000;
-            overflow: hidden;
+            max-width: 900px;
+            padding: 40px 20px 20px;
+            text-align: center;
         }
-        #jsdos {
+
+        header h1 {
+            font-size: 2rem;
+            color: #0ff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin-top: 10px;
+            color: #888;
+            font-size: 0.9rem;
+            max-width: 540px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .locations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            padding: 30px 20px;
+            max-width: 900px;
             width: 100%;
-            height: 100%;
         }
-        /* Loading overlay */
-        #loading {
+
+        .loc-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 18px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .loc-card:hover {
+            border-color: #0ff;
+            background: #0a1a1a;
+        }
+
+        .loc-card .title {
+            font-size: 0.8rem;
+            color: #0ff;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .loc-card .place {
+            font-size: 1rem;
+            color: #eee;
+            margin-bottom: 8px;
+        }
+
+        .loc-card .desc {
+            font-size: 0.78rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .launch-section {
+            padding: 10px 20px 40px;
+            text-align: center;
+        }
+
+        #launch-btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 14px 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+
+        #launch-btn:hover { background: #0cc; }
+
+        .hint {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        /* Game overlay */
+        #game-overlay {
+            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #1a1a2e;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            flex-direction: column;
+        }
+
+        #game-overlay.active { display: flex; }
+
+        #close-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: none;
+            border: 1px solid #444;
+            color: #aaa;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            cursor: pointer;
+            z-index: 200;
+        }
+
+        #close-btn:hover { border-color: #0ff; color: #0ff; }
+
+        #jsdos { width: 100%; height: 100%; }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: #0a0a14;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #eee;
-            font-family: monospace;
-            z-index: 1000;
+            z-index: 150;
         }
-        #loading.hidden {
-            display: none;
-        }
-        #loading h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-        #loading p {
-            font-size: 14px;
-            color: #888;
-        }
+
+        #loading-overlay.hidden { display: none; }
+
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #333;
+            width: 36px; height: 36px;
+            border: 3px solid #222;
             border-top-color: #0ff;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #loading-overlay p { color: #555; font-size: 0.8rem; }
+
+        footer {
+            padding: 20px;
+            font-size: 0.7rem;
+            color: #333;
+            text-align: center;
         }
+
+        footer a { color: #555; }
     </style>
 </head>
 <body>
-    <div id="loading">
-        <div class="spinner"></div>
-        <h1>Loading Portfolio...</h1>
-        <p>Initializing DOSBox emulator</p>
+
+<header>
+    <h1>Yassine Benkhira</h1>
+    <p>Engineer & maker. Explore the world below to discover projects — each location tells a story.</p>
+</header>
+
+<div class="locations">
+    <div class="loc-card">
+        <div class="title">Main Hub</div>
+        <div class="place">Citadel Island</div>
+        <div class="desc">Start here. Talk to the residents to get an overview of all projects.</div>
     </div>
+    <div class="loc-card">
+        <div class="title">Personal Intro</div>
+        <div class="place">Twinsen's House</div>
+        <div class="desc">Meet Zoé and learn about who built all of this.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Electronics Lab</div>
+        <div class="place">Proxima Island</div>
+        <div class="desc">CinePi — a RAW cinema camera on a Raspberry Pi CM4 with a custom PCB.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">AI Workshop</div>
+        <div class="place">Old Burg</div>
+        <div class="desc">OpenClaw — an autonomous AI agent framework for complex tasks.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Maker Space</div>
+        <div class="place">Rebellion Island</div>
+        <div class="desc">GSAT — a CubeSat guidance system for atmospheric re-entry.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Portfolio Showroom</div>
+        <div class="place">Maritime Museum</div>
+        <div class="desc">Full overview of all projects in one place.</div>
+    </div>
+</div>
 
+<div class="launch-section">
+    <button id="launch-btn" onclick="launchGame()">Enter the World</button>
+    <p class="hint">Runs in-browser via DOSBox · Use keyboard &amp; mouse · ~80 MB download</p>
+</div>
+
+<footer>
+    Built on <a href="https://github.com/LBALab/lba-classic-builder" target="_blank">Little Big Adventure 1</a> (1994) ·
+    <a href="https://github.com/yassinebkr/lba-custom-portfolio" target="_blank">Source</a>
+</footer>
+
+<!-- Game overlay (hidden until launched) -->
+<div id="game-overlay">
+    <button id="close-btn" onclick="closeGame()">✕ Close</button>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading game engine... (~80 MB)</p>
+    </div>
     <div id="jsdos"></div>
+</div>
 
-    <!-- js-dos v8 from CDN -->
-    <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
-    <script>
-        // Configure js-dos
-        Dos(document.getElementById("jsdos"), {
-            // Path to your .jsdos bundle
-            url: "./lba1_portfolio.jsdos",
+<script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+<script>
+    let ci = null;
 
-            // Optional: auto-start without user interaction
+    function launchGame() {
+        document.getElementById('game-overlay').classList.add('active');
+
+        Dos(document.getElementById('jsdos'), {
+            url: './lba1_portfolio.jsdos',
             autoStart: true,
-
-            // Backend selection (use "dosboxX" for better compatibility if needed)
-            backend: "dosbox",
-
-            // Event handlers
-            onEvent: (event, ci) => {
-                if (event === "ci-ready") {
-                    // Command interface ready - game is loaded
-                    document.getElementById("loading").classList.add("hidden");
-                    console.log("LBA1 Portfolio loaded successfully");
+            backend: 'dosbox',
+            onEvent: (event, data) => {
+                if (event === 'ci-ready') {
+                    ci = data;
+                    document.getElementById('loading-overlay').classList.add('hidden');
                 }
-
-                if (event === "error") {
-                    console.error("js-dos error:", ci);
-                    document.getElementById("loading").innerHTML = `
-                        <h1>Error Loading Game</h1>
-                        <p>Check console for details. Make sure lba1_portfolio.jsdos exists.</p>
-                    `;
+                if (event === 'error') {
+                    document.getElementById('loading-overlay').innerHTML =
+                        '<p style="color:#f66">Failed to load. Check that lba1_portfolio.jsdos is deployed.</p>';
                 }
             }
         });
-    </script>
+    }
+
+    function closeGame() {
+        if (ci) { ci.exit(); ci = null; }
+        document.getElementById('game-overlay').classList.remove('active');
+        document.getElementById('loading-overlay').classList.remove('hidden');
+        document.getElementById('jsdos').innerHTML = '';
+    }
+</script>
+
 </body>
 </html>

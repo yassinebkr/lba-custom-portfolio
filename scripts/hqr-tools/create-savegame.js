@@ -185,37 +185,47 @@ function buildSave(loc) {
     return buf;
 }
 
-function writeSave(key, loc, outputDir, deploy) {
-    // Use a stable numeric ID derived from the key so it's predictable
+function writeSave(key, loc, outputDir, deploy, dosMode) {
     const ids = Object.keys(LOCATIONS);
-    const id  = 9000 + ids.indexOf(key) + 1;  // 9001 .. 9007
-    const filename = `S${id}.LBA`;
-
+    const slotIndex = ids.indexOf(key);  // 0-based slot number
     const buf = buildSave(loc);
 
-    // Always write to output/saves
     fs.mkdirSync(outputDir, { recursive: true });
-    const localPath = path.join(outputDir, filename);
-    fs.writeFileSync(localPath, buf);
-    console.log(`  [local] ${localPath} (${buf.length} bytes, area 0x${loc.area.toString(16).padStart(2,'0')})`);
 
-    // Optionally deploy to the game's save directory
+    // Remaster format: S{id}.LBA
+    const remasterId = 9000 + slotIndex + 1;
+    const remasterFile = `S${remasterId}.LBA`;
+    const localPath = path.join(outputDir, remasterFile);
+    fs.writeFileSync(localPath, buf);
+    console.log(`  [local] ${localPath} (${buf.length}b, area 0x${loc.area.toString(16).padStart(2,'0')})`);
+
     if (deploy) {
         try {
             fs.mkdirSync(SAVE_DIR, { recursive: true });
-            const gamePath = path.join(SAVE_DIR, filename);
+            const gamePath = path.join(SAVE_DIR, remasterFile);
             fs.copyFileSync(localPath, gamePath);
             console.log(`  [game]  ${gamePath}`);
         } catch (e) {
-            console.warn(`  [warn]  Could not copy to game dir: ${e.message}`);
+            console.warn(`  [warn]  Could not deploy to game dir: ${e.message}`);
         }
+    }
+
+    // DOS format: LBA.S0x (for js-dos web bundle)
+    if (dosMode) {
+        const dosFile = `LBA.S${String(slotIndex).padStart(2, '0')}`;
+        const dosDir  = path.join(outputDir, 'dos');
+        fs.mkdirSync(dosDir, { recursive: true });
+        const dosPath = path.join(dosDir, dosFile);
+        fs.writeFileSync(dosPath, buf);
+        console.log(`  [dos]   ${dosPath}`);
     }
 }
 
 // ── CLI ───────────────────────────────────────────────────────────────────────
 
-const args       = process.argv.slice(2).filter(a => a !== '--no-deploy');
+const args       = process.argv.slice(2).filter(a => !a.startsWith('--'));
 const noDeploy   = process.argv.includes('--no-deploy');
+const dosDeploy  = process.argv.includes('--dos');  // also write DOS LBA.S0x saves
 const deploy     = !noDeploy;
 const command    = args[0];
 const OUTPUT_DIR = path.join(__dirname, '../../output/saves');
@@ -230,9 +240,9 @@ switch (command) {
         break;
 
     case undefined:
-        console.log(`Creating all portfolio saves${deploy ? ' and deploying to game' : ''}...\n`);
+        console.log(`Creating all portfolio saves${deploy ? ' + deploying to game' : ''}${dosDeploy ? ' + DOS format' : ''}...\n`);
         for (const [key, loc] of Object.entries(LOCATIONS)) {
-            writeSave(key, loc, OUTPUT_DIR, deploy);
+            writeSave(key, loc, OUTPUT_DIR, deploy, dosDeploy);
         }
         console.log('\nDone. Launch the game and use "Continue Saved Game" to test.');
         break;
@@ -244,6 +254,6 @@ switch (command) {
             process.exit(1);
         }
         console.log(`Creating save for: ${command}${deploy ? ' (deploying)' : ''}\n`);
-        writeSave(command, LOCATIONS[command], OUTPUT_DIR, deploy);
+        writeSave(command, LOCATIONS[command], OUTPUT_DIR, deploy, dosDeploy);
         break;
 }
