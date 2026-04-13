@@ -1,83 +1,85 @@
 @echo off
-REM Test LBA1 Game - Runs the original game via DOSBox or directly
-REM Place your LBA1 files in base_game\ first
+REM Test LBA1 Game - Multiple options to play
+REM Supports GOG version (remaster + DOS)
 
 echo === LBA1 Game Tester ===
 echo.
 
 cd /d "%~dp0.."
 set "GAME_DIR=%CD%\base_game"
+set "GOG_DIR=E:\Program Files (x86)\GOG Galaxy\Games\tlba-classic"
 
 REM Check if game files exist
-if not exist "%GAME_DIR%\LBA.EXE" (
-    if not exist "%GAME_DIR%\lba.exe" (
-        echo [ERROR] LBA.EXE not found in base_game\
+if not exist "%GAME_DIR%\RELENT.EXE" (
+    if not exist "%GAME_DIR%\RESS.HQR" (
+        echo [ERROR] Game files not found in base_game\
         echo.
-        echo Please copy your LBA1 game files to:
-        echo   %GAME_DIR%
-        echo.
-        echo Required files:
-        echo   - LBA.EXE
-        echo   - LBA.HQR
-        echo   - RESS.HQR
-        echo   - TEXT.HQR
-        echo   - SCENE.HQR
-        echo   - (and other .HQR files)
-        echo.
+        echo Run init-workspace.bat first, or copy files manually.
         pause
         exit /b 1
     )
 )
 
-echo Found game files in: %GAME_DIR%
+echo Game files found in: %GAME_DIR%
+echo.
+echo Choose how to play:
+echo.
+echo   [1] GOG Remaster (TLBA1C.exe) - Best quality, built-in language switching
+echo   [2] DOS via DOSBox (RELENT.EXE) - Original experience
+echo   [3] Open game folder
+echo   [4] Cancel
 echo.
 
-REM List HQR files
-echo HQR files found:
-dir /b "%GAME_DIR%\*.HQR" 2>nul
-dir /b "%GAME_DIR%\*.hqr" 2>nul
-echo.
+set /p choice="Enter choice (1/2/3/4): "
 
-REM Check for DOSBox
-where dosbox >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo [OPTION 1] DOSBox found - launching game...
+if "%choice%"=="1" (
     echo.
-    dosbox -c "mount c %GAME_DIR%" -c "c:" -c "LBA.EXE" -c "exit"
+    echo Launching GOG Remaster...
+    if exist "%GOG_DIR%\TLBA1C.exe" (
+        start "" "%GOG_DIR%\TLBA1C.exe"
+    ) else (
+        echo [ERROR] TLBA1C.exe not found at:
+        echo         %GOG_DIR%
+        echo.
+        echo Please update GOG_DIR in this script.
+    )
     goto :end
 )
 
-REM Check for DOSBox in common locations
-if exist "C:\Program Files (x86)\DOSBox-0.74-3\DOSBox.exe" (
-    echo [OPTION 1] DOSBox found - launching game...
-    "C:\Program Files (x86)\DOSBox-0.74-3\DOSBox.exe" -c "mount c %GAME_DIR%" -c "c:" -c "LBA.EXE" -c "exit"
+if "%choice%"=="2" (
+    echo.
+    echo Launching via DOSBox...
+
+    REM Try GOG's bundled DOSBox first
+    set "DOSBOX_EXE=%GOG_DIR%\Speedrun\Windows\DOSBOX\DOSBox.exe"
+    set "DOSBOX_CONF=%GOG_DIR%\Speedrun\Windows\LBA1.conf"
+
+    if exist "%DOSBOX_EXE%" (
+        echo Using GOG's DOSBox...
+        start "" "%DOSBOX_EXE%" -conf "%DOSBOX_CONF%"
+        goto :end
+    )
+
+    REM Try system DOSBox
+    where dosbox >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo Using system DOSBox...
+        dosbox -c "mount c %GAME_DIR%" -c "c:" -c "RELENT.EXE" -c "exit"
+        goto :end
+    )
+
+    echo [ERROR] DOSBox not found.
+    echo Install DOSBox or use option 1 (Remaster).
     goto :end
 )
 
-if exist "C:\Program Files\DOSBox\DOSBox.exe" (
-    echo [OPTION 1] DOSBox found - launching game...
-    "C:\Program Files\DOSBox\DOSBox.exe" -c "mount c %GAME_DIR%" -c "c:" -c "LBA.EXE" -c "exit"
+if "%choice%"=="3" (
+    explorer "%GAME_DIR%"
     goto :end
 )
 
-REM No DOSBox found
-echo [INFO] DOSBox not found in PATH or common locations.
-echo.
-echo Options to run LBA1:
-echo.
-echo   1. Install DOSBox from https://www.dosbox.com/download.php
-echo      Then run this script again.
-echo.
-echo   2. Use DOSBox-X (better compatibility):
-echo      https://dosbox-x.com/
-echo.
-echo   3. If you have the GOG or Steam version, it includes DOSBox.
-echo      Run it from there instead.
-echo.
-echo   4. Try running LBA.EXE directly (may work on some systems):
-echo      cd base_game
-echo      LBA.EXE
-echo.
+echo Cancelled.
 
 :end
+echo.
 pause
