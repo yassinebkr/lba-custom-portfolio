@@ -1,16 +1,14 @@
 /**
- * LBA1 Text/Dialogue Editor
+ * LBA1 Text/Dialogue Editor - Proper Format
  *
- * Extracts text strings to editable JSON and repacks them.
- *
- * LBA1 text format:
- *   - TEXT.HQR contains multiple language banks
- *   - Each bank contains null-terminated strings
- *   - Entry 0 = English, Entry 1 = French, etc.
+ * LBA TEXT.HQR format:
+ *   - Each entry is a "text bank" with offset table + null-terminated strings
+ *   - Entries are grouped by language (EN: 1-27, FR: 29-55, DE: 57-83, ES: 85-111, IT: 113-139)
+ *   - Key dialogue entries: 7 (EN), 35 (FR), 63 (DE), 91 (ES), 119 (IT)
  *
  * Usage:
- *   node edit-text.js extract   # Extract strings to JSON
- *   node edit-text.js repack    # Rebuild TEXT.HQR from JSON
+ *   node edit-text.js extract   # Extract to JSON
+ *   node edit-text.js repack    # Rebuild TEXT.HQR
  */
 
 const { HQR, HQREntry, CompressionType } = require('@lbalab/hqr');
@@ -21,66 +19,94 @@ const BASE_GAME_DIR = path.join(__dirname, '../../base_game');
 const MODDED_DIR = path.join(__dirname, '../../modded_assets/text');
 const TEXT_JSON_PATH = path.join(MODDED_DIR, 'dialogue_strings.json');
 
-// Language indices in TEXT.HQR (LBA1)
+// Language configuration
 const LANGUAGES = {
-    0: 'english',
-    1: 'french',
-    2: 'german',
-    3: 'spanish',
-    4: 'italian',
-    // LBA1 typically has 5 languages
+    english: { start: 1, end: 27, dialogueEntry: 7 },
+    french: { start: 29, end: 55, dialogueEntry: 35 },
+    german: { start: 57, end: 83, dialogueEntry: 63 },
+    spanish: { start: 85, end: 111, dialogueEntry: 91 },
+    italian: { start: 113, end: 139, dialogueEntry: 119 }
+};
+
+// Text bank names (based on content analysis)
+const BANK_NAMES = {
+    1: 'ui_menu',
+    3: 'credits',
+    5: 'game_tips',
+    7: 'dialogue_main',      // Main NPC dialogue
+    9: 'dialogue_extended',  // More dialogue
+    11: 'dialogue_quest',
+    13: 'signs_labels',
+    15: 'rebellion_dialogue',
+    17: 'military_dialogue',
+    19: 'factory_dialogue',
+    21: 'misc_dialogue',
+    23: 'guards_dialogue',
+    25: 'funfrock_dialogue',
+    27: 'ending_dialogue'
 };
 
 /**
- * Decode text strings from a buffer
- * LBA uses null-terminated strings, packed sequentially
+ * Read strings from LBA text bank format
  */
-function decodeTextBuffer(buffer) {
+function readTextBank(buffer) {
     const strings = [];
-    let current = '';
-    const decoder = new TextDecoder('latin1'); // LBA uses Latin-1 encoding
+    if (buffer.length < 2) return strings;
 
-    for (let i = 0; i < buffer.length; i++) {
-        if (buffer[i] === 0) {
-            // Null terminator - end of string
-            if (current.length > 0 || strings.length > 0) {
-                strings.push(current);
-            }
-            current = '';
-        } else {
-            current += decoder.decode(new Uint8Array([buffer[i]]));
+    const firstOffset = buffer.readUInt16LE(0);
+    if (firstOffset >= buffer.length) return strings;
+
+    let pos = firstOffset;
+    let id = 0;
+
+    while (pos < buffer.length) {
+        let end = pos;
+        while (end < buffer.length && buffer[end] !== 0) end++;
+
+        if (end > pos) {
+            const str = buffer.slice(pos, end).toString('latin1');
+            strings.push({ id: id++, text: str });
+        } else if (end === pos && buffer[end] === 0) {
+            // Empty string
+            strings.push({ id: id++, text: '' });
         }
-    }
-
-    // Don't forget last string if no terminator
-    if (current.length > 0) {
-        strings.push(current);
+        pos = end + 1;
     }
 
     return strings;
 }
 
 /**
- * Encode strings back to buffer format
+ * Write strings to LBA text bank format
  */
-function encodeStringsToBuffer(strings) {
-    const encoder = new TextEncoder();
-    const parts = [];
+function writeTextBank(strings) {
+    // Calculate offsets
+    const numStrings = strings.length;
+    const offsetTableSize = numStrings * 2;
 
-    for (const str of strings) {
-        // Encode string and add null terminator
-        const encoded = encoder.encode(str);
-        parts.push(encoded);
-        parts.push(new Uint8Array([0]));
+    // Build string data
+    const stringBuffers = strings.map(s => {
+        const encoded = Buffer.from(s.text || s.modified || '', 'latin1');
+        return Buffer.concat([encoded, Buffer.from([0])]); // null terminator
+    });
+
+    const totalStringSize = stringBuffers.reduce((sum, b) => sum + b.length, 0);
+    const totalSize = offsetTableSize + totalStringSize;
+
+    const result = Buffer.alloc(totalSize);
+
+    // Write offset table
+    let stringOffset = offsetTableSize;
+    for (let i = 0; i < numStrings; i++) {
+        result.writeUInt16LE(stringOffset, i * 2);
+        stringOffset += stringBuffers[i].length;
     }
 
-    // Concatenate all parts
-    const totalLength = parts.reduce((sum, p) => sum + p.length, 0);
-    const result = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const part of parts) {
-        result.set(part, offset);
-        offset += part.length;
+    // Write strings
+    let writePos = offsetTableSize;
+    for (const buf of stringBuffers) {
+        buf.copy(result, writePos);
+        writePos += buf.length;
     }
 
     return result;
@@ -100,35 +126,55 @@ async function extractText() {
     const hqr = HQR.fromArrayBuffer(buffer.buffer);
 
     const textData = {
-        _info: 'Edit strings below. Keep indices intact. Run "node edit-text.js repack" to rebuild.',
+        _info: 'Edit the "modified" field for each string. Run "node edit-text.js repack" to rebuild.',
+        _format: 'LBA TEXT.HQR - Each language has identical bank structure',
         languages: {}
     };
 
-    for (let i = 0; i < hqr.entries.length; i++) {
-        const entry = hqr.entries[i];
-        if (!entry || !entry.content) continue;
-
-        const langName = LANGUAGES[i] || `language_${i}`;
-        const strings = decodeTextBuffer(Buffer.from(entry.content));
-
-        console.log(`[${langName}] ${strings.length} strings`);
+    // Extract each language
+    for (const [langName, config] of Object.entries(LANGUAGES)) {
+        console.log(`\n=== ${langName.toUpperCase()} (entries ${config.start}-${config.end}) ===`);
 
         textData.languages[langName] = {
-            index: i,
-            strings: strings.map((str, idx) => ({
-                id: idx,
-                original: str,
-                modified: str  // User edits this field
-            }))
+            config: config,
+            banks: {}
         };
+
+        for (let i = config.start; i <= config.end; i += 2) {
+            const entry = hqr.entries[i];
+            if (!entry || !entry.content) continue;
+
+            const buf = Buffer.from(entry.content);
+            const strings = readTextBank(buf);
+
+            if (strings.length === 0) continue;
+
+            const bankIndex = i - config.start + 1;
+            const bankName = BANK_NAMES[bankIndex] || `bank_${bankIndex}`;
+
+            console.log(`  [${i}] ${bankName}: ${strings.length} strings`);
+
+            textData.languages[langName].banks[i] = {
+                name: bankName,
+                entryIndex: i,
+                strings: strings.map(s => ({
+                    id: s.id,
+                    original: s.text,
+                    modified: s.text
+                }))
+            };
+        }
     }
 
     // Write JSON
     fs.mkdirSync(MODDED_DIR, { recursive: true });
     fs.writeFileSync(TEXT_JSON_PATH, JSON.stringify(textData, null, 2));
 
-    console.log(`\nExtracted to: ${TEXT_JSON_PATH}`);
-    console.log('Edit the "modified" field for each string, then run: node edit-text.js repack');
+    console.log(`\n\nExtracted to: ${TEXT_JSON_PATH}`);
+    console.log('\nKey dialogue banks to edit:');
+    console.log('  - Entry 7 (English dialogue_main)');
+    console.log('  - Entry 35 (French dialogue_main)');
+    console.log('\nEdit the "modified" field, then run: node edit-text.js repack');
 }
 
 async function repackText() {
@@ -138,36 +184,56 @@ async function repackText() {
         process.exit(1);
     }
 
+    const textHqrPath = path.join(BASE_GAME_DIR, 'TEXT.HQR');
+    if (!fs.existsSync(textHqrPath)) {
+        console.error('ERROR: Original TEXT.HQR not found in base_game/');
+        process.exit(1);
+    }
+
     console.log('Repacking text strings to TEXT.HQR...\n');
 
+    // Load original HQR as base
+    const origBuffer = fs.readFileSync(textHqrPath);
+    const hqr = HQR.fromArrayBuffer(origBuffer.buffer);
+
+    // Load modified text
     const textData = JSON.parse(fs.readFileSync(TEXT_JSON_PATH, 'utf8'));
-    const hqr = new HQR();
 
-    // Determine max index
-    let maxIndex = 0;
-    for (const lang of Object.values(textData.languages)) {
-        if (lang.index > maxIndex) maxIndex = lang.index;
+    let modifiedCount = 0;
+
+    // Apply modifications
+    for (const [langName, langData] of Object.entries(textData.languages)) {
+        for (const [entryIndexStr, bankData] of Object.entries(langData.banks)) {
+            const entryIndex = parseInt(entryIndexStr);
+
+            // Check if any strings were modified
+            const hasModifications = bankData.strings.some(s => s.modified !== s.original);
+
+            if (hasModifications) {
+                console.log(`[${langName}] Entry ${entryIndex} (${bankData.name}): rebuilding...`);
+
+                const newStrings = bankData.strings.map(s => ({
+                    text: s.modified
+                }));
+
+                const newBuffer = writeTextBank(newStrings);
+
+                hqr.entries[entryIndex] = new HQREntry(
+                    newBuffer.buffer.slice(newBuffer.byteOffset, newBuffer.byteOffset + newBuffer.byteLength),
+                    CompressionType.NONE
+                );
+
+                modifiedCount++;
+            }
+        }
     }
 
-    // Fill with null entries up to maxIndex
-    for (let i = 0; i <= maxIndex; i++) {
-        hqr.entries.push(null);
+    if (modifiedCount === 0) {
+        console.log('No modifications detected. TEXT.HQR unchanged.');
+        return;
     }
 
-    // Populate with actual data
-    for (const [langName, lang] of Object.entries(textData.languages)) {
-        const strings = lang.strings.map(s => s.modified);
-        const encoded = encodeStringsToBuffer(strings);
-
-        console.log(`[${langName}] ${strings.length} strings, ${encoded.length} bytes`);
-
-        hqr.entries[lang.index] = new HQREntry(
-            encoded.buffer,
-            CompressionType.NONE
-        );
-    }
-
-    // Write HQR
+    // Write new HQR
     const outputDir = path.join(__dirname, '../../output');
     fs.mkdirSync(outputDir, { recursive: true });
 
@@ -175,7 +241,34 @@ async function repackText() {
     const packedBuffer = hqr.toArrayBuffer();
     fs.writeFileSync(outputPath, Buffer.from(packedBuffer));
 
-    console.log(`\nCreated: ${outputPath} (${(packedBuffer.byteLength / 1024).toFixed(2)} KB)`);
+    console.log(`\n${modifiedCount} bank(s) modified.`);
+    console.log(`Created: ${outputPath} (${(packedBuffer.byteLength / 1024).toFixed(2)} KB)`);
+}
+
+// List command - show sample dialogue
+async function listDialogue() {
+    const textHqrPath = path.join(BASE_GAME_DIR, 'TEXT.HQR');
+    if (!fs.existsSync(textHqrPath)) {
+        console.error('ERROR: TEXT.HQR not found in base_game/');
+        process.exit(1);
+    }
+
+    const buffer = fs.readFileSync(textHqrPath);
+    const hqr = HQR.fromArrayBuffer(buffer.buffer);
+
+    console.log('=== Sample Dialogue from TEXT.HQR ===\n');
+
+    // Show English dialogue (entry 7)
+    const entry = hqr.entries[7];
+    const buf = Buffer.from(entry.content);
+    const strings = readTextBank(buf);
+
+    console.log('Entry 7 - Main English Dialogue:\n');
+    strings.slice(0, 20).forEach((s, i) => {
+        if (s.text.length > 10) {
+            console.log(`  [${i}] ${s.text.substring(0, 100)}${s.text.length > 100 ? '...' : ''}`);
+        }
+    });
 }
 
 // Main
@@ -185,17 +278,19 @@ if (command === 'extract') {
     extractText();
 } else if (command === 'repack') {
     repackText();
+} else if (command === 'list') {
+    listDialogue();
 } else {
     console.log('LBA1 Text/Dialogue Editor');
     console.log('');
     console.log('Usage:');
-    console.log('  node edit-text.js extract   Extract strings to JSON for editing');
-    console.log('  node edit-text.js repack    Rebuild TEXT.HQR from edited JSON');
+    console.log('  node edit-text.js extract   Extract text to JSON');
+    console.log('  node edit-text.js repack    Rebuild TEXT.HQR from JSON');
+    console.log('  node edit-text.js list      Show sample dialogue');
     console.log('');
     console.log('Workflow:');
-    console.log('  1. Place TEXT.HQR in base_game/');
-    console.log('  2. Run: node edit-text.js extract');
-    console.log('  3. Edit modded_assets/text/dialogue_strings.json');
-    console.log('  4. Run: node edit-text.js repack');
-    console.log('  5. Copy output/TEXT.HQR to your game folder');
+    console.log('  1. Run: node edit-text.js extract');
+    console.log('  2. Edit: modded_assets/text/dialogue_strings.json');
+    console.log('  3. Run: node edit-text.js repack');
+    console.log('  4. Copy output/TEXT.HQR to test');
 }
