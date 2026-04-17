@@ -210,9 +210,9 @@ function writeSave(key, loc, outputDir, deploy, dosMode) {
         }
     }
 
-    // DOS format: LBA.S0x (for js-dos web bundle)
+    // DOS format: S<num>.LBA (RELENT.EXE scans *.LBA)
     if (dosMode) {
-        const dosFile = `LBA.S${String(slotIndex).padStart(2, '0')}`;
+        const dosFile = `S${String(slotIndex + 1).padStart(3, '0')}.LBA`;
         const dosDir  = path.join(outputDir, 'dos');
         fs.mkdirSync(dosDir, { recursive: true });
         const dosPath = path.join(dosDir, dosFile);

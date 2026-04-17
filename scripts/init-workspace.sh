@@ -82,6 +82,22 @@ else
     echo "[EXISTS] lba-packager"
 fi
 
+# metadata (for referencing IDs and names)
+if [ ! -d "tools/metadata" ]; then
+    git clone https://github.com/LBALab/metadata.git tools/metadata
+    echo "[CLONED] metadata"
+else
+    echo "[EXISTS] metadata"
+fi
+
+# LBAPackEd (for editing geometry and sprites)
+if [ ! -d "tools/LBAPackEd" ]; then
+    git clone https://github.com/LBALab/LBAPackEd.git tools/LBAPackEd
+    echo "[CLONED] LBAPackEd"
+else
+    echo "[EXISTS] LBAPackEd"
+fi
+
 # --- Install Node.js HQR Library ---
 echo ""
 echo "Setting up Node.js HQR extraction toolkit..."

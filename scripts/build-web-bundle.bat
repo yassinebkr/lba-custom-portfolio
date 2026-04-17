@@ -68,6 +68,15 @@ if exist "%BASE%\VOX" (
     echo [COPIED] English voice files
 )
 
+REM --- Emulate CD-ROM ---
+echo [2.5/5] Forging Virtual CD-ROM...
+mkdir "%BUNDLE%\CD"
+echo 1 > "%BUNDLE%\CD\CD_LBA"
+mkdir "%BUNDLE%\CD\LBA\FLA"
+echo 1 > "%BUNDLE%\CD\LBA\FLA\INTROD.FLA"
+REM Game expects SAMPLES.HQR strictly on CD-ROM
+move "%GAME%\SAMPLES.HQR" "%BUNDLE%\CD\" >nul 2>&1
+
 echo [OK] Game files assembled
 echo.
 
@@ -86,6 +95,7 @@ echo [3/5] Writing dosbox.conf...
     echo [autoexec]
     echo @echo off
     echo mount c .
+    echo mount d .\CD -t cdrom -label CD_LBA
     echo c:
     echo cd LBA
     echo RELENT.EXE
@@ -97,8 +107,10 @@ REM --- Pack .jsdos ---
 echo [4/5] Packing .jsdos bundle...
 set "JSDOS=%WEB%\lba1_portfolio.jsdos"
 if exist "%JSDOS%" del "%JSDOS%"
-powershell -Command "Compress-Archive -Path '%BUNDLE%\*' -DestinationPath '%JSDOS%' -Force"
+if exist "%WEB%\lba1_portfolio.zip" del "%WEB%\lba1_portfolio.zip"
+powershell -Command "Compress-Archive -Path '%BUNDLE%\*' -DestinationPath '%WEB%\lba1_portfolio.zip' -Force"
 if %ERRORLEVEL% NEQ 0 ( echo [ERROR] ZIP creation failed. & pause & exit /b 1 )
+ren "%WEB%\lba1_portfolio.zip" "lba1_portfolio.jsdos"
 echo [OK] Bundle created: lba1_portfolio.jsdos
 echo.
 

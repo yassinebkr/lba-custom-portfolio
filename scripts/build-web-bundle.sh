@@ -111,6 +111,17 @@ if [ -d "$OUTPUT" ]; then
         fi
     done
     echo "[APPLIED] $MOD_COUNT modded files"
+
+    # Overlay DOS saves if they exist
+    if [ -d "$OUTPUT/saves/dos" ]; then
+        for savefile in "$OUTPUT/saves/dos"/LBA.S*; do
+            if [ -f "$savefile" ]; then
+                savename=$(basename "$savefile")
+                cp "$savefile" "$BUNDLE_DIR/LBA/$savename"
+                echo "  [SAVE] $savename"
+            fi
+        done
+    fi
 else
     echo "[SKIP] No output/ directory found (no mods to apply)"
 fi

@@ -140,7 +140,8 @@
 
         #close-btn:hover { border-color: #0ff; color: #0ff; }
 
-        #jsdos { width: 100%; height: 100%; }
+        #jsdos-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #jsdos { image-rendering: pixelated; max-width: 100%; max-height: 100%; background: #000; }
 
         #loading-overlay {
             position: absolute;
@@ -233,41 +234,35 @@
     <button id="close-btn" onclick="closeGame()">✕ Close</button>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p>Loading game engine... (~80 MB)</p>
+        <p>Loading game engine...</p>
     </div>
-    <div id="jsdos"></div>
+    <div id="jsdos-wrap">
+        <canvas id="jsdos" width="640" height="480"></canvas>
+    </div>
 </div>
 
-<script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+<script src="./vendor/jsdos622/js-dos.js" crossorigin="anonymous"></script>
 <script>
-    let ci = null;
-
     function launchGame() {
         document.getElementById('game-overlay').classList.add('active');
-
-        Dos(document.getElementById('jsdos'), {
-            url: './lba1_portfolio.jsdos',
-            autoStart: true,
-            backend: 'dosbox',
-            onEvent: (event, data) => {
-                if (event === 'ci-ready') {
-                    ci = data;
+        var el = document.getElementById('jsdos');
+        Dos(el, { wdosboxUrl: './vendor/jsdos622/wdosbox.js' })
+            .ready(function(fs, main) {
+                var url = './lba1_portfolio.jsdos?v=' + Date.now();
+                fs.extract(url).then(function() {
                     document.getElementById('loading-overlay').classList.add('hidden');
-                }
-                if (event === 'error') {
+                    return main([
+                        '-c', 'imgmount d LBA.ISO -t iso',
+                        '-c', 'RELENT.EXE',
+                    ]);
+                }).catch(function(e) {
                     document.getElementById('loading-overlay').innerHTML =
-                        '<p style="color:#f66">Failed to load. Check that lba1_portfolio.jsdos is deployed.</p>';
-                }
-            }
-        });
+                        '<p style="color:#f66">Extract failed: ' + e + '</p>';
+                });
+            });
     }
 
-    function closeGame() {
-        if (ci) { ci.exit(); ci = null; }
-        document.getElementById('game-overlay').classList.remove('active');
-        document.getElementById('loading-overlay').classList.remove('hidden');
-        document.getElementById('jsdos').innerHTML = '';
-    }
+    function closeGame() { location.reload(); }
 </script>
 
 </body>

@@ -17,10 +17,23 @@ modded_assets/
 node_modules/
 package-lock.json
 
-# Tools (cloned repos)
-tools/twin-e/
-tools/lba-packager/
-tools/LBArchitect/
+# Tools (cloned LBALab repos — reference only, not part of this project)
+tools/
+
+# Python capstone vendored dist
+scripts/hqr-tools/_pylib/
+
+# Metadata UI (optional prototype)
+metadata-ui/node_modules/
+metadata-ui/dist/
+
+# Stray files / scratch artifacts
+$web/
+CONTINUE_PROMPT.json
+*.jpg
+web_deploy/lba1_portfolio_test.zip
+web_deploy/_tmp/
+web_deploy/_cdtmp/
 
 # OS files
 .DS_Store

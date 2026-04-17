@@ -1,194 +1,124 @@
-# LBA1 Portfolio Mod Project
+# LBA1 Custom Portfolio
 
-Turn Little Big Adventure 1 into an interactive portfolio using official LBALab modding tools.
+An interactive portfolio built on a modded **Little Big Adventure 1** (1994) running in-browser via js-dos 6.22. Visitors explore the LBA world; each location tells the story of a project.
 
-## Overview
+> ⚠️ Requires a legitimate copy of LBA1. This repo ships tooling only — no game assets.
 
-This project provides a complete workflow to:
-1. Extract assets from original LBA1 game files
-2. Modify dialogue, scenes, and level layouts
-3. Repack modified assets
-4. Deploy the modded game playable in a web browser
+## What this is
+
+The original LBA1 DOS binary boots straight into Twinsen's prison cell with a "No CD" check that aborts without a mounted CD-ROM. Four binary patches to `RELENT.EXE` plus a synthetic `LBA.ISO` (ISO9660, volume label `ADELINE`) get it booting cleanly under js-dos, with both intro FLA cinematics NOPed out so the WASM heap doesn't explode.
+
+On top of that bootable base we overlay:
+- Custom save files pre-positioned at six portfolio locations
+- Modded `TEXT.HQR` with portfolio dialogue
+- (WIP) Modded `SPRITES.HQR` with personalised sprites
+
+## Project layout
+
+```
+base_game/                  # Original LBA1 files (user-provided, .HQR/.EXE)
+modded_assets/sprites/      # Extracted PNG sprites for GIMP editing
+output/                     # Build artefacts: patched RELENT.EXE, modded HQRs, saves
+web_deploy/                 # Static site + bundle
+  index.html                # Landing page with location grid + js-dos launcher
+  lba1_portfolio.jsdos      # The bundle (ZIP with game files + LBA.ISO)
+  vendor/jsdos622/          # Self-hosted js-dos 6.22 runtime
+scripts/hqr-tools/          # Node + Python tooling
+tools/                      # Vendored LBALab repos (twin-e, metadata, etc.)
+memory/                     # Long-term project notes (Claude auto-memory)
+```
 
 ## Prerequisites
 
-- **Original LBA1 game files** (legitimate copy required - .HQR files)
-- **Node.js 18+**
-- **Git**
-- **Windows** (for LBArchitect level editor) or WSL2
-- **zip** command (for bundle creation)
+- Node.js 18+
+- Windows (build uses PowerShell + IMAPI2 to produce `LBA.ISO`)
+- Original LBA1 `.HQR` and `.EXE` files in `base_game/`
+- Optional: GIMP for sprite edits, Python 3 + capstone for EXE analysis
 
-## Quick Start
-
-```bash
-# 1. Initialize workspace (clone tools, install dependencies)
-chmod +x scripts/init-workspace.sh
-./scripts/init-workspace.sh
-
-# 2. Copy your LBA1 game files
-cp /path/to/lba1/*.HQR base_game/
-cp /path/to/lba1/*.EXE base_game/
-
-# 3. Extract assets
-cd scripts/hqr-tools
-node extract-all.js
-
-# 4. Edit dialogue
-node edit-text.js extract
-# Edit modded_assets/text/dialogue_strings.json
-node edit-text.js repack
-
-# 5. Build web bundle
-cd ../..
-./scripts/build-web-bundle.sh
-
-# 6. Test locally
-cd web_deploy
-npx serve .
-# Open http://localhost:3000
-```
-
-## Project Structure
-
-```
-lba-custom-portefolio/
-├── base_game/              # Original LBA1 files (YOU PROVIDE)
-│   ├── LBA.EXE
-│   ├── LBA.HQR
-│   ├── RESS.HQR
-│   ├── TEXT.HQR
-│   ├── SCENE.HQR
-│   └── ...
-├── modded_assets/          # Extracted & editable assets
-│   ├── text/
-│   │   └── dialogue_strings.json
-│   ├── scenes/
-│   └── ...
-├── output/                 # Repacked .HQR files
-├── tools/                  # LBALab repositories
-│   ├── twin-e/            # Engine recreation
-│   ├── lba-packager/      # Web-based HQR editor
-│   └── LBArchitect/       # Level editor (Windows)
-├── scripts/
-│   ├── init-workspace.sh
-│   ├── build-web-bundle.sh
-│   └── hqr-tools/
-│       ├── extract-all.js
-│       ├── repack-hqr.js
-│       └── edit-text.js
-├── web_deploy/
-│   ├── index.html
-│   └── lba1_portfolio.jsdos
-└── docs/
-    └── LBARCHITECT_GUIDE.md
-```
-
-## Detailed Workflow
-
-### 1. Dialogue Editing (Easiest)
-
-Modify NPC dialogue to create portfolio content:
+## Build pipeline
 
 ```bash
-cd scripts/hqr-tools
-node edit-text.js extract
+# 1. Patch RELENT.EXE (CD bypass + skip intro FLAs → output/RELENT.EXE)
+node scripts/hqr-tools/patch-relent.js
+
+# 2. Generate portfolio save files (S001.LBA … S007.LBA)
+node scripts/hqr-tools/create-savegame.js --dos --no-deploy
+
+# 3. (Optional) Apply portfolio dialogue
+node scripts/hqr-tools/edit-text.js repack
+
+# 4. Build the web bundle (.jsdos + CD ISO + config)
+node scripts/hqr-tools/build-bundle.js
+
+# 5. Serve locally
+cd web_deploy && python -m http.server 8765
+# open http://localhost:8765
 ```
 
-Edit `modded_assets/text/dialogue_strings.json`:
-```json
-{
-  "languages": {
-    "english": {
-      "strings": [
-        {
-          "id": 42,
-          "original": "Hello stranger!",
-          "modified": "Welcome to my portfolio! I'm a software developer..."
-        }
-      ]
-    }
-  }
-}
-```
+The build overlays every `.HQR` under `output/` on top of `base_game/` originals, so any repacked asset is picked up automatically.
 
-Then repack:
-```bash
-node edit-text.js repack
-# Creates output/TEXT.HQR
-```
+## Asset workflows
 
-### 2. Level Editing (Advanced)
-
-See `docs/LBARCHITECT_GUIDE.md` for detailed instructions.
-
-**Short version:**
-1. Use LBArchitect (Windows) to visually edit rooms
-2. Or use https://lbalab.github.io/lba-packager/ for web-based editing
-3. Repack with `node repack-hqr.js scenes`
-
-### 3. Testing Locally
-
-**With twin-e (desktop):**
-```bash
-cd tools/twin-e
-./twin-e --datapath ../../output
-```
-
-**With js-dos (browser):**
-```bash
-./scripts/build-web-bundle.sh
-cd web_deploy
-npx serve .
-```
-
-### 4. VPS Deployment
+### Sprites (2D, GIMP-friendly)
 
 ```bash
-# Build the bundle
-./scripts/build-web-bundle.sh
-
-# Deploy to nginx server
-scp web_deploy/index.html user@server:/var/www/html/
-scp web_deploy/lba1_portfolio.jsdos user@server:/var/www/html/
-
-# Configure nginx
-# Ensure MIME types for .jsdos (application/octet-stream)
+node scripts/hqr-tools/extract-sprites.js        # all entries → modded_assets/sprites/
+node scripts/hqr-tools/extract-sprites.js 11     # just entry 11
+# edit PNGs in GIMP — use _palette.png, index 0 = transparent
+node scripts/hqr-tools/inject-sprite.js          # repack all edited sprites
+node scripts/hqr-tools/build-bundle.js           # rebundle
 ```
 
-## Key Resources
+Output RGBAs are indexed to the LBA1 VGA palette via nearest-neighbour matching; transparent pixels must use palette index 0.
 
-- **twin-e** (engine): https://github.com/LBALab/twin-e
-- **lba-packager** (web editor): https://lbalab.github.io/lba-packager/
-- **@lbalab/hqr** (Node.js library): https://www.npmjs.com/package/@lbalab/hqr
-- **LBArchitect** (level editor): https://github.com/LBALab/LBArchitect
-- **js-dos** (browser DOSBox): https://js-dos.com
+### Dialogue
 
-## Legal Notice
+`scripts/hqr-tools/edit-text.js` extracts and repacks `TEXT.HQR`. Edit `modded_assets/text/dialogue_strings.json`. See `scripts/hqr-tools/apply-portfolio-dialogue.js` for the full portfolio text overlay.
 
-This project requires a legitimate copy of Little Big Adventure 1. The tools provided here modify existing game assets - they do not include or distribute copyrighted game content.
+### Save files
 
-## Troubleshooting
+`scripts/hqr-tools/create-savegame.js` generates `.LBA` saves placing Twinsen at specific scenes with pre-filled inventory/chapter flags. Edit the `LOCATIONS` map to change portfolio spots. Scene IDs are documented in `tools/metadata/LBA1/HQR/SCENE.HQR.json`.
 
-**"TEXT.HQR not found"**
-- Ensure your LBA1 files are in `base_game/`
-- Check case sensitivity (Linux is case-sensitive)
+## Key scenes
 
-**"twin-e won't build"**
-- Install SDL 1.2: `sudo apt install libsdl1.2-dev libsdl-mixer1.2-dev`
-- On macOS: `brew install sdl12-compat`
+| Scene | Name | Portfolio role |
+|-------|------|----------------|
+| 1 | Citadel Island | Main Hub |
+| 5 | Twinsen's House | Personal Intro |
+| 42 | Proxima City | Electronics Lab (CinePi) |
+| 13 | Old Burg | AI Workshop (OpenClaw) |
+| 60 | Rebel Camp | Maker Space (GSAT CubeSat) |
+| 43 | Maritime Museum | Portfolio Showroom |
 
-**"LBArchitect crashes"**
-- Run as Administrator
-- Use Windows 10/11 (may have issues on older versions)
-- Configure file paths in View → Settings first
+## The boot patches (`patch-relent.js`)
 
-**"js-dos shows black screen"**
-- Check browser console for errors
-- Ensure .jsdos bundle was created correctly
-- Verify LBA.EXE is in the bundle
+All four patches are fixup-free windows verified with `check-fixups.js`:
 
-## License
+| # | File offset | Bytes | Effect |
+|---|-------------|-------|--------|
+| 1 | `0x10a5f`   | 13    | Skip `find_cd_drive`, force drive idx = 3 (`D:`) |
+| 2 | `0x10af1`   | 2     | `jne → jmp` on "Type INSTALL" check |
+| 3 | `0x0f83f`   | 13    | NOP out `INTROD.FLA` playback (15.9 MB file) |
+| 4 | `0x10e71`   | 13    | NOP out `DRAGON3.FLA` playback (not on CD) |
 
-Scripts in this repository: MIT
-LBALab tools: See their respective licenses
-LBA1 game content: Proprietary (you must own a copy)
+See `memory/lba1_no_cd_probe.md` for the reverse-engineering notes.
+
+## Known limitations
+
+- **Voice files (`VOX.HQR`) excluded** — 33 MB uncompressed exceeds the js-dos 6.22 WASM heap (~32 MB). `FlagKeepVoice: OFF` in `LBA.CFG`.
+- **Main menu still shown** — visitor clicks "New Game" once to enter. Direct-boot-to-Museum patch is designed but not yet merged (see `patch-relent.js` comments).
+- **Output HQRs are ~1.6× base size** — `@lbalab/hqr`'s `HQRWriter` hardcodes `CompressionType.NONE`. Functional; just larger bundles.
+
+## References
+
+- **twin-e** (engine reimplementation, reference only): https://github.com/LBALab/twin-e
+- **@lbalab/hqr** (Node.js HQR library): https://www.npmjs.com/package/@lbalab/hqr
+- **lba-packager** (web HQR editor): https://lbalab.github.io/lba-packager/
+- **LBArchitect** (Windows level editor): https://github.com/LBALab/LBArchitect
+- **metadata** (JSON schemas for every HQR entry): https://github.com/LBALab/metadata
+- **js-dos 6.22**: https://js-dos.com
+- **Save format wiki**: https://lbafileinfo.kaziq.net/index.php/LBA1:Savegame
+
+## Legal
+
+Little Big Adventure is © Adeline Software / 2.21. This repository contains no game content — you must supply your own copy of the game files. Scripts here are MIT-licensed.
