@@ -62,14 +62,30 @@ The build overlays every `.HQR` under `output/` on top of `base_game/` originals
 ### Sprites (2D, GIMP-friendly)
 
 ```bash
-node scripts/hqr-tools/extract-sprites.js        # all entries → modded_assets/sprites/
-node scripts/hqr-tools/extract-sprites.js 11     # just entry 11
+# from scripts/hqr-tools/
+npm run sprites:extract            # all entries → modded_assets/sprites/
+node extract-sprites.js 11         # just entry 11
 # edit PNGs in GIMP — use _palette.png, index 0 = transparent
-node scripts/hqr-tools/inject-sprite.js          # repack all edited sprites
-node scripts/hqr-tools/build-bundle.js           # rebundle
+npm run sprites:inject             # repack all edited sprites
+npm run sprites:inject:strict      # CI-style: fail on any off-palette px
+node build-bundle.js               # rebundle
 ```
 
-Output RGBAs are indexed to the LBA1 VGA palette via nearest-neighbour matching; transparent pixels must use palette index 0.
+Alpha < 128 becomes palette index 0 (transparent). Other pixels snap to the
+nearest LBA palette color (Euclidean distance); add `--strict` to fail fast
+on any off-palette RGB instead of silently snapping.
+
+**Test the pipeline before shipping:**
+
+```bash
+npm test
+```
+
+Runs four suites against `lib/sprite-codec.js`:
+1. Round-trip every base sprite (encode/decode is lossless)
+2. Palette hygiene on every PNG in `modded_assets/sprites/`
+3. Metadata ↔ PNG consistency (dims, orphans)
+4. Encoder fuzz (edge dims, long runs, 20 random indexed buffers)
 
 ### Dialogue
 

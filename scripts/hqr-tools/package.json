@@ -6,7 +6,11 @@
     "extract": "node extract-all.js",
     "repack": "node repack-hqr.js",
     "text:extract": "node edit-text.js extract",
-    "text:repack": "node edit-text.js repack"
+    "text:repack": "node edit-text.js repack",
+    "sprites:extract": "node extract-sprites.js",
+    "sprites:inject": "node inject-sprite.js",
+    "sprites:inject:strict": "node inject-sprite.js --strict",
+    "test": "node test-sprites.js"
   },
   "dependencies": {
     "@lbalab/hqr": "^1.0.0",
