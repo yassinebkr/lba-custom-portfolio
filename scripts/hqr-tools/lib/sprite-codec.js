@@ -16,8 +16,11 @@
  *       (temp & 0xC0) == 0x80 → RLE  : next byte = color, repeat `iteration`×
  *       otherwise             → literal: read `iteration` palette indices
  *
- * Palette: RESS.HQR entry 0 is 768 bytes of 6-bit VGA (values 0..63). We
- * scale ×4 to get 8-bit RGB. Index 0 is always transparent.
+ * Palette: RESS.HQR entry 0 is 768 bytes. This build of the game stores it
+ * already in 8-bit RGB (values 0..255) — earlier LBA1 releases used 6-bit
+ * VGA and would need ×4 scaling, but @lbalab/hqr gives us the already-
+ * upscaled bytes here. `loadPalette` detects the range at read time and
+ * scales only when needed. Index 0 is always transparent.
  */
 
 const { HQR } = require('@lbalab/hqr');
@@ -35,9 +38,15 @@ function loadPalette(baseGameDir) {
     const ab  = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
     const hqr = HQR.fromArrayBuffer(ab);
     const pal = Buffer.from(hqr.entries[0].content);
+
+    // Detect 6-bit vs 8-bit palette: if anything > 63 exists, it's 8-bit.
+    let max = 0;
+    for (let i = 0; i < PALETTE_BYTES; i++) if (pal[i] > max) max = pal[i];
+    const is6bit = max <= 63;
+
     const rgb = new Uint8Array(PALETTE_BYTES);
     for (let i = 0; i < PALETTE_BYTES; i++) {
-        rgb[i] = Math.min(255, (pal[i] & 0x3F) * 4);
+        rgb[i] = is6bit ? Math.min(255, pal[i] * 4) : pal[i];
     }
     return rgb;
 }
@@ -77,6 +86,49 @@ function decodeSpriteFrame(data, frameIndex = 0) {
             } else {
                 for (let i = 0; i < iteration && x < width; i++, x++) {
                     pixels[row * width + x] = ptr[p++];
+                }
+            }
+        }
+    }
+
+    return { width, height, offsetX, offsetY, pixels };
+}
+
+/**
+ * Bricks (LBA_BRK.HQR) use the same row-RLE scheme as sprite FRAMES, but
+ * the entry starts directly with the header — there's no u32 offset table
+ * prefix. This matches twin-e's grid.c `drawBrickSprite(..., isSprite=false)`.
+ */
+function decodeBrick(data) {
+    if (data.length < 4) return null;
+    const arr     = data instanceof Uint8Array ? data : new Uint8Array(data);
+    const width   = arr[0];
+    const height  = arr[1];
+    const offsetX = (arr[2] > 127) ? arr[2] - 256 : arr[2];
+    const offsetY = (arr[3] > 127) ? arr[3] - 256 : arr[3];
+    if (!width || !height || width > 255 || height > 255) return null;
+
+    const pixels = new Uint8Array(width * height);
+    let p = 4;
+
+    for (let row = 0; row < height; row++) {
+        if (p >= arr.length) return null;
+        const numSegments = arr[p++];
+        let x = 0;
+        for (let seg = 0; seg < numSegments; seg++) {
+            if (p >= arr.length) return null;
+            const temp      = arr[p++];
+            const iteration = (temp & 0x3F) + 1;
+            if ((temp & 0xC0) === 0x00) {
+                x += iteration;
+            } else if ((temp & 0xC0) === 0x80) {
+                const color = arr[p++];
+                for (let i = 0; i < iteration && x < width; i++, x++) {
+                    pixels[row * width + x] = color;
+                }
+            } else {
+                for (let i = 0; i < iteration && x < width; i++, x++) {
+                    pixels[row * width + x] = arr[p++];
                 }
             }
         }
@@ -217,6 +269,7 @@ module.exports = {
     MAX_RUN,
     loadPalette,
     decodeSpriteFrame,
+    decodeBrick,
     encodeSprite,
     encodeRow,
     buildPaletteLUT,

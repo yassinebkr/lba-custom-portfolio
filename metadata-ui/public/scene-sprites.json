@@ -1,0 +1,1219 @@
+{
+  "source": "SCENE.HQR",
+  "parsedScenes": 119,
+  "failedScenes": 0,
+  "scenes": {
+    "0": {
+      "description": "Scene 0: Citadel Island, Prison",
+      "numActors": 14,
+      "sprites": [
+        12,
+        17,
+        18,
+        19,
+        36
+      ]
+    },
+    "1": {
+      "description": "Scene 1: Citadel Island, outside the citadel",
+      "numActors": 19,
+      "sprites": [
+        11,
+        12,
+        19,
+        38,
+        58
+      ]
+    },
+    "2": {
+      "description": "Scene 2: Citadel Island, near the tavern",
+      "numActors": 19,
+      "sprites": [
+        11,
+        12,
+        18,
+        29
+      ]
+    },
+    "3": {
+      "description": "Scene 3: Citadel Island, near the pharmacy",
+      "numActors": 14,
+      "sprites": [
+        11,
+        27,
+        76
+      ]
+    },
+    "4": {
+      "description": "Scene 4: Citadel Island, near twinsens house",
+      "numActors": 10,
+      "sprites": [
+        11,
+        30,
+        31,
+        76
+      ]
+    },
+    "5": {
+      "description": "Scene 5: Citadel Island, inside Twinsens house",
+      "numActors": 12,
+      "sprites": [
+        12,
+        22,
+        23
+      ]
+    },
+    "6": {
+      "description": "Scene 6: Citadel Island, Harbor",
+      "numActors": 5,
+      "sprites": [
+        33
+      ]
+    },
+    "7": {
+      "description": "Scene 7: Citadel Island, Pharmacy",
+      "numActors": 34,
+      "sprites": [
+        14,
+        48,
+        49,
+        51,
+        52,
+        53
+      ]
+    },
+    "8": {
+      "description": "Scene 8: White Leaf Desert, Temple of Bú 1st scene",
+      "numActors": 22,
+      "sprites": [
+        20,
+        57
+      ]
+    },
+    "9": {
+      "description": "Scene 9: Hamalayi Mountains, landing place",
+      "numActors": 16,
+      "sprites": [
+        46,
+        75,
+        78
+      ]
+    },
+    "10": {
+      "description": "Scene 10: Principal Island, Library",
+      "numActors": 22,
+      "sprites": [
+        11,
+        12,
+        37
+      ]
+    },
+    "11": {
+      "description": "Scene 11: Principal Island, Harbor",
+      "numActors": 32,
+      "sprites": [
+        17,
+        20,
+        22,
+        23,
+        34,
+        35
+      ]
+    },
+    "12": {
+      "description": "Scene 12: Principal Island, outside the fortress",
+      "numActors": 28,
+      "sprites": [
+        11,
+        12,
+        22,
+        29,
+        38
+      ]
+    },
+    "13": {
+      "description": "Scene 13: Principal Island, Lupin Burg",
+      "numActors": 11,
+      "sprites": [
+        45
+      ]
+    },
+    "14": {
+      "description": "Scene 14: Citadel Island, Tavern",
+      "numActors": 11,
+      "sprites": [
+        89
+      ]
+    },
+    "15": {
+      "description": "Scene 15: Hamalayi Mountains, Rabbibunny village",
+      "numActors": 4,
+      "sprites": []
+    },
+    "16": {
+      "description": "Scene 16: Citadel Island, inside a Rabbibunny house",
+      "numActors": 7,
+      "sprites": [
+        63
+      ]
+    },
+    "17": {
+      "description": "Scene 17: Principal Island, Ruins",
+      "numActors": 5,
+      "sprites": [
+        11
+      ]
+    },
+    "18": {
+      "description": "Scene 18: Principal Island, outside the library",
+      "numActors": 14,
+      "sprites": [
+        92
+      ]
+    },
+    "19": {
+      "description": "Scene 19: Principal Island, Militairy camp",
+      "numActors": 4,
+      "sprites": []
+    },
+    "20": {
+      "description": "Scene 20: Citadel Island, Architects house",
+      "numActors": 8,
+      "sprites": [
+        7,
+        32,
+        84
+      ]
+    },
+    "21": {
+      "description": "Scene 21: Citadel Island, secret chamber in the house",
+      "numActors": 4,
+      "sprites": []
+    },
+    "22": {
+      "description": "Scene 22: Principal Island, Ticket office",
+      "numActors": 6,
+      "sprites": [
+        15,
+        37
+      ]
+    },
+    "23": {
+      "description": "Scene 23: Principal Island, Prison",
+      "numActors": 10,
+      "sprites": [
+        11
+      ]
+    },
+    "24": {
+      "description": "Scene 24: Principal Island, Port Belooga",
+      "numActors": 7,
+      "sprites": [
+        11,
+        41,
+        92
+      ]
+    },
+    "25": {
+      "description": "Scene 25: Principal Island, Peg Leg Street",
+      "numActors": 7,
+      "sprites": [
+        71
+      ]
+    },
+    "26": {
+      "description": "Scene 26: Principal Island, Shop",
+      "numActors": 5,
+      "sprites": [
+        30
+      ]
+    },
+    "27": {
+      "description": "Scene 27: Principal Island, Locksmith",
+      "numActors": 4,
+      "sprites": [
+        39
+      ]
+    },
+    "28": {
+      "description": "Scene 28: Principal Island, inside a Rabbibunny house",
+      "numActors": 3,
+      "sprites": []
+    },
+    "29": {
+      "description": "Scene 29: Principal Island, Astronimers House",
+      "numActors": 6,
+      "sprites": []
+    },
+    "30": {
+      "description": "Scene 30: Principal Island, Tavern",
+      "numActors": 2,
+      "sprites": []
+    },
+    "31": {
+      "description": "Scene 31: Principal Island, Basement of the Astronomer",
+      "numActors": 3,
+      "sprites": []
+    },
+    "32": {
+      "description": "Scene 32: Principal Island, Stables",
+      "numActors": 4,
+      "sprites": [
+        41,
+        92
+      ]
+    },
+    "33": {
+      "description": "Scene 33: Citadel Island, Cellar of the Tavern",
+      "numActors": 8,
+      "sprites": [
+        29,
+        41,
+        92
+      ]
+    },
+    "34": {
+      "description": "Scene 34: Citadel Island, Sewer of the 1st scene",
+      "numActors": 6,
+      "sprites": [
+        47
+      ]
+    },
+    "35": {
+      "description": "Scene 35: Citadel Island, Warehouse",
+      "numActors": 14,
+      "sprites": [
+        62,
+        92
+      ]
+    },
+    "36": {
+      "description": "Scene 36: White Leaf Desert, outside the Temple of Bú",
+      "numActors": 6,
+      "sprites": [
+        27
+      ]
+    },
+    "37": {
+      "description": "Scene 37: Principal Island, outside the water tower",
+      "numActors": 5,
+      "sprites": [
+        92
+      ]
+    },
+    "38": {
+      "description": "Scene 38: Principal Island, inside the water tower",
+      "numActors": 22,
+      "sprites": [
+        15,
+        57,
+        92
+      ]
+    },
+    "39": {
+      "description": "Scene 39: White Leaf Desert, Militairy camp",
+      "numActors": 68,
+      "sprites": [
+        14,
+        48,
+        50,
+        53,
+        56
+      ]
+    },
+    "40": {
+      "description": "Scene 40: White Leaf Desert, Temple of Bú 2nd scene",
+      "numActors": 40,
+      "sprites": [
+        5,
+        14,
+        25,
+        49,
+        50,
+        51,
+        53,
+        55,
+        56,
+        92
+      ]
+    },
+    "41": {
+      "description": "Scene 41: White Leaf Desert, Temple of Bú 3rd scene",
+      "numActors": 26,
+      "sprites": [
+        11,
+        12,
+        18,
+        19,
+        29,
+        35
+      ]
+    },
+    "42": {
+      "description": "Scene 42: Proxima Island, Proxim City",
+      "numActors": 19,
+      "sprites": [
+        29,
+        46,
+        77
+      ]
+    },
+    "43": {
+      "description": "Scene 43: Proxima Island, Museum",
+      "numActors": 6,
+      "sprites": [
+        11,
+        12,
+        58
+      ]
+    },
+    "44": {
+      "description": "Scene 44: Proxima Island, near the Inventors house",
+      "numActors": 4,
+      "sprites": [
+        60
+      ]
+    },
+    "45": {
+      "description": "Scene 45: Proxima Island, upper rune stone",
+      "numActors": 4,
+      "sprites": [
+        60
+      ]
+    },
+    "46": {
+      "description": "Scene 46: Proxima Island, lower rune stone",
+      "numActors": 4,
+      "sprites": [
+        61
+      ]
+    },
+    "47": {
+      "description": "Scene 47: Proxima Island, befor the upper rune stone",
+      "numActors": 4,
+      "sprites": []
+    },
+    "48": {
+      "description": "Scene 48: Proxima Island, Forgers house",
+      "numActors": 8,
+      "sprites": [
+        29,
+        36,
+        73,
+        94
+      ]
+    },
+    "49": {
+      "description": "Scene 49: Proxima Island, Prison",
+      "numActors": 7,
+      "sprites": []
+    },
+    "50": {
+      "description": "Scene 50: Proxima Island, Shop",
+      "numActors": 11,
+      "sprites": [
+        29,
+        73
+      ]
+    },
+    "51": {
+      "description": "Scene 51: Proxima Island, Sewer",
+      "numActors": 3,
+      "sprites": []
+    },
+    "52": {
+      "description": "Scene 52: Principal Island, house at Peg Leg Street",
+      "numActors": 3,
+      "sprites": []
+    },
+    "53": {
+      "description": "Scene 53: Proxima Island, Grobo house",
+      "numActors": 5,
+      "sprites": []
+    },
+    "54": {
+      "description": "Scene 54: Proxima Island, Inventors house",
+      "numActors": 3,
+      "sprites": []
+    },
+    "55": {
+      "description": "Scene 55: Citadel Island, Sewer (secret)",
+      "numActors": 6,
+      "sprites": [
+        92
+      ]
+    },
+    "56": {
+      "description": "Scene 56: Principal Island, Sewer (secret)",
+      "numActors": 3,
+      "sprites": []
+    },
+    "57": {
+      "description": "Scene 57: White Leaf Desert, Maze",
+      "numActors": 3,
+      "sprites": []
+    },
+    "58": {
+      "description": "Scene 58: Principal Island, House with the TV",
+      "numActors": 21,
+      "sprites": [
+        69
+      ]
+    },
+    "59": {
+      "description": "Scene 59: Rebelion Island, Harbor",
+      "numActors": 8,
+      "sprites": []
+    },
+    "60": {
+      "description": "Scene 60: Rebelion Island, Rebel camp",
+      "numActors": 2,
+      "sprites": []
+    },
+    "61": {
+      "description": "Scene 61: Some room (cut-out ?)",
+      "numActors": 14,
+      "sprites": [
+        20
+      ]
+    },
+    "62": {
+      "description": "Scene 62: Hamalayi Mountains, 1st fighting scene",
+      "numActors": 10,
+      "sprites": []
+    },
+    "63": {
+      "description": "Scene 63: Hamalayi Mountains, 2nd fighting scene",
+      "numActors": 15,
+      "sprites": [
+        15,
+        16,
+        36
+      ]
+    },
+    "64": {
+      "description": "Scene 64: Hamalayi Mountains, Prison",
+      "numActors": 12,
+      "sprites": [
+        16,
+        57,
+        107
+      ]
+    },
+    "65": {
+      "description": "Scene 65: Hamalayi Mountains, outside the transporter",
+      "numActors": 12,
+      "sprites": [
+        16,
+        35
+      ]
+    },
+    "66": {
+      "description": "Scene 66: Hamalayi Mountains, inside the transporter",
+      "numActors": 16,
+      "sprites": []
+    },
+    "67": {
+      "description": "Scene 67: Hamalayi Mountains, Mutation centre 1st scene",
+      "numActors": 14,
+      "sprites": [
+        16,
+        67
+      ]
+    },
+    "68": {
+      "description": "Scene 68: Hamalayi Mountains, Mutation centre 2nd scene",
+      "numActors": 10,
+      "sprites": [
+        20
+      ]
+    },
+    "69": {
+      "description": "Scene 69: Hamalayi Mountains, 3rd fighting scene",
+      "numActors": 12,
+      "sprites": [
+        17
+      ]
+    },
+    "70": {
+      "description": "Scene 70: Hamalayi Mountains, Entrance to the prison",
+      "numActors": 7,
+      "sprites": [
+        16
+      ]
+    },
+    "71": {
+      "description": "Scene 71: Hamalayi Mountains, outside the prison",
+      "numActors": 6,
+      "sprites": [
+        57
+      ]
+    },
+    "72": {
+      "description": "Scene 72: Hamalayi Mountains, Catamaran dock",
+      "numActors": 16,
+      "sprites": [
+        15,
+        35,
+        57
+      ]
+    },
+    "73": {
+      "description": "Scene 73: Hamalayi Mountains, Bunker near clear water",
+      "numActors": 9,
+      "sprites": [
+        50,
+        54
+      ]
+    },
+    "74": {
+      "description": "Scene 74: Tippet Island, Village",
+      "numActors": 5,
+      "sprites": [
+        6,
+        54
+      ]
+    },
+    "75": {
+      "description": "Scene 75: Tippet Island, Secret passage scene 2",
+      "numActors": 5,
+      "sprites": [
+        92
+      ]
+    },
+    "76": {
+      "description": "Scene 76: Tippet Island, near the bar",
+      "numActors": 5,
+      "sprites": []
+    },
+    "77": {
+      "description": "Scene 77: Tippet Island, Secret passage scene 1",
+      "numActors": 3,
+      "sprites": []
+    },
+    "78": {
+      "description": "Scene 78: Tippet Island, near the Dino-Fly",
+      "numActors": 7,
+      "sprites": []
+    },
+    "79": {
+      "description": "Scene 79: Tippet Island, Secret passage scene 3",
+      "numActors": 7,
+      "sprites": [
+        29
+      ]
+    },
+    "80": {
+      "description": "Scene 80: Tippet Island, Twinsun Cafe",
+      "numActors": 5,
+      "sprites": [
+        74
+      ]
+    },
+    "81": {
+      "description": "Scene 81: Hamalayi Mountains, Sacret Carrot",
+      "numActors": 2,
+      "sprites": []
+    },
+    "82": {
+      "description": "Scene 82: Hamalayi Mountains, Backdoor of the prison",
+      "numActors": 14,
+      "sprites": [
+        15,
+        16,
+        26,
+        28,
+        29
+      ]
+    },
+    "83": {
+      "description": "Scene 83: Fortress Island, inside the fortress",
+      "numActors": 16,
+      "sprites": [
+        35,
+        96
+      ]
+    },
+    "84": {
+      "description": "Scene 84: Fortress Island, outside the forstress",
+      "numActors": 14,
+      "sprites": [
+        79,
+        80,
+        83,
+        92
+      ]
+    },
+    "85": {
+      "description": "Scene 85: Fortress Island, Secret passage scene 1",
+      "numActors": 5,
+      "sprites": []
+    },
+    "86": {
+      "description": "Scene 86: Fortress Island, Secret in the fortress",
+      "numActors": 7,
+      "sprites": [
+        50,
+        83
+      ]
+    },
+    "87": {
+      "description": "Scene 87: Fortress Island, near Zoes cell",
+      "numActors": 6,
+      "sprites": [
+        92
+      ]
+    },
+    "88": {
+      "description": "Scene 88: Fortress Island, Swimming pool",
+      "numActors": 14,
+      "sprites": [
+        81,
+        82
+      ]
+    },
+    "89": {
+      "description": "Scene 89: Fortress Island, Cloning centre",
+      "numActors": 2,
+      "sprites": []
+    },
+    "90": {
+      "description": "Scene 90: Fortress Island, Rune stone",
+      "numActors": 4,
+      "sprites": []
+    },
+    "91": {
+      "description": "Scene 91: Hamalayi Mountains, Behind th sacret carrot",
+      "numActors": 3,
+      "sprites": []
+    },
+    "92": {
+      "description": "Scene 92: Hamalayi Mountains, Clear water lake",
+      "numActors": 2,
+      "sprites": []
+    },
+    "93": {
+      "description": "Scene 93: Fortress Island, outside fortress destroyed",
+      "numActors": 14,
+      "sprites": [
+        11,
+        17,
+        35,
+        87,
+        88
+      ]
+    },
+    "94": {
+      "description": "Scene 94: Brundle Island, outside the teleportation",
+      "numActors": 16,
+      "sprites": [
+        15,
+        16,
+        26,
+        28,
+        35,
+        85,
+        86,
+        93
+      ]
+    },
+    "95": {
+      "description": "Scene 95: Brundle Island, inside the teleportation",
+      "numActors": 14,
+      "sprites": []
+    },
+    "96": {
+      "description": "Scene 96: Hamalayi Mountains, Ski resort",
+      "numActors": 6,
+      "sprites": [
+        92
+      ]
+    },
+    "97": {
+      "description": "Scene 97: Brundle Island, Docks",
+      "numActors": 4,
+      "sprites": [
+        93
+      ]
+    },
+    "98": {
+      "description": "Scene 98: Brundle Island, Secret room",
+      "numActors": 12,
+      "sprites": [
+        15,
+        95
+      ]
+    },
+    "99": {
+      "description": "Scene 99: Brundle Island, near the telepods",
+      "numActors": 5,
+      "sprites": []
+    },
+    "100": {
+      "description": "Scene 100: Fortress Island, Docks",
+      "numActors": 6,
+      "sprites": []
+    },
+    "101": {
+      "description": "Scene 101: Tippet Island, Shop",
+      "numActors": 2,
+      "sprites": []
+    },
+    "102": {
+      "description": "Scene 102: Principal Island, house in port Belooga",
+      "numActors": 3,
+      "sprites": []
+    },
+    "103": {
+      "description": "Scene 103: Brundle Island, Painters house",
+      "numActors": 3,
+      "sprites": []
+    },
+    "104": {
+      "description": "Scene 104: Citadel Island, Ticket Office",
+      "numActors": 16,
+      "sprites": [
+        15,
+        16,
+        34,
+        105
+      ]
+    },
+    "105": {
+      "description": "Scene 105: Principal Island, inside the fortress",
+      "numActors": 8,
+      "sprites": []
+    },
+    "106": {
+      "description": "Scene 106: Polar Island, 2nd scene",
+      "numActors": 14,
+      "sprites": [
+        92
+      ]
+    },
+    "107": {
+      "description": "Scene 107: Polar Island, 3rd scene",
+      "numActors": 12,
+      "sprites": [
+        104
+      ]
+    },
+    "108": {
+      "description": "Scene 108: Polar Island, Before the rocky peak",
+      "numActors": 9,
+      "sprites": []
+    },
+    "109": {
+      "description": "Scene 109: Polar Island, 4th scene",
+      "numActors": 5,
+      "sprites": []
+    },
+    "110": {
+      "description": "Scene 110: Polar Island, The rocky peak",
+      "numActors": 5,
+      "sprites": [
+        108
+      ]
+    },
+    "111": {
+      "description": "Scene 111: Polar Island, on the rocky peak",
+      "numActors": 4,
+      "sprites": [
+        29
+      ]
+    },
+    "112": {
+      "description": "Scene 112: Polar Island, Before the end room",
+      "numActors": 5,
+      "sprites": [
+        24
+      ]
+    },
+    "113": {
+      "description": "Scene 113: Polar Island, Final Battle",
+      "numActors": 2,
+      "sprites": []
+    },
+    "114": {
+      "description": "Scene 114: Polar Island, end scene",
+      "numActors": 6,
+      "sprites": [
+        107
+      ]
+    },
+    "115": {
+      "description": "Scene 115: Polar Island, 1st scene",
+      "numActors": 21,
+      "sprites": [
+        106
+      ]
+    },
+    "116": {
+      "description": "Scene 116: Citadel Island, end sequence (1)",
+      "numActors": 15,
+      "sprites": []
+    },
+    "117": {
+      "description": "Scene 117: Citadel Island, end sequence (2)",
+      "numActors": 10,
+      "sprites": [
+        11,
+        27
+      ]
+    },
+    "118": {
+      "description": "Scene 118: Citadel Island, Twinsens house destroyed",
+      "numActors": 28,
+      "sprites": []
+    }
+  },
+  "spriteToScenes": {
+    "5": [
+      40
+    ],
+    "6": [
+      74
+    ],
+    "7": [
+      20
+    ],
+    "11": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      12,
+      17,
+      23,
+      24,
+      41,
+      43,
+      93,
+      117
+    ],
+    "12": [
+      0,
+      1,
+      2,
+      5,
+      10,
+      12,
+      41,
+      43
+    ],
+    "14": [
+      7,
+      39,
+      40
+    ],
+    "15": [
+      22,
+      38,
+      63,
+      72,
+      82,
+      94,
+      98,
+      104
+    ],
+    "16": [
+      63,
+      64,
+      65,
+      67,
+      70,
+      82,
+      94,
+      104
+    ],
+    "17": [
+      0,
+      11,
+      69,
+      93
+    ],
+    "18": [
+      0,
+      2,
+      41
+    ],
+    "19": [
+      0,
+      1,
+      41
+    ],
+    "20": [
+      8,
+      11,
+      61,
+      68
+    ],
+    "22": [
+      5,
+      11,
+      12
+    ],
+    "23": [
+      5,
+      11
+    ],
+    "24": [
+      112
+    ],
+    "25": [
+      40
+    ],
+    "26": [
+      82,
+      94
+    ],
+    "27": [
+      3,
+      36,
+      117
+    ],
+    "28": [
+      82,
+      94
+    ],
+    "29": [
+      2,
+      12,
+      33,
+      41,
+      42,
+      48,
+      50,
+      79,
+      82,
+      111
+    ],
+    "30": [
+      4,
+      26
+    ],
+    "31": [
+      4
+    ],
+    "32": [
+      20
+    ],
+    "33": [
+      6
+    ],
+    "34": [
+      11,
+      104
+    ],
+    "35": [
+      11,
+      41,
+      65,
+      72,
+      83,
+      93,
+      94
+    ],
+    "36": [
+      0,
+      48,
+      63
+    ],
+    "37": [
+      10,
+      22
+    ],
+    "38": [
+      1,
+      12
+    ],
+    "39": [
+      27
+    ],
+    "41": [
+      24,
+      32,
+      33
+    ],
+    "45": [
+      13
+    ],
+    "46": [
+      9,
+      42
+    ],
+    "47": [
+      34
+    ],
+    "48": [
+      7,
+      39
+    ],
+    "49": [
+      7,
+      40
+    ],
+    "50": [
+      39,
+      40,
+      73,
+      86
+    ],
+    "51": [
+      7,
+      40
+    ],
+    "52": [
+      7
+    ],
+    "53": [
+      7,
+      39,
+      40
+    ],
+    "54": [
+      73,
+      74
+    ],
+    "55": [
+      40
+    ],
+    "56": [
+      39,
+      40
+    ],
+    "57": [
+      8,
+      38,
+      64,
+      71,
+      72
+    ],
+    "58": [
+      1,
+      43
+    ],
+    "60": [
+      44,
+      45
+    ],
+    "61": [
+      46
+    ],
+    "62": [
+      35
+    ],
+    "63": [
+      16
+    ],
+    "67": [
+      67
+    ],
+    "69": [
+      58
+    ],
+    "71": [
+      25
+    ],
+    "73": [
+      48,
+      50
+    ],
+    "74": [
+      80
+    ],
+    "75": [
+      9
+    ],
+    "76": [
+      3,
+      4
+    ],
+    "77": [
+      42
+    ],
+    "78": [
+      9
+    ],
+    "79": [
+      84
+    ],
+    "80": [
+      84
+    ],
+    "81": [
+      88
+    ],
+    "82": [
+      88
+    ],
+    "83": [
+      84,
+      86
+    ],
+    "84": [
+      20
+    ],
+    "85": [
+      94
+    ],
+    "86": [
+      94
+    ],
+    "87": [
+      93
+    ],
+    "88": [
+      93
+    ],
+    "89": [
+      14
+    ],
+    "92": [
+      18,
+      24,
+      32,
+      33,
+      35,
+      37,
+      38,
+      40,
+      55,
+      75,
+      84,
+      87,
+      96,
+      106
+    ],
+    "93": [
+      94,
+      97
+    ],
+    "94": [
+      48
+    ],
+    "95": [
+      98
+    ],
+    "96": [
+      83
+    ],
+    "104": [
+      107
+    ],
+    "105": [
+      104
+    ],
+    "106": [
+      115
+    ],
+    "107": [
+      64,
+      114
+    ],
+    "108": [
+      110
+    ]
+  }
+}

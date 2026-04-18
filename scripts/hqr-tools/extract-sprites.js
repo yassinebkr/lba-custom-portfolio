@@ -131,6 +131,8 @@ writePalettePNG(path.join(OUT, '_palette.png'), palette);
 fs.writeFileSync(path.join(OUT, '_palette.bin'), Buffer.from(palette));
 fs.writeFileSync(path.join(OUT, '_metadata.json'), JSON.stringify({
     source:       'SPRITES.HQR',
+    generatedAt:  new Date().toISOString(),
+    version:      Date.now(),
     totalEntries: sprHQR.entries.length,
     entries:      metaEntries,
 }, null, 2));

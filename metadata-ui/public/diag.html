@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sprite color diagnostic — "still white" list</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+    .row { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 14px; border: 1px solid #333; padding: 12px; background: #0a0a0a; }
+    .row img { image-rendering: pixelated; border: 1px solid #444; background: #222; }
+    .label { min-width: 320px; font-size: 13px; line-height: 1.5; }
+    .swatch { display: inline-block; width: 14px; height: 14px; border: 1px solid #666; vertical-align: middle; }
+    h1 { color: #5eead4; }
+    .verdict-white { color: #fca5a5; font-weight: bold; }
+    .verdict-dark { color: #86efac; font-weight: bold; }
+    .verdict-mid { color: #fcd34d; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Sprite color diagnostic — direct load, no React, no caching</h1>
+  <p>Each row loads a fresh copy of the PNG (cache-busted) and measures its actual pixels with a canvas.</p>
+  <p><strong>Verdict rule:</strong> "dark" = avg &lt; 100, "mid" = 100-180, "white" = &gt; 180. Anything not marked "white" is not actually white.</p>
+  <p>If a sprite shows "dark" / "mid" here but still looks white in the main UI, the main UI is serving a stale cached file. Hard-reload (Ctrl+Shift+R) the main UI.</p>
+
+  <div id="grid"></div>
+
+  <script>
+    const sprites = [
+      // User-reported "still white" list
+      { idx: 14,  file: '014_plataform_1.png',                       note: 'Platform #1' },
+      { idx: 26,  file: '026_platform_2_prison.png',                 note: 'Platform #2 (prison)' },
+      { idx: 29,  file: '029_platform_4_sewer_access.png',           note: 'Platform #4 (sewer)' },
+      { idx: 48,  file: '048_ground_square_1_temple_of_bu.png',      note: 'Ground square #1 Temple of Bu' },
+      { idx: 56,  file: '056_ground_square_2_temple_of_bu.png',      note: 'Ground square #2 Temple of Bu' },
+      { idx: 58,  file: '058_door_padlock_forger_s_house.png',       note: "Door padlock Forger's house" },
+      { idx: 73,  file: '073_platform_5.png',                        note: 'Platform #5' },
+      { idx: 75,  file: '075_book_1.png',                            note: 'Book #1' },
+      { idx: 78,  file: '078_book_2.png',                            note: 'Book #2' },
+      { idx: 96,  file: '096_false_ground_some_platform.png',        note: 'False ground platform' },
+      { idx: 108, file: '108_platform_with_sendell_s_sign.png',      note: "Platform with Sendell's sign" },
+      // Earlier "white/pink" sanity checks — should all be dark
+      { idx: 52,  file: '052_wall_false_door.png',                   note: 'Wall false door (sanity)' },
+      { idx: 74,  file: '074_wall.png',                              note: 'Wall (sanity)' },
+      { idx: 11,  file: '011_door_1_house.png',                      note: 'Door #1 house (sanity)' },
+    ];
+
+    const grid = document.getElementById('grid');
+    const nonce = Date.now() + '-' + Math.random().toString(36).slice(2);
+
+    for (const s of sprites) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <div class="label">
+          <strong>#${s.idx}</strong> ${s.file}<br>
+          <em>${s.note}</em><br>
+          <span class="measured" id="m${s.idx}">measuring…</span>
+        </div>
+        <img src="/sprites/${s.file}?diag=${nonce}" id="img${s.idx}">
+      `;
+      grid.appendChild(row);
+
+      const img = row.querySelector('img');
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const data = ctx.getImageData(0, 0, c.width, c.height).data;
+        let sr=0, sg=0, sb=0, n=0, mr=0, mg=0, mb=0, wp=0;
+        for (let i = 0; i < data.length; i += 4) {
+          if (!data[i + 3]) continue;
+          n++;
+          sr += data[i]; sg += data[i + 1]; sb += data[i + 2];
+          if (data[i]     > mr) mr = data[i];
+          if (data[i + 1] > mg) mg = data[i + 1];
+          if (data[i + 2] > mb) mb = data[i + 2];
+          if (data[i] > 220 && data[i+1] > 220 && data[i+2] > 220) wp++;
+        }
+        const ar = Math.round(sr/n), ag = Math.round(sg/n), ab = Math.round(sb/n);
+        const bright = (ar + ag + ab) / 3;
+        let verdict, cls;
+        if (bright < 100)      { verdict = 'DARK';  cls = 'verdict-dark'; }
+        else if (bright < 180) { verdict = 'MID';   cls = 'verdict-mid'; }
+        else                   { verdict = 'WHITE'; cls = 'verdict-white'; }
+        const el = document.getElementById('m' + s.idx);
+        el.innerHTML = `
+          ${img.naturalWidth}×${img.naturalHeight} · ${n} opaque px<br>
+          avg <span class="swatch" style="background:rgb(${ar},${ag},${ab})"></span> (${ar},${ag},${ab})<br>
+          max (${mr},${mg},${mb}) · &gt;220-white px: ${wp}<br>
+          <span class="${cls}">verdict: ${verdict}</span>
+        `;
+      };
+    }
+  </script>
+</body>
+</html>

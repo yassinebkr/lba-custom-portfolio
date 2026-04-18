@@ -26,6 +26,11 @@ scripts/hqr-tools/_pylib/
 # Metadata UI (optional prototype)
 metadata-ui/node_modules/
 metadata-ui/dist/
+# Extracted/rendered preview assets mirrored from modded_assets (regeneratable, game-derived)
+metadata-ui/public/bricks/
+metadata-ui/public/sprites/
+metadata-ui/public/scenes/
+metadata-ui/public/_palette.bin
 
 # Stray files / scratch artifacts
 $web/
