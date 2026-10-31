@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-and-browser:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,13 +23,29 @@ jobs:
           node-version: '22'
       - name: Validate shared asset contracts
         run: node --test packages/asset-schema/index.test.mjs
-      - name: Install Studio dependencies
+      - name: Install Studio dependencies and browser runner
         working-directory: apps/studio
-        run: npm install --no-audit --no-fund
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
       - name: Type check and production build
         working-directory: apps/studio
         run: npm run build
+      - name: Browser UI smoke at desktop and mobile
+        working-directory: apps/studio
+        run: node tests/studio.e2e.mjs
+      - name: Upload screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-studio-screenshots
+          path: |
+            apps/studio/studio-desktop.png
+            apps/studio/studio-mobile.png
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: asset-studio-build
           path: apps/studio/dist
