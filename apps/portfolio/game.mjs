@@ -1,9 +1,10 @@
 import {scene,newGame,move,nearest,inspect} from './rules.mjs';
-const game=newGame(scene);
+import {ROOMS} from './rooms.mjs';
+let game=newGame(ROOMS[0]);
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const info=document.getElementById('info'),msg=document.getElementById('status');
 const list=document.getElementById('list');
-const tiles=scene.width,tw=62,th=31;
+const tw=62,th=31;
 const pos=(x,z)=>({x:480+(x-z)*tw/2,y:110+(x+z)*th/2});
 function polygon(points,fill,stroke){
  ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);
@@ -19,16 +20,16 @@ function station(p){
  polygon([[x-23,y-24],[x,y-12],[x,y+10],[x-23,y-2]],'#506372');
  polygon([[x,y-12],[x+23,y-24],[x+23,y-2],[x,y+10]],'#293946');
  polygon([[x-23,y-24],[x,y-36],[x+23,y-24],[x,y-12]],'#c7a47b','#e8c79d');
- if(p.id==='lora'){
+ if((p.kind||p.id)==='antenna'||p.id==='lora'){
   ctx.strokeStyle='#a6e5df';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y-35);ctx.lineTo(x,y-82);ctx.stroke();
   ctx.fillStyle='#d7e9d9';ctx.fillRect(x-8,y-66,16,6);
- }else if(p.id==='cinepi'){
+ }else if((p.kind||p.id)==='camera'||p.id==='cinepi'){
   ctx.fillStyle='#293848';ctx.fillRect(x-11,y-54,22,15);
   ctx.fillStyle='#83e7d7';ctx.beginPath();ctx.arc(x+7,y-47,6,0,7);ctx.fill();
  }else{
   ctx.fillStyle='#152d35';ctx.fillRect(x-16,y-65,32,25);
   ctx.strokeStyle='#76dcce';ctx.strokeRect(x-16,y-65,32,25);
-  ctx.fillStyle=p.id==='bigbrain'?'#b4b0ff':'#8de9dc';ctx.fillRect(x-8,y-57,17,4);
+  ctx.fillStyle=(p.kind==='character'||p.id==='bigbrain')?'#b4b0ff':'#8de9dc';ctx.fillRect(x-8,y-57,17,4);
  }
  ctx.font='600 14px system-ui';ctx.textAlign='center';ctx.fillStyle='#e9f2f0';
  ctx.fillText(p.label,x,y-92);
@@ -42,9 +43,9 @@ function player(){
 }
 function render(){
  ctx.fillStyle='#101e29';ctx.fillRect(0,0,canvas.width,canvas.height);
- for(let depth=0;depth<tiles*2-1;depth++)
-  for(let x=0;x<tiles;x++){const z=depth-x;if(z<0||z>=tiles)continue;
-    const q=pos(x,z);const edge=x===0||z===0||x===tiles-1||z===tiles-1;
+ for(let depth=0;depth<game.map.width+game.map.depth-1;depth++)
+  for(let x=0;x<game.map.width;x++){const z=depth-x;if(z<0||z>=game.map.depth)continue;
+    const q=pos(x,z);const edge=x===0||z===0||x===game.map.width-1||z===game.map.depth-1;
     tile(q.x,q.y,edge?'#3a515d':(x+z)%2?'#304650':'#364d56');
   }
  const elements=game.map.projects.map(p=>({depth:p.x+p.z,item:p})).concat({depth:game.player.x+game.player.z,item:null});
@@ -69,11 +70,39 @@ function navigate(dx,dz){
  else msg.textContent='Blocked: try another direction.';
 }
 function interact(){const near=nearest(game);if(near){inspect(game,near.id);show(near);}else msg.textContent='Move closer to an exhibit.';}
-for(const p of game.map.projects){
- const button=document.createElement('button');button.type='button';button.dataset.id=p.id;button.className='project';
- button.setAttribute('aria-pressed','false');button.textContent=p.label+' · '+p.category;
- button.addEventListener('click',()=>show(p));list.append(button);
+function populateList(){
+ list.replaceChildren();
+ for(const p of game.map.projects){
+  const button=document.createElement('button');button.type='button';button.dataset.id=p.id;button.className='project';
+  button.setAttribute('aria-pressed','false');button.textContent=p.label+' · '+p.category;
+  button.addEventListener('click',()=>show(p));list.append(button);
+ }
 }
+const nav=document.getElementById('room-nav');
+const roomLabel=document.querySelector('.stage .bar');
+function openRoom(room){
+ game=newGame(room);
+ info.replaceChildren();
+ const heading=document.createElement('p');heading.className='eyebrow';heading.textContent='ROOM INTRODUCTION';
+ const title=document.createElement('h2');title.textContent=room.name;
+ const body=document.createElement('p');body.textContent='Explore the stations or choose a project in the directory below.';
+ const note=document.createElement('small');note.textContent='Original, locally-rendered scene. No download required.';
+ info.append(heading,title,body,note);
+ msg.textContent='Room changed: '+room.name;
+ roomLabel.textContent='● '+room.name.toUpperCase()+' · ORIGINAL WORLD';
+ document.documentElement.style.setProperty('--room-accent',room.accent||'#85e8d6');
+ populateList();
+ Array.from(nav.children).forEach(button=>button.setAttribute('aria-current',
+  button.dataset.room===room.id?'page':'false'));
+ render();
+}
+for(const [index,room] of ROOMS.entries()){
+ const button=document.createElement('button');button.type='button';button.dataset.room=room.id;
+ button.className='room-button';button.textContent=(index+1).toString().padStart(2,'0')+'  '+room.name;
+ button.setAttribute('aria-current','false');
+ button.addEventListener('click',()=>openRoom(room));nav.append(button);
+}
+openRoom(ROOMS[0]);
 const moves={ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1],ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0]};
 window.addEventListener('keydown',e=>{
  if(e.altKey||e.ctrlKey||e.metaKey||['INPUT','TEXTAREA'].includes(e.target.tagName))return;

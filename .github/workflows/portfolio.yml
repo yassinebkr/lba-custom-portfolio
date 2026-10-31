@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '22'
       - name: Run pure game rule tests
-        run: node --test apps/portfolio/rules.test.mjs
+        run: node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
       - name: Prevent proprietary game files in public bundle
         run: |
           if find apps/portfolio -type f \( -iname '*.hqr' -o -iname '*.exe' -o -iname '*.jsdos' -o -iname '*.iso' -o -iname '*.vox' -o -iname '*.fla' \) | grep . ; then
@@ -31,6 +31,7 @@ jobs:
           test -f apps/portfolio/index.html
           test -f apps/portfolio/game.mjs
           test -f apps/portfolio/rules.mjs
+          test -f apps/portfolio/rooms.mjs
       - name: Install browser test tooling
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.56.1
@@ -49,8 +50,8 @@ jobs:
       - name: Build public-only Pages artifact
         run: |
           mkdir -p dist
-          cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs dist/
-          test "$(find dist -type f | wc -l)" -eq 3
+          cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs apps/portfolio/rooms.mjs dist/
+          test "$(find dist -type f | wc -l)" -eq 4
       - uses: actions/upload-artifact@v4
         with:
           name: portfolio-public-static

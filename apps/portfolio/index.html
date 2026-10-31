@@ -36,6 +36,10 @@ kbd{border:1px solid #54707d;padding:3px 6px;border-radius:4px;color:#e4f2ef}
 footer{padding-top:24px;padding-bottom:24px;border-top:1px solid #314550;color:#829aa4;font-size:12px}
 @media(max-width:920px){.layout{grid-template-columns:1fr}.sidebar{min-height:200px}.intro{align-items:start;flex-direction:column}}
 @media(max-width:580px){header,main,footer{padding-left:14px;padding-right:14px}.list{grid-template-columns:1fr}.stage .controls{flex-direction:column;align-items:start}h1{font-size:34px}}
+.room-nav{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:0 0 16px;margin-bottom:4px;scrollbar-width:thin}
+.room-button{white-space:nowrap;border-radius:7px;color:#9db5c1;border:1px solid #35505d;background:#162a34;padding:10px 13px;font-size:11px}
+.room-button:hover,.room-button[aria-current=page]{background:#244b49;color:#e4fff8;border-color:var(--room-accent,#84e1d2)}
+.stage .bar{overflow-wrap:anywhere}
 </style>
 <script type="module" src="./game.mjs"></script>
 </head>
@@ -44,6 +48,7 @@ footer{padding-top:24px;padding-bottom:24px;border-top:1px solid #314550;color:#
 <header><div class="brand">◆ PROJECT <span>ATLAS</span></div><a href="https://github.com/yassinebkr">GitHub profile ↗</a></header>
 <main>
 <div class="intro"><div><p class="eyebrow">An interactive maker portfolio</p><h1>Explore the work.<br>Discover the ideas.</h1></div><p>Walk up to an exhibit to discover an engineering project. Everything runs inside your browser.</p></div>
+<nav id="room-nav" class="room-nav" aria-label="Portfolio rooms"></nav>
 <div class="layout">
 <section class="stage" aria-label="Playable isometric showroom">
 <div class="bar">● WORKSHOP / ROOM 01 · ORIGINAL PROTOTYPE</div>

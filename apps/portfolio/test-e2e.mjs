@@ -13,7 +13,7 @@ const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost:'+PORT);
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const name=url.pathname.slice(base.length)||'index.html';
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs)$/.test(name)){res.writeHead(404);return res.end();}
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs)$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
@@ -30,7 +30,11 @@ try{
   const response=await page.goto('http://127.0.0.1:'+PORT+base);
   assert.equal(response.status(),200,'nested Pages path must load');
   await page.locator('#list .project').first().waitFor();
-  assert.equal(await page.locator('#list .project').count(),4,'HTML fallback exposes all four projects');
+  assert.equal(await page.locator('#list .project').count(),4,'HTML fallback exposes four room projects');
+  assert.equal(await page.locator('#room-nav button').count(),6,'all six rooms are navigable');
+  await page.locator('#room-nav button').nth(2).click();
+  assert.match((await page.locator('.stage .bar').textContent())||'',/ELECTRONICS/);
+  await page.locator('#room-nav button').first().click();
   assert.equal(await page.locator('#game').evaluate(el=>el.width),960,'drawing canvas mounted');
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('e');
