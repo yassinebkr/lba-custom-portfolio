@@ -13,6 +13,7 @@ This repository has **two separate tracks**. The **new Project Atlas** is an ori
 | **[Technical architecture](docs/ARCHITECTURE_TARGET.md)** | System context, modules, logical asset/scene model, asset production and GitHub Pages delivery |
 | [Creative Asset Studio UX](docs/STUDIO_UX_SPEC.md) | Modern GUI layout and visual editing workflows; readable data visualization rules |
 | [Photo / 3D → sprite and scene pipeline](docs/ASSET_PIPELINE.md) | Character, furniture, prop, scene and animation routes; candidate tools and QA |
+| [Release checks and outstanding gates](docs/PUBLIC_RELEASE_CHECKLIST.md) | Public artifact, CI, deployment restrictions and remaining validation |
 | [Milestones J0–J8](docs/MILESTONES.md) | Dependencies, acceptance gates, status, tests and commit log |
 | [ADR-001: runtime renderer](docs/ADR-001-J1-RUNTIME.md) | Canvas2D proof versus future engine choice |
 | [J1 playable prototype](apps/portfolio/README.md) | Local instructions and current limitations |
@@ -27,7 +28,8 @@ From the **feature branch** and repository root:
 ```bash
 python3 -m http.server 8765
 # Visit http://localhost:8765/apps/portfolio/
-node --test apps/portfolio/rules.test.mjs
+node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
+node scripts/build-portfolio.mjs
 ```
 
 The public deployment source must contain only approved `apps/portfolio/` runtime files, **not** the `web_deploy/` js-dos archive. GitHub Actions runs checks on the branch, but the Pages publishing job currently needs a manual dispatch; the live site has not been verified.

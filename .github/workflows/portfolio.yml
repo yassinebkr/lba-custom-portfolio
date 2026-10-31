@@ -6,6 +6,8 @@ on:
       - feature/portfolio-studio-j1-j8
     paths:
       - 'apps/portfolio/**'
+      - 'scripts/build-portfolio.mjs'
+      - 'tests/public-build.test.mjs'
       - '.github/workflows/portfolio.yml'
   workflow_dispatch:
 
@@ -47,11 +49,10 @@ jobs:
             portfolio-desktop.png
             portfolio-mobile.png
           if-no-files-found: ignore
-      - name: Build public-only Pages artifact
+      - name: Audit public-only Pages artifact
         run: |
-          mkdir -p dist
-          cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs apps/portfolio/rooms.mjs dist/
-          test "$(find dist -type f | wc -l)" -eq 4
+          node scripts/build-portfolio.mjs
+          node --test tests/public-build.test.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: portfolio-public-static
