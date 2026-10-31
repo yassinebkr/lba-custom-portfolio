@@ -1,4 +1,4 @@
-name: Portfolio J1 checks and optional Pages deployment
+name: Portfolio CI and optional Pages deployment
 
 on:
   push:
@@ -20,25 +20,41 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test navigation, collisions and scene validation
+      - name: Run pure game rule tests
         run: node --test apps/portfolio/rules.test.mjs
-      - name: Reject proprietary game archives and executables in Pages source
+      - name: Prevent proprietary game files in public bundle
         run: |
           if find apps/portfolio -type f \( -iname '*.hqr' -o -iname '*.exe' -o -iname '*.jsdos' -o -iname '*.iso' -o -iname '*.vox' -o -iname '*.fla' \) | grep . ; then
-            echo "Forbidden game asset in public app"
+            echo "Forbidden original LBA files in public artifact"
             exit 1
           fi
           test -f apps/portfolio/index.html
           test -f apps/portfolio/game.mjs
           test -f apps/portfolio/rules.mjs
-      - name: Create isolated static artifact
+      - name: Install browser test tooling
         run: |
-          mkdir -p /tmp/portfolio-public
-          cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs /tmp/portfolio-public/
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Browser smoke at GitHub Pages project subpath
+        run: node apps/portfolio/test-e2e.mjs
+      - name: Capture browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portfolio-e2e-screenshots
+          path: |
+            portfolio-desktop.png
+            portfolio-mobile.png
+          if-no-files-found: ignore
+      - name: Build public-only Pages artifact
+        run: |
+          mkdir -p dist
+          cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs dist/
+          test "$(find dist -type f | wc -l)" -eq 3
       - uses: actions/upload-artifact@v4
         with:
-          name: static-portfolio-j1
-          path: /tmp/portfolio-public
+          name: portfolio-public-static
+          path: dist
 
   publish-pages:
     if: github.event_name == 'workflow_dispatch'
@@ -53,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - name: Stage public-only files
+      - name: Stage only public files
         run: |
           mkdir -p dist
           cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs dist/
