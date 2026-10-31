@@ -36,6 +36,7 @@ jobs:
         working-directory: apps/studio
         run: npm run build
       - name: Browser UI smoke at desktop and mobile
+        timeout-minutes: 4
         working-directory: apps/studio
         run: node tests/studio.e2e.mjs
       - name: Upload screenshots for visual review
