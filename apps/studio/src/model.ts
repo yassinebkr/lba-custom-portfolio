@@ -1,16 +1,18 @@
 export type AssetKind = 'character' | 'furniture' | 'prop' | 'structure';
 export type AnimationState = 'idle' | 'active' | 'talk' | 'open';
+import type {SourceProvenance} from '../../../packages/asset-schema/index.mjs';
 export type SpriteAsset = {
   id:string; name:string; kind:AssetKind; category:string;
   color:string; icon:string; frameCount:number; state:AnimationState;
-  notes:string; license:'original'; palette:string;
+  notes:string; license:'original'; palette:string; source:SourceProvenance;
 };
 export type Instance = {
   id:string; assetId:string; x:number; z:number; layer:number; rotation:0|90|180|270;
   interactive:boolean; label:string;
 };
-export type SceneData={id:string;name:string;width:number;depth:number;instances:Instance[]};
-export const ASSETS:SpriteAsset[]=[
+export type SceneData={schemaVersion:1;id:string;name:string;width:number;depth:number;instances:Instance[]};
+const originalSource:SourceProvenance={origin:'original-art',creator:'project-owner',sourceUrl:null,license:'original',attribution:null,reviewStatus:'approved',allowedForPublicBuild:true};
+const rawAssets:Omit<SpriteAsset,'source'>[]=[
   {id:'camera',name:'Camera Rig',kind:'prop',category:'Electronics',color:'#83ccc2',icon:'camera',frameCount:4,state:'active',notes:'RAW imaging workstation',license:'original',palette:'Studio Natural'},
   {id:'workbench',name:'Workbench',kind:'furniture',category:'Furniture',color:'#bc9d7c',icon:'table',frameCount:1,state:'idle',notes:'Workbench and tabletop',license:'original',palette:'Studio Natural'},
   {id:'monitor',name:'Control Monitor',kind:'prop',category:'Electronics',color:'#8daadc',icon:'monitor',frameCount:6,state:'active',notes:'Animated status display',license:'original',palette:'Studio Natural'},
@@ -19,8 +21,9 @@ export const ASSETS:SpriteAsset[]=[
   {id:'maker',name:'Workshop Guide',kind:'character',category:'Characters',color:'#a3bbcd',icon:'person',frameCount:8,state:'talk',notes:'Original guide character',license:'original',palette:'Studio Natural'},
   {id:'antenna',name:'LoRa Antenna',kind:'prop',category:'Electronics',color:'#d1bd8c',icon:'antenna',frameCount:4,state:'active',notes:'Radio telemetry exhibit',license:'original',palette:'Studio Natural'},
 ];
+export const ASSETS:SpriteAsset[]=rawAssets.map(a=>({...a,source:{...originalSource}}));
 export const INITIAL:SceneData={
-  id:'workshop-01',name:'Workshop / Showroom',width:11,depth:11,
+  schemaVersion:1,id:'workshop-01',name:'Workshop / Showroom',width:11,depth:11,
   instances:[
     {id:'obj-1',assetId:'workbench',x:3,z:3,layer:1,rotation:0,interactive:false,label:'Prototype table'},
     {id:'obj-2',assetId:'camera',x:3,z:4,layer:2,rotation:0,interactive:true,label:'CinePi station'},

@@ -3,6 +3,7 @@ import {PanelsTopLeft,Boxes,Layers3,Clapperboard,Search,Save,Play,Pause,Undo2,Re
   MousePointer2,Grid2X2,Eye,ChevronDown,ChevronRight,Check,AlertTriangle,Maximize,RotateCw,Move,Copy,Info,
   Camera,Armchair,Monitor,Leaf,DoorOpen,UserRound,RadioTower,SlidersHorizontal} from 'lucide-react';
 import {ASSETS,INITIAL,findAsset,type SceneData,type Instance,type AssetKind} from './model';
+import {validateSceneDocument,validateAssetCatalog} from '../../../packages/asset-schema/index.mjs';
 import './styles.css';
 
 const VIEW_W=920,VIEW_H=540,TW=56,TH=28;
@@ -38,9 +39,8 @@ function safeLoad():SceneData{
  if(!val||typeof val!=='object')return structuredClone(INITIAL);
  const v=val as Partial<SceneData>;
  if(v.id!==INITIAL.id||!Array.isArray(v.instances)||v.instances.length>500)return structuredClone(INITIAL);
- const safe=v.instances.every(i=>i&&typeof i.id==='string'&&typeof i.assetId==='string'&&
- Number.isInteger(i.x)&&Number.isInteger(i.z)&&i.x>=0&&i.x<INITIAL.width&&i.z>=0&&i.z<INITIAL.depth&&findAsset(i.assetId));
- return safe?{...INITIAL,instances:v.instances}:structuredClone(INITIAL);
+ const errors=validateSceneDocument(v,new Set(ASSETS.map(asset=>asset.id)));
+ return errors.length===0?v as SceneData:structuredClone(INITIAL);
  }catch{return structuredClone(INITIAL);}
 }
 export default function App(){
@@ -68,6 +68,8 @@ export default function App(){
    return()=>window.clearInterval(timer);
  },[playing,selectedAsset?.id,selectedAsset?.frameCount]);
  const mutate=(next:SceneData)=>{
+   const issues=validateSceneDocument(next,new Set(ASSETS.map(asset=>asset.id)));
+   if(issues.length){setNotice(issues[0].message+' ('+issues[0].path+')');return;}
    setHistory(h=>[...h.slice(-40),structuredClone(scene)]);
    setFuture([]);setScene(next);setNotice('Unsaved changes');
  };
@@ -84,8 +86,13 @@ export default function App(){
  };
  const undo=()=>{if(!history.length)return;setFuture(f=>[structuredClone(scene),...f]);setScene(history.at(-1)!);setHistory(h=>h.slice(0,-1));setNotice('Undo');};
  const redo=()=>{if(!future.length)return;setHistory(h=>[...h,structuredClone(scene)]);setScene(future[0]);setFuture(f=>f.slice(1));setNotice('Redo');};
- const save=()=>{localStorage.setItem('atlas.studio.scene.v1',JSON.stringify(scene));setHistory([]);setFuture([]);setNotice('Saved locally');};
+ const save=()=>{
+   const errors=validateAssetCatalog(ASSETS).concat(validateSceneDocument(scene,new Set(ASSETS.map(asset=>asset.id))));
+   if(errors.length){setNotice('Save blocked: '+errors[0].message);return;}
+   localStorage.setItem('atlas.studio.scene.v1',JSON.stringify(scene));setHistory([]);setFuture([]);setNotice('Saved locally');};
  const exportJson=()=>{
+   const errors=validateAssetCatalog(ASSETS).concat(validateSceneDocument(scene,new Set(ASSETS.map(asset=>asset.id))));
+   if(errors.length){setNotice('Export blocked: '+errors[0].message);return;}
    const blob=new Blob([JSON.stringify(scene,null,2)],{type:'application/json'});
    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=scene.id+'.json';a.click();
    window.setTimeout(()=>URL.revokeObjectURL(url),1000);setNotice('Scene exported');
@@ -94,9 +101,8 @@ export default function App(){
    if(file.size>250000){setNotice('File is too large');return;}
    try{const parsed:unknown=JSON.parse(await file.text());
      const doc=parsed as SceneData;
-     if(!doc||doc.id!==scene.id||!Array.isArray(doc.instances)||doc.instances.length>500||
-       !doc.instances.every(i=>i&&typeof i.id==='string'&&!!findAsset(i.assetId)&&Number.isInteger(i.x)&&
-       Number.isInteger(i.z)&&i.x>=0&&i.x<scene.width&&i.z>=0&&i.z<scene.depth))throw Error('Invalid scene data');
+     const issues=validateSceneDocument(doc,new Set(ASSETS.map(asset=>asset.id)));
+     if(issues.length||doc.id!==scene.id)throw Error('Invalid scene document');
      mutate({...scene,instances:doc.instances});setSelection(null);setNotice('Scene imported');
    }catch{setNotice('Import rejected: invalid scene JSON');}
  };

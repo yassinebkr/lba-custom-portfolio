@@ -1,4 +1,4 @@
-name: Asset Studio build checks
+name: Asset Studio and shared schema checks
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - feature/portfolio-studio-j1-j8
     paths:
       - 'apps/studio/**'
+      - 'packages/asset-schema/**'
       - '.github/workflows/studio.yml'
   workflow_dispatch:
 
@@ -15,20 +16,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/studio
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Validate shared asset contracts
+        run: node --test packages/asset-schema/index.test.mjs
       - name: Install Studio dependencies
+        working-directory: apps/studio
         run: npm install --no-audit --no-fund
       - name: Type check and production build
+        working-directory: apps/studio
         run: npm run build
-      - name: Upload static Studio bundle (for inspection only)
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: asset-studio-build
           path: apps/studio/dist
