@@ -1,6 +1,6 @@
 # Architecture — Project Atlas and Asset Studio
 
-Status: **J0 target design; diagrams are proposed architecture, NOT completed features.** Branch: feature/portfolio-studio-j1-j8.
+Status: **target architecture with partial J1–J8 implementation; diagrams include planned components and are not evidence of finished features.** Branch: feature/portfolio-studio-j1-j8.
 This supersedes the public-delivery assumptions in the historical LBA mod plan; those documents and tools remain available as legacy references.
 
 ## Architecture map

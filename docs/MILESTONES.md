@@ -31,15 +31,15 @@ J0["J0: architecture and audit"] --> J1["J1: static playable proof"]
 
 | Gate | Goal | Acceptance proof | State |
 | --- | --- | --- | --- |
-| J0 | Audit and agree architecture, UX, asset pipeline, legal/deploy boundaries | Files documented; existing paths audited; branch created | Documentation complete; no implementation |
-| J1 | Static playable isometric original prototype | Real Pages-compatible build at repo subpath, movement, collision, interaction, accessible project fallback, no LBA binary, automated tests | **In progress: CI passed; public Pages/browser acceptance not yet verified** |
-| J2 | Modern creative UI | Actual desktop/narrow interface, real library/viewport/inspector/timeline, usable edit/preview flow, a11y states | Pending |
-| J3 | Unified asset contract and manager | Runtime schema + valid manifest, tests against malformed inputs, source provenance, import/edit/export round trip | Pending |
-| J4 | Photo/model to sprites/props | Test fixtures: one character + three different furniture/props, reproducible pipeline, multi-view validation and visual review | Pending |
-| J5 | Visual scene editor | Compose, position, layer, collide, save/export and play an original room without manually editing JSON | Pending |
-| J6 | Animations and interactions | Editable/scrubbable timeline, NPC walk/talk, door + monitor + machine, proper events, tested runtime | Pending |
-| J7 | Six portfolio scenes | All six original rooms, projects/contact content, internal navigation, verified content/license completeness | Pending |
-| J8 | Ship-ready hardening | Unit/integration/E2E/visual tests, responsive + keyboard/touch, load/perf budget, license audit, successful GitHub Pages publication | Pending |
+| J0 | Audit and agree architecture, UX, asset pipeline, legal/deploy boundaries | Files documented; existing paths audited; branch created | **Architecture and docs established; implementation status tracked separately** |
+| J1 | Static playable isometric original prototype | Real Pages-compatible build at repo subpath, movement, collision, interaction, accessible project fallback, no LBA binary, automated tests | **WIP — six original playable rooms; browser CI passed; live GitHub Pages unverified** |
+| J2 | Modern creative UI | Actual desktop/narrow interface, real library/viewport/inspector/timeline, usable edit/preview flow, a11y states | **WIP — Studio UI implemented, TypeScript build and desktop/mobile E2E passed; UX review pending** |
+| J3 | Unified asset contract and manager | Runtime schema + valid manifest, tests against malformed inputs, source provenance, import/edit/export round trip | **WIP — shared validators and Studio import/export; runtime schema parity pending** |
+| J4 | Photo/model to sprites/props | Test fixtures: one character + three different furniture/props, reproducible pipeline, multi-view validation and visual review | **WIP — tested Python sprite preparation and Blender adapter; real multi-view assets pending** |
+| J5 | Visual scene editor | Compose, position, layer, collide, save/export and play an original room without manually editing JSON | **WIP — Studio six-scene editor; authored scene → public runtime compilation pending** |
+| J6 | Animations and interactions | Editable/scrubbable timeline, NPC walk/talk, door + monitor + machine, proper events, tested runtime | **WIP — deterministic frame clips and editable timeline; event/interaction engine pending** |
+| J7 | Six portfolio scenes | All six original rooms, projects/contact content, internal navigation, verified content/license completeness | **WIP — six original runtime rooms; final art, interactions and content QA pending** |
+| J8 | Ship-ready hardening | Unit/integration/E2E/visual tests, responsive + keyboard/touch, load/perf budget, license audit, successful GitHub Pages publication | **WIP — allowlisted public builder, CSP, CI checks; live Pages, performance and release review pending** |
 
 ## Constraints and non-goals
 
@@ -64,7 +64,14 @@ J0["J0: architecture and audit"] --> J1["J1: static playable proof"]
 | Date | Gate | Commit(s) | Verification | Notes |
 | --- | --- | --- | --- | --- |
 | 2026-11-01 | J0 | 7e9bb42 | Repository audit + four checked-in specs | Completed documentation baseline |
-| 2026-11-01 | J1 (WIP) | 114e37a, cb2cb06 | Browser-static game source, original procedural scene, Node test suite, optional Pages workflow; V8 smoke of seven pure rule checks PASS; file syntax PASS | CI run 41253304495 passed (commit cb2cb06); no verified live Pages deployment or browser E2E. Do not mark accepted. |
+| 2026-11-01 | J1 (WIP) | 114e37a, 7323bbf, b2a32f5, 158cb0b | Six-room original static site with nested-path browser E2E | CI 41254491670 passed; no verified live Pages URL |
+| 2026-11-01 | J2 (WIP) | 87601ae, d63bbe6, b406420 | React/TS creative Studio; inspected desktop/mobile screenshots; responsive correction | CI 41254525803 passed; newest responsive screenshot recheck pending |
+| 2026-11-01 | J3 (WIP) | c4591ce | Shared v1 validators, rights metadata and Studio save/import/export validation | CI 41254091108 passed; public-runtime schema parity still incomplete |
+| 2026-11-01 | J4 (WIP) | 71c1476 | PNG-to-atlas CLI, Blender multi-view adapter, synthetic-image tests | CI 41254634053 passed; actual photographic/3D visual cases outstanding |
+| 2026-11-01 | J5 (WIP) | a6e9997 | Studio multi-scene authoring and isolated drafts | CI Studio build passed; no export-to-runtime bridge yet |
+| 2026-11-01 | J6 (WIP) | da63ecb, 595e540 | Deterministic animation frame evaluator and editable timeline controls | Animation tests + Studio CI passed; runtime trigger system pending |
+| 2026-11-01 | J7 (WIP) | b2a32f5, 158cb0b | Six original web rooms with navigation and project fallback | CI 41254491670 passed; art/content release review pending |
+| 2026-11-01 | J8 (WIP) | 89cce81, 460bf4e | Public allowlist, CSP and build tests, release checklist | CI 41254634041 passed; actual Pages deployment and end-to-end release gate open |
 
 ## Documentation acceptance criteria
 

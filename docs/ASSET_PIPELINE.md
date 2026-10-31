@@ -1,6 +1,6 @@
 # Source photo / model to isometric game assets — pipeline design
 
-Status: **J0 design and research; not implemented (J3/J4/J5/J6 later)**.
+Status: **pipeline partially implemented (J4 WIP); Python 2D image/atlas tool and Blender adapter exist, but full generation and visual QA remain open**.
 The workflow covers **characters, furniture, electronics, props, whole rooms, and interaction animations**, not characters alone.
 
 ## Production routes by asset kind

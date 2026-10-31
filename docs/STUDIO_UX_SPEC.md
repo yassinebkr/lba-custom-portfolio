@@ -1,6 +1,6 @@
 # Asset Studio — creative tool UX / UI specification
 
-Status: **J0 approved design requirements; J2 implementation pending**.
+Status: **J2 editor prototype implemented and browser-tested; complete creative workflow acceptance remains open**.
 Goal: a useful production environment for scenes, characters, furniture, props, sprites, and animation, not a metadata browser with another coat of CSS.
 
 ## Studio as a creative workspace
