@@ -7,6 +7,7 @@ on:
     paths:
       - 'apps/studio/**'
       - 'packages/asset-schema/**'
+      - 'packages/game-core/**'
       - '.github/workflows/studio.yml'
   workflow_dispatch:
 
@@ -23,6 +24,8 @@ jobs:
           node-version: '22'
       - name: Validate shared asset contracts
         run: node --test packages/asset-schema/index.test.mjs
+      - name: Test animation frame evaluator
+        run: node --test packages/game-core/animation.test.mjs
       - name: Install Studio dependencies and browser runner
         working-directory: apps/studio
         run: |

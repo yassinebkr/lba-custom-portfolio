@@ -4,6 +4,7 @@ import {PanelsTopLeft,Boxes,Layers3,Clapperboard,Search,Save,Play,Pause,Undo2,Re
   Camera,Armchair,Monitor,Leaf,DoorOpen,UserRound,RadioTower,SlidersHorizontal} from 'lucide-react';
 import {ASSETS,INITIAL,findAsset,type SceneData,type Instance,type AssetKind} from './model';
 import {ORIGINAL_SCENES,findScene} from './scenes';
+import {createClip,validateClip,type AnimationClip} from '../../../packages/game-core/animation.mjs';
 import {validateSceneDocument,validateAssetCatalog} from '../../../packages/asset-schema/index.mjs';
 import './styles.css';
 
@@ -62,14 +63,31 @@ export default function App(){
  const fileInput=useRef<HTMLInputElement>(null);
  const selected=scene.instances.find(i=>i.id===selection)||null;
  const selectedAsset=selected?findAsset(selected.assetId):null;
+ const[clips,setClips]=useState<Record<string,AnimationClip>>(()=>{
+  try{const stored=JSON.parse(localStorage.getItem('atlas.studio.clips.v1')||'{}') as Record<string,AnimationClip>;
+   return Object.fromEntries(ASSETS.map(a=>[a.id,stored[a.id]&&validateClip(stored[a.id]).length===0?stored[a.id]:createClip(a.id,a.frameCount)]));
+  }catch{return Object.fromEntries(ASSETS.map(a=>[a.id,createClip(a.id,a.frameCount)]));}
+ });
+ const clip=selectedAsset?clips[selectedAsset.id]:null;
  const catalog=useMemo(()=>ASSETS.filter(a=>(filter==='all'||a.kind===filter)&&
  (a.name+' '+a.category).toLowerCase().includes(search.toLowerCase())),[filter,search]);
  const dirty=history.length>0;
  useEffect(()=>{
-   if(!playing||!selectedAsset||selectedAsset.frameCount<=1)return;
-   const timer=window.setInterval(()=>setFrame(f=>(f+1)%selectedAsset.frameCount),1000/6);
-   return()=>window.clearInterval(timer);
- },[playing,selectedAsset?.id,selectedAsset?.frameCount]);
+   if(!playing||!clip||clip.frames.length<=1)return;
+   const timer=window.setTimeout(()=>setFrame(f=>(f+1)%clip.frames.length),clip.frames[frame%clip.frames.length]?.durationMs||160);
+   return()=>window.clearTimeout(timer);
+ },[playing,clip,frame]);
+ const editClip=(next:AnimationClip)=>{
+   const errors=validateClip(next);
+   if(errors.length){setNotice('Invalid animation: '+errors[0]);return;}
+   if(!selectedAsset)return;
+   setClips(all=>({...all,[selectedAsset.id]:next}));
+   setPlaying(false);setFrame(f=>Math.min(f,next.frames.length-1));setNotice('Unsaved animation edit');
+ };
+ const saveClips=()=>{
+   if(Object.values(clips).some(c=>validateClip(c).length>0)){setNotice('Invalid animation data');return;}
+   localStorage.setItem('atlas.studio.clips.v1',JSON.stringify(clips));setNotice('Animations saved locally');
+ };
  const mutate=(next:SceneData)=>{
    const issues=validateSceneDocument(next,new Set(ASSETS.map(asset=>asset.id)));
    if(issues.length){setNotice(issues[0].message+' ('+issues[0].path+')');return;}
@@ -97,6 +115,7 @@ export default function App(){
  const undo=()=>{if(!history.length)return;setFuture(f=>[structuredClone(scene),...f]);setScene(history.at(-1)!);setHistory(h=>h.slice(0,-1));setNotice('Undo');};
  const redo=()=>{if(!future.length)return;setHistory(h=>[...h,structuredClone(scene)]);setScene(future[0]);setFuture(f=>f.slice(1));setNotice('Redo');};
  const save=()=>{
+   saveClips();
    const errors=validateAssetCatalog(ASSETS).concat(validateSceneDocument(scene,new Set(ASSETS.map(asset=>asset.id))));
    if(errors.length){setNotice('Save blocked: '+errors[0].message);return;}
    localStorage.setItem('atlas.studio.scene.'+scene.id,JSON.stringify(scene));setHistory([]);setFuture([]);setNotice('Saved locally: '+scene.name);};
@@ -195,7 +214,7 @@ export default function App(){
           role="button" tabIndex={0} aria-label={'Select '+item.label}
           onClick={e=>{e.stopPropagation();setSelection(item.id);setTool('select');setFrame(0);}}
           onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();setSelection(item.id);}}}>
-          <Shape assetId={item.assetId} active={selection===item.id} frame={selection===item.id?frame:0}/>
+          <g transform={'translate(0 '+(selection===item.id?-(clip?.frames[frame]?.offsetYPx||0):0)+')'}><Shape assetId={item.assetId} active={selection===item.id} frame={selection===item.id?frame:0}/></g>
           {colliders&&<ellipse cx="0" cy="12" rx="25" ry="12" fill="#83e4d3" fillOpacity=".13" stroke="#83e4d3" strokeDasharray="3 3"/>}
          </g>;
        })}
@@ -206,18 +225,18 @@ export default function App(){
     <div className="bottom-panel">
       <div className="bottom-header"><span><Clapperboard size={16}/> ANIMATION TIMELINE</span><span className="timeline-state">{selectedAsset?.state||'No selection'}</span></div>
       <div className="timeline-body">
-        <button className="icon-button play" onClick={()=>setPlaying(!playing)} title={playing?'Pause':'Preview animation'} disabled={!selectedAsset||selectedAsset.frameCount<=1}>{playing?<Pause size={17}/>:<Play size={17}/>}</button>
-        <div className="frames">{Array.from({length:selectedAsset?.frameCount||1},(_,i)=><button key={i}
+        <button className="icon-button play" onClick={()=>setPlaying(!playing)} title={playing?'Pause':'Preview animation'} disabled={!clip||clip.frames.length<=1}>{playing?<Pause size={17}/>:<Play size={17}/>}</button>
+        <div className="frames">{Array.from({length:clip?.frames.length||1},(_,i)=><button key={i}
           className={'frame '+(frame===i?'current':'')}
           onClick={()=>{setFrame(i);setPlaying(false);}}><span>{('0'+(i+1)).slice(-2)}</span></button>)}</div>
-        <span className="timeline-fps">{selectedAsset&&selectedAsset.frameCount>1?'6 FPS':'1 FRAME'}</span>
+        <span className="timeline-fps">{clip&&clip.frames.length>1?Math.round(1000/(clip.frames[frame]?.durationMs||160))+' FPS':'1 FRAME'}</span>
       </div>
     </div>
    </section>
    <aside className="inspector" aria-label="Inspector">
       <div className="panel-title"><span>INSPECTOR</span><SlidersHorizontal size={16}/></div>
       {selected && selectedAsset ? <>
-       <div className="selection-preview"><svg viewBox="-38 -90 76 132"><Shape assetId={selected.assetId} active frame={frame}/></svg></div>
+       <div className="selection-preview"><svg viewBox="-38 -90 76 132"><g transform={'translate(0 '+-(clip?.frames[frame]?.offsetYPx||0)+')'}><Shape assetId={selected.assetId} active frame={frame}/></g></svg></div>
        <div className="selection-title"><h2>{selected.label}</h2><p>{selectedAsset.category} · {selected.id}</p></div>
        <div className="inspector-tabs"><button className={selectedTab==='props'?'active':''} onClick={()=>setSelectedTab('props')}>Properties</button><button className={selectedTab==='animation'?'active':''} onClick={()=>setSelectedTab('animation')}>Animation</button></div>
        {selectedTab==='props'?<>
@@ -234,9 +253,20 @@ export default function App(){
         </div>
        </>:<div className="inspector-group"><h3><Clapperboard size={14}/> ANIMATION</h3>
         <div className="detail-row"><span>State</span><strong>{selectedAsset.state}</strong></div>
-        <div className="detail-row"><span>Frames</span><strong>{selectedAsset.frameCount}</strong></div>
-        <div className="detail-row"><span>Preview frame</span><strong>{frame+1}</strong></div>
-        <p className="help-text">Scrub the frames in the timeline. Editable sequences arrive in J6.</p>
+        <div className="detail-row"><span>Frames</span><strong>{clip?.frames.length||0}</strong></div>
+        <label className="toggle"><input type="checkbox" checked={clip?.loop||false} onChange={e=>clip&&editClip({...clip,loop:e.target.checked})}/> Loop sequence</label>
+        <div className="fields">
+         <label>Duration <span>ms</span><input aria-label="Frame duration" type="number" min="16" max="60000" value={clip?.frames[frame]?.durationMs||160} onChange={e=>clip&&editClip({...clip,frames:clip.frames.map((f,i)=>i===frame?{...f,durationMs:Number(e.target.value)}:f)})}/></label>
+         <label>Vertical offset <span>px</span><input aria-label="Frame vertical offset" type="number" min="-32" max="32" value={clip?.frames[frame]?.offsetYPx||0} onChange={e=>clip&&editClip({...clip,frames:clip.frames.map((f,i)=>i===frame?{...f,offsetYPx:Number(e.target.value)}:f)})}/></label>
+        </div>
+        <div className="detail-row"><span>Frame glow</span><strong>{Math.round((clip?.frames[frame]?.glow||0)*100)}%</strong></div>
+        <input aria-label="Frame glow" type="range" min="0" max="1" step="0.05" value={clip?.frames[frame]?.glow||0} onChange={e=>clip&&editClip({...clip,frames:clip.frames.map((f,i)=>i===frame?{...f,glow:Number(e.target.value)}:f)})}/>
+        <div className="animation-actions">
+         <button onClick={()=>clip&&clip.frames.length<120&&editClip({...clip,frames:[...clip.frames,{...clip.frames.at(-1)!}]})}><Plus size={14}/> Add frame</button>
+         <button disabled={!clip||clip.frames.length<=1} onClick={()=>clip&&editClip({...clip,frames:clip.frames.filter((_,i)=>i!==frame)})}><Trash2 size={14}/> Remove</button>
+        </div>
+        <button className="animation-save" onClick={saveClips}><Save size={14}/> Save animation</button>
+        <p className="help-text">Timing, vertical motion and looping are editable. Frame-image binding and game interaction events need full J6 integration.</p>
        </div>}
        <div className="inspector-group provenance"><h3><Check size={14}/> SOURCE STATUS</h3><div className="approval"><Check size={15}/> Original procedural artwork</div></div>
        <div className="inspector-footer"><button onClick={()=>{const copy={...selected,id:id(),x:Math.min(scene.width-1,selected.x+1)};if(scene.instances.some(i=>i.x===copy.x&&i.z===copy.z)){setNotice('Target tile occupied');return;}mutate({...scene,instances:[...scene.instances,copy]});setSelection(copy.id);}}><Copy size={15}/> Duplicate</button>
