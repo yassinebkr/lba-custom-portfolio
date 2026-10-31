@@ -5,7 +5,7 @@ This supersedes the public-delivery assumptions in the historical LBA mod plan; 
 
 ## Architecture map
 
-This page contains **five rendered Mermaid diagrams**: system context, module boundaries, logical data relationships, asset production and public release. Nodes explicitly marked *planned* are not deployed.
+The diagrams describe system context, module boundaries, data relationships, asset production and public release. Nodes explicitly marked *planned* are not deployed.
 
 ### 1. System context — local production versus public experience
 
@@ -222,6 +222,6 @@ PUSH["Push to feature branch"] --> TESTS["Tests + asset safety checks"]
 3. Asset storage strategy for large editable masters (Git LFS or separate storage if needed; avoid exceeding Pages/repo limits).
 4. Static hosting of the public game vs a separately deployed static studio preview; authoring remains local.
 
-## Diagram maintenance rule
+## Documentation maintenance
 
 Diagrams are versioned directly in this Markdown file using `mermaid` fences supported by GitHub. For every change to an interface, asset schema or release boundary, update the relevant diagram **and** its textual contract; do not mark an unimplemented node as complete. Prefer several small readable diagrams over one oversized wall of arrows.
