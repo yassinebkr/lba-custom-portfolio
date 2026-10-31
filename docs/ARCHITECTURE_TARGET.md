@@ -1,7 +1,29 @@
-# Target architecture — standalone portfolio and asset studio
+# Architecture — Project Atlas and Asset Studio
 
-Status: **J0 design baseline; not implemented**. Branch: feature/portfolio-studio-j1-j8.
+Status: **J0 target design; diagrams are proposed architecture, NOT completed features.** Branch: feature/portfolio-studio-j1-j8.
 This supersedes the public-delivery assumptions in the historical LBA mod plan; those documents and tools remain available as legacy references.
+
+## Architecture map
+
+This page contains **five rendered Mermaid diagrams**: system context, module boundaries, logical data relationships, asset production and public release. Nodes explicitly marked *planned* are not deployed.
+
+### 1. System context — local production versus public experience
+
+```mermaid
+flowchart LR
+AUTHOR["Creator"] --> STUDIO["Asset Studio (planned)"]
+    STUDIO --> PIPE["Local asset pipeline"]
+    PIPE --> SAFE["Approved original assets"]
+    SAFE --> GIT["Feature branch"]
+    GIT --> CI["GitHub Actions"]
+    CI --> PAGES["GitHub Pages"]
+    VISITOR["Visitor"] --> PAGES
+    PAGES --> GAME["Playable portfolio + HTML fallback"]
+```
+
+**Reading:** the author controls asset production; the visitor only downloads approved static pages, code and images. No ROM, LBA data, hosted editor, account or API server is required to view the portfolio.
+
+[Studio UX and workflows](STUDIO_UX_SPEC.md) · [Asset production pipelines](ASSET_PIPELINE.md) · [Milestones and evidence](MILESTONES.md)
 
 ## Product boundaries
 
@@ -22,6 +44,36 @@ The public URL must render a useful, accessible landing/portfolio experience eve
 - \`metadata-ui/vite.config.js\` implements dev-only POST/PUT-style file-writing middleware and spawns Node scene injection; it cannot run on GitHub Pages.
 - \`render-scene.js\`, \`inject-scene-image.js\`, \`lib/sprite-codec.js\`, \`create-savegame.js\`, and \`patch-relent.js\` are valuable reverse-engineering/codec references. No automatic license assumption applies to their inputs, generated PNGs, palettes or JSON metadata.
 - The original game assets are gitignored in \`.gitignore\`; the public build must additionally fail closed if any proprietary content is accidentally staged.
+
+## Module boundaries — planned end state
+
+```mermaid
+flowchart TB
+subgraph AUTHORING["Local authoring — planned J2 to J7"]
+      LIB["Library and scene editor"]
+      INSPECT["Inspector and timeline"]
+      BUILD["Blender and asset export"]
+      LIB <--> INSPECT
+      INSPECT --> BUILD
+    end
+    subgraph CONTRACT["Shared contracts — planned J3"]
+      DATA["Versioned manifest validation"]
+      COORDS["Grid / projection / pivots"]
+    end
+    subgraph PUBLIC["Public site — J1 prototype"]
+      LOADER["Scene loader"]
+      GAME["Canvas renderer + movement rules"]
+      FALLBACK["Accessible HTML project directory"]
+      LOADER --> GAME
+      LOADER --> FALLBACK
+    end
+    BUILD --> DATA
+    DATA --> LOADER
+    COORDS --> INSPECT
+    COORDS --> GAME
+```
+
+**Reading:** Studio, pipeline and shared contracts are target components. Only the J1 original Canvas2D proof in `apps/portfolio/` currently exists; no universal asset schema is implemented. The Studio is **local**, so its write APIs never run on GitHub Pages.
 
 ## Target ownership layout (migrate incrementally)
 
@@ -49,6 +101,64 @@ tests/
 
 Do NOT move or delete \`metadata-ui\`, \`web_deploy\`, \`scripts/hqr-tools\`, or old docs as a prerequisite. The initial J1 proof-of-concept may coexist in \`apps/portfolio\`; migration comes after import/export contracts exist.
 
+## Logical data model — provisional, not a database
+
+```mermaid
+erDiagram
+SOURCE ||--o{ ASSET : documents
+    ASSET ||--o{ INSTANCE : instantiated_as
+    SCENE ||--o{ INSTANCE : contains
+    ASSET ||--o{ ANIMATION : provides
+    ANIMATION ||--o{ FRAME : contains
+    SCENE ||--o{ TRIGGER : defines
+    TRIGGER }o--|| ACTION : dispatches
+    SCENE {
+      string id PK
+      int schemaVersion
+      int widthCells
+      int depthCells
+    }
+    INSTANCE {
+      string id PK
+      string sceneId FK
+      string assetId FK
+      number x
+      number z
+    }
+    ASSET {
+      string id PK
+      string kind
+      string sourceId FK
+      string atlasRef
+    }
+    SOURCE {
+      string id PK
+      string license
+      string reviewStatus
+      boolean publicApproved
+    }
+    ANIMATION {
+      string id PK
+      string assetId FK
+      number fps
+    }
+    FRAME {
+      int index
+      int durationMs
+    }
+    TRIGGER {
+      string id PK
+      string sceneId FK
+      string actionId FK
+    }
+    ACTION {
+      string id PK
+      string kind
+    }
+```
+
+**Model semantics:** `ASSET` is a reusable sprite/prop/model output; `INSTANCE` is its placement in a particular `SCENE`; `TRIGGER` dispatches an `ACTION`; `ANIMATION` contains ordered frames. `SOURCE` holds provenance/license records. Coordinates, draw pivot and collision footprint are deliberately distinct. J3 must finalize JSON Schema, TypeScript types, cardinalities and cross-reference checks before authoring depends on these diagrams.
+
 ## Runtime design
 
 - Candidate engine: Phaser 3.x/4.x, to be selected by a compatibility spike, including isometric Tiled map behavior, batching, animation and mobile input. Prefer an explicit adapter so an engine change does not alter asset manifests.
@@ -59,6 +169,22 @@ Do NOT move or delete \`metadata-ui\`, \`web_deploy\`, \`scripts/hqr-tools\`, or
 - Studio uses the same scene and projection library as runtime for a trustworthy preview; heavy generators stay local.
 - Basename-aware URLs: test at \`/lba-custom-portfolio/\`, not just root \`/\`; Vite \`base\` configured accordingly for Pages.
 
+## Asset production and approval gate
+
+```mermaid
+flowchart TB
+INPUT["Photo / sketch / 3D model"] --> RIGHTS{"Rights verified?"}
+    RIGHTS -->|no| HOLD["Block export"]
+    RIGHTS -->|yes| MASTER["Editable master"]
+    MASTER --> RENDER["Isometric rendering and frames"]
+    RENDER --> PIXEL["Palette / edges / atlas"]
+    PIXEL --> QA{"Visual + schema QA"}
+    QA -->|revise| MASTER
+    QA -->|pass| OUTPUT["Approved assets for runtime"]
+```
+
+**Reading:** segmentation, 3D reconstruction and automatic stylization are authoring aids, not guaranteed accurate or legally cleared results. Human review and original/licensed sources remain mandatory. The final scene contains editable independent placements, not a single flattened image.
+
 ## Ownership, intellectual property and security
 
 - No original LBA \`.HQR\`, \`.EXE\`, \`.jsdos\`, CD \`.ISO\`, extracted derived artwork, or game-specific copied dialogue in public build.
@@ -67,6 +193,19 @@ Do NOT move or delete \`metadata-ui\`, \`web_deploy\`, \`scripts/hqr-tools\`, or
 - Default deny for any item missing an explicit approved provenance/license record. Keep an allowlist of safe licenses/individual permissions and require attribution where necessary. Generated material is not automatically copyright-clear.
 - Reject traversal paths, unsupported formats, huge files, malicious SVG/scripts, decompression bombs and badly structured atlases in all import steps.
 - Secrets/credentials are not embedded in the static site. Contributor edits happen in local tooling and Git, not a public write API.
+
+## Release architecture — GitHub Pages
+
+```mermaid
+flowchart TB
+PUSH["Push to feature branch"] --> TESTS["Tests + asset safety checks"]
+    TESTS -->|pass| ARTIFACT["Public-only artifact"]
+    ARTIFACT --> MANUAL["Manual publish (workflow_dispatch)"]
+    MANUAL --> PAGES["GitHub Pages"]
+    PAGES --> VERIFY["Live subpath + browser checks"]
+```
+
+**Current CI state:** the J1 branch workflow has passed once. Its Pages publication job is **manual**, and the real deployed URL has **not** been browser-verified. A passing Actions job alone does not close J1. The public artifact must exclude `web_deploy/` and any original game files.
 
 ## Release and measurable quality
 
@@ -82,3 +221,7 @@ Do NOT move or delete \`metadata-ui\`, \`web_deploy\`, \`scripts/hqr-tools\`, or
 2. Final JSON schema and coordinates plus importer behavior; establish fixtures and round trips before migrating studio.
 3. Asset storage strategy for large editable masters (Git LFS or separate storage if needed; avoid exceeding Pages/repo limits).
 4. Static hosting of the public game vs a separately deployed static studio preview; authoring remains local.
+
+## Diagram maintenance rule
+
+Diagrams are versioned directly in this Markdown file using `mermaid` fences supported by GitHub. For every change to an interface, asset schema or release boundary, update the relevant diagram **and** its textual contract; do not mark an unimplemented node as complete. Prefer several small readable diagrams over one oversized wall of arrows.

@@ -3,6 +3,37 @@
 Status: **J0 approved design requirements; J2 implementation pending**.
 Goal: a useful production environment for scenes, characters, furniture, props, sprites, and animation, not a metadata browser with another coat of CSS.
 
+## Studio as a creative workspace
+
+```mermaid
+flowchart TB
+TOP["Project bar: save, undo, preview, export"]
+    LIB["Library: thumbnails + search"]
+    CANVAS["Primary scene viewport"]
+    INSPECT["Inspector: typed fields + units"]
+    TIME["Timeline / job queue"]
+    TOP --> CANVAS
+    LIB -->|select / drag| CANVAS
+    CANVAS <--> INSPECT
+    CANVAS <--> TIME
+```
+
+This diagram specifies **information relationships, not a pixel-perfect mockup**. The central canvas must dominate. Panels collapse on small screens; inspector properties use specialized, unit-aware controls. Dense raw JSON, walls of logs and flat metadata cards are reserved for developer diagnostics.
+
+### Representative edit-to-export journey
+
+```mermaid
+flowchart LR
+SEARCH["Find asset"] --> PLACE["Place in scene"]
+    PLACE --> EDIT["Edit properties"]
+    EDIT --> PREVIEW["Live preview"]
+    PREVIEW --> VALIDATE{"Valid?"}
+    VALIDATE -->|no| EDIT
+    VALIDATE -->|yes| SAVE["Save / export"]
+```
+
+Each arrow represents a working action to demonstrate at J2; the diagrams must eventually be accompanied by real screenshots and desktop/mobile UX checks.
+
 ## Users and essential workflows
 
 1. **Scene authoring:** choose/create a room → choose an asset from the library → place and align with grid guides → inspect pivot/layer/collision → test trigger → preview in game → save/export.

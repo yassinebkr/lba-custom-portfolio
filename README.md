@@ -1,10 +1,44 @@
-# LBA1 Custom Portfolio
+# LBA Custom Portfolio / Project Atlas
 
-An interactive portfolio built on a modded **Little Big Adventure 1** (1994) running in-browser via js-dos 6.22. Visitors explore the LBA world; each location tells the story of a project.
+> **Active work:** [`feature/portfolio-studio-j1-j8`](https://github.com/yassinebkr/lba-custom-portfolio/tree/feature/portfolio-studio-j1-j8). `main` is deliberately unchanged; **no merge** without explicit approval.
 
-> Requires a legitimate copy of LBA1. This repo ships tooling only — no game assets.
+This repository has **two separate tracks**. The **new Project Atlas** is an original browser-based portfolio intended to run from GitHub Pages without an account, game download or backend. The **historical LBA1 mod** and its js-dos/HQR tools are preserved for lawful local development; original game files must **not** be published as the public portfolio.
 
-## What this is
+**Status:** J0 architecture documented. J1 original playable prototype with CI success; live GitHub Pages/browser acceptance is still pending. Studio GUI and asset production (J2–J8) are **planned, not yet implemented**.
+
+## Documentation and architecture
+
+| Document | What you'll find |
+| --- | --- |
+| **[Architecture with 5 rendered diagrams](docs/ARCHITECTURE_TARGET.md)** | System context, modules, logical asset/scene model, asset production and GitHub Pages delivery |
+| [Creative Asset Studio UX](docs/STUDIO_UX_SPEC.md) | Modern GUI layout and visual editing workflows; readable data visualization rules |
+| [Photo / 3D → sprite and scene pipeline](docs/ASSET_PIPELINE.md) | Character, furniture, prop, scene and animation routes; candidate tools and QA |
+| [Milestones J0–J8](docs/MILESTONES.md) | Dependencies, acceptance gates, status, tests and commit log |
+| [ADR-001: runtime renderer](docs/ADR-001-J1-RUNTIME.md) | Canvas2D proof versus future engine choice |
+| [J1 playable prototype](apps/portfolio/README.md) | Local instructions and current limitations |
+| [Legacy LBA asset workflow](docs/WORKFLOW_ASSETS.md) | Historical HQR modding, not a public release pipeline |
+
+GitHub renders the Mermaid diagrams **inside each Markdown document**. Concept diagrams and schema examples describe a **target** until implemented and tested.
+
+## Run the original J1 prototype
+
+From the **feature branch** and repository root:
+
+```bash
+python3 -m http.server 8765
+# Visit http://localhost:8765/apps/portfolio/
+node --test apps/portfolio/rules.test.mjs
+```
+
+The public deployment source must contain only approved `apps/portfolio/` runtime files, **not** the `web_deploy/` js-dos archive. GitHub Actions runs checks on the branch, but the Pages publishing job currently needs a manual dispatch; the live site has not been verified.
+
+---
+
+## Historical LBA1 modding workspace — legacy
+
+The following sections describe the older Little Big Adventure (1994) modding pipeline. They are **not** instructions for preparing the public no-ROM portfolio.
+
+### What the legacy mod does
 
 The original LBA1 DOS binary boots into a CD probe that aborts without a mounted CD-ROM. Four binary patches to `RELENT.EXE` plus a synthetic `LBA.ISO` (ISO9660, volume label `ADELINE`) get it booting cleanly under js-dos, with both intro FLA cinematics NOPed out so the WASM heap doesn't explode.
 

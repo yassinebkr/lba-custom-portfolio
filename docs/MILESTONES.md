@@ -11,6 +11,22 @@ Status: J0 documented only. Follow exact branch **feature/portfolio-studio-j1-j8
 - No merges, no deployment of copyrighted LBA content, no force push, no deletion of user work.
 - Public runtime never depends on local authoring services. Public Pages deployment requires GitHub Pages settings and a functioning build workflow; a checked-in workflow alone does not prove publication.
 
+## Milestone dependencies
+
+```mermaid
+flowchart TB
+J0["J0: architecture and audit"] --> J1["J1: static playable proof"]
+    J1 --> J2["J2: creative Studio GUI"]
+    J2 --> J3["J3: typed asset manager"]
+    J3 --> J4["J4: photo-to-asset pipeline"]
+    J4 --> J5["J5: visual scene editor"]
+    J5 --> J6["J6: animation + interactions"]
+    J6 --> J7["J7: six original scenes"]
+    J7 --> J8["J8: QA + Pages delivery"]
+```
+
+**This is the intended order, not a completion diagram.** The state and CI evidence live in the acceptance table and delivery ledger below.
+
 ## Gate definitions
 
 | Gate | Goal | Acceptance proof | State |
@@ -49,6 +65,10 @@ Status: J0 documented only. Follow exact branch **feature/portfolio-studio-j1-j8
 | --- | --- | --- | --- | --- |
 | 2026-11-01 | J0 | 7e9bb42 | Repository audit + four checked-in specs | Completed documentation baseline |
 | 2026-11-01 | J1 (WIP) | 114e37a, cb2cb06 | Browser-static game source, original procedural scene, Node test suite, optional Pages workflow; V8 smoke of seven pure rule checks PASS; file syntax PASS | CI run 41253304495 passed (commit cb2cb06); no verified live Pages deployment or browser E2E. Do not mark accepted. |
+
+## Documentation acceptance criteria
+
+The [architecture page](ARCHITECTURE_TARGET.md) must include rendered system, module, data, pipeline and delivery diagrams; [Studio UX](STUDIO_UX_SPEC.md) must describe workflows as actual visual tasks; [asset production](ASSET_PIPELINE.md) must distinguish characters, furniture, scene construction and animation. Links to these documents must be visible at the **top of the repository README**.
 
 ## Docs map
 

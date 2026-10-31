@@ -3,6 +3,23 @@
 Status: **J0 design and research; not implemented (J3/J4/J5/J6 later)**.
 The workflow covers **characters, furniture, electronics, props, whole rooms, and interaction animations**, not characters alone.
 
+## Production routes by asset kind
+
+```mermaid
+flowchart TB
+MASTER["Editable 2D or 3D master"] --> KIND{"Output type"}
+    KIND -->|character| ACTOR["4 / 8 directions + walk / talk"]
+    KIND -->|furniture / prop| PROP["Rotations + on/off states"]
+    KIND -->|scene| ROOM["Layers + independent placements"]
+    ACTOR --> FRAMES["Frame export"]
+    PROP --> FRAMES
+    ROOM --> VALIDATE["Visual + rights QA"]
+    FRAMES --> VALIDATE
+    VALIDATE --> ATLAS["Atlas + versioned manifest"]
+```
+
+A furniture object, character and interactive prop cannot share the same blind conversion path: the editor must keep their **source master, view convention, animation states, draw pivot, collision footprint and rights metadata** separate. None of these jobs executes in the public browser.
+
 ## Ingest and provenance (common to all asset kinds)
 
 Input: one or more photos, 3D files (GLB/GLTF/OBJ/FBX), an original drawing, a reference board or an existing master.
@@ -10,31 +27,21 @@ Store source hash, author/permission, license, link, any AI/model-use restrictio
 
 A photo has no reliable hidden-face geometry. Offer **reference-guided 2D painting** or **photo → approximate 3D mesh → manual shape/UV cleanup**; visually show uncertainty and require human review for hero props and characters.
 
-## Canonical flow
+## Canonical flow — local authoring
 
-\`\`\`text
-Reference(s) + provenance / license approval
-             |
-      Segment / clean / crop
-             |
-  Editable 2D master or modeled/rigged 3D master
-             |
-  Deterministic isometric camera + light + scale + orientation
-             |
-  Render raw frames / material ID / optional occlusion shadows
-             |
-  Silhouette cleanup + downsample + palette quantization + dithering policy
-             |
-  Pivot normalization + consistent per-action frame bounding boxes
-             |
-  Contact sheet + turntable + diff preview + human approval
-             |
-  Atlas PNG/WebP + versioned JSON manifests + QA report
-             |
-  Asset Studio viewport -> static Portfolio Runtime
-\`\`\`
+```mermaid
+flowchart LR
+REF["Source + provenance"] --> RIGHTS{"Rights approved?"}
+    RIGHTS -->|no| STOP["Hold"]
+    RIGHTS -->|yes| CLEAN["Clean / segment"]
+    CLEAN --> MASTER["Editable master"]
+    MASTER --> RENDER["Render + pixelize"]
+    RENDER --> VALIDATE{"Visual + schema QA"}
+    VALIDATE -->|revise| MASTER
+    VALIDATE -->|pass| EXPORT["Pack + export"]
+```
 
-Segmentation candidates must be compared to simple manual masking. Model reconstruction is optional, not an invisible required cloud API. Heavy AI inference / Blender are local; visitor's site is **purely static**.
+**Quality gate:** never discard visual information or silently change anchors, colors, timings or licensing status. Compare before/after and require approval for irreversible transformations. The output is a static atlas/manifest pair, not a running cloud service.
 
 ## Output by kind
 
