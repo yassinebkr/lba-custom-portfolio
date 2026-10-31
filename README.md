@@ -10,7 +10,7 @@ This repository has **two separate tracks**. The **new Project Atlas** is an ori
 
 | Document | What you'll find |
 | --- | --- |
-| **[Architecture with 5 rendered diagrams](docs/ARCHITECTURE_TARGET.md)** | System context, modules, logical asset/scene model, asset production and GitHub Pages delivery |
+| **[Technical architecture](docs/ARCHITECTURE_TARGET.md)** | System context, modules, logical asset/scene model, asset production and GitHub Pages delivery |
 | [Creative Asset Studio UX](docs/STUDIO_UX_SPEC.md) | Modern GUI layout and visual editing workflows; readable data visualization rules |
 | [Photo / 3D → sprite and scene pipeline](docs/ASSET_PIPELINE.md) | Character, furniture, prop, scene and animation routes; candidate tools and QA |
 | [Milestones J0–J8](docs/MILESTONES.md) | Dependencies, acceptance gates, status, tests and commit log |
@@ -18,7 +18,7 @@ This repository has **two separate tracks**. The **new Project Atlas** is an ori
 | [J1 playable prototype](apps/portfolio/README.md) | Local instructions and current limitations |
 | [Legacy LBA asset workflow](docs/WORKFLOW_ASSETS.md) | Historical HQR modding, not a public release pipeline |
 
-GitHub renders the Mermaid diagrams **inside each Markdown document**. Concept diagrams and schema examples describe a **target** until implemented and tested.
+The architecture describes the target system. Implementation status and verification evidence are tracked separately in the milestone ledger.
 
 ## Run the original J1 prototype
 
