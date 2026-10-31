@@ -46,20 +46,20 @@ REF["Source + provenance"] --> RIGHTS{"Rights approved?"}
 ## Output by kind
 
 - **Character:** 4 or 8 orientations with a fixed named convention; idle/talk/walk/interact states; consistent ground pivot and frame duration. Rig source preserved, editable, with root-motion policy recorded.
-- **Furniture and props:** one or more allowed rotations; separate visual sprite, ground footprint/collider, shadow, depth pivot, possible variants \`off/on/open/closed\`; optional animation.
+- **Furniture and props:** one or more allowed rotations; separate visual sprite, ground footprint/collider, shadow, depth pivot, possible variants `off/on/open/closed`; optional animation.
 - **Structure and rooms:** tile or mesh-derived floors, walls and static decoration; independent furniture/interactables/actors; explicit depth masks, navigation and trigger rectangles. The preview must render real per-asset layers, **not a single flattened concept image masquerading as an editable room**.
 - **Interactions:** stable event/action IDs, trigger condition, timeline/state transition, frame timing, optional audio, fallback for reduced motion and pointer/keyboard.
 - **All:** display size in pixels and world-grid units, separate draw pivot and collision area, source license/provenance, transparent margin diagnostics, missing direction/frame detection.
 
 ## Scene assembly & lesson from legacy
 
-The historical \`render-scene.js\` / \`inject-scene-image.js\` inverse-map paintings onto shared bricks and use mode-pick across repeated instances. This loses unique per-cell detail; it is a useful technique, **not the data model of the new scene editor**. New scenes store per-instance placements and independent asset references (no 256-layout cap). An optional scene concept image guides composition, but independent furniture, actors and animations remain editable.
+The historical `render-scene.js` / `inject-scene-image.js` inverse-map paintings onto shared bricks and use mode-pick across repeated instances. This loses unique per-cell detail; it is a useful technique, **not the data model of the new scene editor**. New scenes store per-instance placements and independent asset references (no 256-layout cap). An optional scene concept image guides composition, but independent furniture, actors and animations remain editable.
 
 Target six narrative roles: main showroom/hub, personal intro, electronics lab, workshop, maker space, and research/AI space. Names, layouts and characters must be original rather than copying the LBA locations.
 
 ## Example manifest contract (provisional; type-check at J3)
 
-\`\`\`json
+```json
 {
   "schemaVersion": 1,
   "id": "electronics.camera-bench",
@@ -90,7 +90,7 @@ Target six narrative roles: main showroom/hub, personal intro, electronics lab, 
   },
   "tags": ["workbench", "interactive", "electronics"]
 }
-\`\`\`
+```
 
 This is a **design sample**, not a validated implementation. A scene manifest additionally references object IDs/instance coordinates, collision polygons, layer ordering, camera and trigger-to-action links. Prefer JSON Schema with runtime validation and TS types derived from the same definition; validate cross-asset references, not only syntax. Do not invent unexplained 'ISO depth' fields and assume renderers interpret them the same way.
 

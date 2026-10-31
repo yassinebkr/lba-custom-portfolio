@@ -15,32 +15,32 @@ This folder contains a **working deterministic local preparation tool** and a **
 
 Install the only image-processing dependency:
 
-\`\`\`bash
+```bash
 python3 -m pip install Pillow
 python3 pipeline/asset_factory.py \
   --input input/original-camera.png \
   --out output/sprites --id camera-rig --kind prop \
   --creator "project-owner" --size 64x64 --colors 64
-\`\`\`
+```
 
-Optional solid backdrop removal: \`--background '#ffffff' --tolerance 10\`. This is simple background-key removal, **not semantic segmentation**. It requires a clean contrast background and should be visually checked.
+Optional solid backdrop removal: `--background '#ffffff' --tolerance 10`. This is simple background-key removal, **not semantic segmentation**. It requires a clean contrast background and should be visually checked.
 
 To render real 3D angles, export an original GLB model then run:
 
-\`\`\`bash
+```bash
 blender -b --python pipeline/blender/render_iso.py -- \
   --input models/original-asset.glb --output output/views --size 256
-\`\`\`
+```
 
-Pack those independently rendered views using \`--input output/views/ne.png output/views/nw.png output/views/sw.png output/views/se.png --method blender-3d\`. They remain separate ordered frames; the exporter does **not** yet store a typed direction→frame map and so J4 remains open.
+Pack those independently rendered views using `--input output/views/ne.png output/views/nw.png output/views/sw.png output/views/se.png --method blender-3d`. They remain separate ordered frames; the exporter does **not** yet store a typed direction→frame map and so J4 remains open.
 
-For public use the generated manifest defaults to \`reviewStatus=pending\` and \`allowedForPublicBuild=false\`. \`--approve\` is an explicit opt-in **after** verifying original/licensed content and visual quality. The manifest contains hash, pivot, frame dimensions and loop timing.
+For public use the generated manifest defaults to `reviewStatus=pending` and `allowedForPublicBuild=false`. `--approve` is an explicit opt-in **after** verifying original/licensed content and visual quality. The manifest contains hash, pivot, frame dimensions and loop timing.
 
 ## Test
 
-\`\`\`bash
+```bash
 python3 -m unittest discover -s pipeline/tests -v
-\`\`\`
+```
 
 The test sources are procedurally generated in memory. No original LBA image is used.
 

@@ -38,7 +38,7 @@ Each arrow represents a working action to demonstrate at J2; the diagrams must e
 
 1. **Scene authoring:** choose/create a room → choose an asset from the library → place and align with grid guides → inspect pivot/layer/collision → test trigger → preview in game → save/export.
 2. **Photo or model import:** drop reference → identify rights/source → choose character/furniture/prop → inspect silhouette / directions → edit master → select pixel/palette profile → compare before/after → approve export.
-3. **Animation:** pick an asset and state (\`idle\`, \`walk\`, \`talk\`, \`interact\`, \`open\`, \`active\`) → edit timeline → preview in all directions → validate pivots, frame durations and collision → save.
+3. **Animation:** pick an asset and state (`idle`, `walk`, `talk`, `interact`, `open`, `active`) → edit timeline → preview in all directions → validate pivots, frame durations and collision → save.
 4. **Library management:** find by visual thumbnail, scene, type, license, status and tags → compare variants → inspect dependencies → replace safely.
 5. **Portfolio QA:** switch scene in preview → simulate interaction → verify project content and click targets → run local validation → publish only after rights checks.
 
@@ -89,4 +89,4 @@ Visual hierarchy: readable contrast, clear heading levels, legible labels, consi
 
 ## Reusing the existing metadata-ui
 
-Retain \`metadata-ui/src/AssetUploader.jsx\` as a functional reference for comparison and \`metadata-ui/vite.config.js\` as an example of a **local-only** write API. Audit its assumptions about proprietary palettes and hardcoded scene IDs before reuse. Extract reusable view logic into small typed components; do not migrate the 37 KB+ monolithic App JSX verbatim.
+Retain `metadata-ui/src/AssetUploader.jsx` as a functional reference for comparison and `metadata-ui/vite.config.js` as an example of a **local-only** write API. Audit its assumptions about proprietary palettes and hardcoded scene IDs before reuse. Extract reusable view logic into small typed components; do not migrate the 37 KB+ monolithic App JSX verbatim.

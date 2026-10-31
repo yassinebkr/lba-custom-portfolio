@@ -52,10 +52,10 @@ J0["J0: architecture and audit"] --> J1["J1: static playable proof"]
 
 ## Audit findings from main (initial)
 
-1. Existing React \`metadata-ui\` depends on Vite middleware (\`/api/save-asset/\`, \`/api/save-scene/\`), a local Node process, and LBA palette/metadata; not directly publishable as a GitHub Pages editor.
-2. \`web_deploy\` creates a js-dos archive from original \`.HQR\`, \`.EXE\` and an ISO; copying it to the public site would redistribute protected game files.
+1. Existing React `metadata-ui` depends on Vite middleware (`/api/save-asset/`, `/api/save-scene/`), a local Node process, and LBA palette/metadata; not directly publishable as a GitHub Pages editor.
+2. `web_deploy` creates a js-dos archive from original `.HQR`, `.EXE` and an ISO; copying it to the public site would redistribute protected game files.
 3. Existing scripts include per-scene render/inverse mapping and palette/codec logic. Reuse algorithms only after reviewing license/original-data coupling; new portfolio scene objects need per-instance placement.
-4. Existing README and \`docs/PORTFOLIO_MOD_PLAN.md\` describe the original mod workflow and may contain historical/obsolete location details; treat them as archival, not authority for the new game.
+4. Existing README and `docs/PORTFOLIO_MOD_PLAN.md` describe the original mod workflow and may contain historical/obsolete location details; treat them as archival, not authority for the new game.
 5. No public standalone portfolio runtime, UI test suite, project-root monorepo scripts, asset rights ledger or Pages workflow exists on the audited main tree.
 6. Visual and accessibility verification requires real screenshots and browser interaction; no claim of tested UX until the test has actually run.
 
@@ -72,7 +72,7 @@ The [architecture page](ARCHITECTURE_TARGET.md) must include rendered system, mo
 
 ## Docs map
 
-- \`docs/ARCHITECTURE_TARGET.md\`: target topology, contracts and public deployment restrictions.
-- \`docs/STUDIO_UX_SPEC.md\`: layout, ergonomics, visualization and data presentation requirements (planned J2).
-- \`docs/ASSET_PIPELINE.md\`: source photo/3D to scenes, characters, props and animations; repo reuse candidates (planned J3–J6).
+- `docs/ARCHITECTURE_TARGET.md`: target topology, contracts and public deployment restrictions.
+- `docs/STUDIO_UX_SPEC.md`: layout, ergonomics, visualization and data presentation requirements (planned J2).
+- `docs/ASSET_PIPELINE.md`: source photo/3D to scenes, characters, props and animations; repo reuse candidates (planned J3–J6).
 - This file: gates and evidence requirements.

@@ -4,7 +4,7 @@ Status: **J8 hardening in progress; not deployed or production-accepted**.
 
 ## Build and delivery contract
 
-\`\`\`mermaid
+```mermaid
 flowchart LR
     SOURCE["Approved original app sources"] --> BUILDER["scripts/build-portfolio.mjs"]
     BUILDER --> CHECKS{"Unit / browser / security / rights"}
@@ -12,7 +12,7 @@ flowchart LR
     ZIP --> MANUAL["Manual workflow dispatch"]
     MANUAL --> PAGES["GitHub Pages"]
     PAGES --> LIVE["Verify live /lba-custom-portfolio/"]
-\`\`\`
+```
 
 Only the original public runtime files enter the artifact. The Studio, Blender pipeline, docs, js-dos bundle and HQR assets are **not** deployed.
 
@@ -42,14 +42,14 @@ A passing CI pipeline is not a substitute for manual rights review, visual inspe
 
 ## Permissions and branch policy
 
-**Feature branch:** \`feature/portfolio-studio-j1-j8\`. Do not merge to \`main\`. Only commit + push incremental work on this branch. The Pages job is intentionally manual (\`workflow_dispatch\`) until public readiness is accepted. GitHub Pages must be configured for GitHub Actions in repository settings. This process cannot infer or guarantee repository Pages settings from a passing unit test.
+**Feature branch:** `feature/portfolio-studio-j1-j8`. Do not merge to `main`. Only commit + push incremental work on this branch. The Pages job is intentionally manual (`workflow_dispatch`) until public readiness is accepted. GitHub Pages must be configured for GitHub Actions in repository settings. This process cannot infer or guarantee repository Pages settings from a passing unit test.
 
 ## Local commands
 
-\`\`\`bash
+```bash
 node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
 node scripts/build-portfolio.mjs
 node --test tests/public-build.test.mjs
 cd apps/studio && npm install && npm run build
 python3 -m unittest discover -s pipeline/tests -v
-\`\`\`
+```

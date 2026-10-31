@@ -4,12 +4,12 @@ An original, local-first React/TypeScript/Vite creative editor. The current func
 
 Run locally:
 
-\`\`\`bash
+```bash
 cd apps/studio
 npm install
 npm run build
 npm run dev
-\`\`\`
+```
 
 Open http://127.0.0.1:5174/ . **The Studio is not part of the public Pages deployment.**
 
