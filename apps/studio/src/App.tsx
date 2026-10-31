@@ -3,6 +3,7 @@ import {PanelsTopLeft,Boxes,Layers3,Clapperboard,Search,Save,Play,Pause,Undo2,Re
   MousePointer2,Grid2X2,Eye,ChevronDown,ChevronRight,Check,AlertTriangle,Maximize,RotateCw,Move,Copy,Info,
   Camera,Armchair,Monitor,Leaf,DoorOpen,UserRound,RadioTower,SlidersHorizontal} from 'lucide-react';
 import {ASSETS,INITIAL,findAsset,type SceneData,type Instance,type AssetKind} from './model';
+import {ORIGINAL_SCENES,findScene} from './scenes';
 import {validateSceneDocument,validateAssetCatalog} from '../../../packages/asset-schema/index.mjs';
 import './styles.css';
 
@@ -33,18 +34,20 @@ function Shape({assetId,active,frame=0}:{assetId:string;active?:boolean;frame?:n
   {active&&<><path d="M-28 20H28M-28 -19V20M28 -19V20" stroke="#8af0db" strokeWidth="1.4" strokeDasharray="4 3" fill="none"/><circle cx="0" cy="17" r="3" fill="#8af0db"/></>}
  </g>;
 }
-function safeLoad():SceneData{
- try{const raw=localStorage.getItem('atlas.studio.scene.v1');if(!raw)return structuredClone(INITIAL);
- const val:unknown=JSON.parse(raw);
- if(!val||typeof val!=='object')return structuredClone(INITIAL);
- const v=val as Partial<SceneData>;
- if(v.id!==INITIAL.id||!Array.isArray(v.instances)||v.instances.length>500)return structuredClone(INITIAL);
- const errors=validateSceneDocument(v,new Set(ASSETS.map(asset=>asset.id)));
- return errors.length===0?v as SceneData:structuredClone(INITIAL);
- }catch{return structuredClone(INITIAL);}
+function safeLoad(sceneId:string):SceneData{
+ const baseline=findScene(sceneId);
+ try{
+   const raw=localStorage.getItem('atlas.studio.scene.'+sceneId);
+   if(!raw)return structuredClone(baseline);
+   const parsed:unknown=JSON.parse(raw);
+   const issues=validateSceneDocument(parsed,new Set(ASSETS.map(a=>a.id)));
+   if(issues.length||!parsed||typeof parsed!=='object'||(parsed as SceneData).id!==sceneId)
+     return structuredClone(baseline);
+   return parsed as SceneData;
+ }catch{return structuredClone(baseline);}
 }
 export default function App(){
- const[scene,setScene]=useState<SceneData>(safeLoad);
+ const[scene,setScene]=useState<SceneData>(()=>safeLoad(INITIAL.id));
  const[history,setHistory]=useState<SceneData[]>([]),[future,setFuture]=useState<SceneData[]>([]);
  const[selection,setSelection]=useState<string|null>('obj-2');
  const[tool,setTool]=useState<Tool>('select');
@@ -73,6 +76,13 @@ export default function App(){
    setHistory(h=>[...h.slice(-40),structuredClone(scene)]);
    setFuture([]);setScene(next);setNotice('Unsaved changes');
  };
+ const switchScene=(nextId:string)=>{
+   if(nextId===scene.id)return;
+   if(dirty&&!window.confirm('Unsaved changes in this scene will be discarded. Continue?'))return;
+   const next=safeLoad(nextId);
+   setScene(next);setHistory([]);setFuture([]);setSelection(next.instances[0]?.id||null);
+   setFrame(0);setPlaying(false);setNotice('Scene opened: '+next.name);
+ };
  const update=(patch:Partial<Instance>)=>{
    if(!selected)return;
    mutate({...scene,instances:scene.instances.map(i=>i.id===selected.id?{...i,...patch}:i)});
@@ -89,7 +99,7 @@ export default function App(){
  const save=()=>{
    const errors=validateAssetCatalog(ASSETS).concat(validateSceneDocument(scene,new Set(ASSETS.map(asset=>asset.id))));
    if(errors.length){setNotice('Save blocked: '+errors[0].message);return;}
-   localStorage.setItem('atlas.studio.scene.v1',JSON.stringify(scene));setHistory([]);setFuture([]);setNotice('Saved locally');};
+   localStorage.setItem('atlas.studio.scene.'+scene.id,JSON.stringify(scene));setHistory([]);setFuture([]);setNotice('Saved locally: '+scene.name);};
  const exportJson=()=>{
    const errors=validateAssetCatalog(ASSETS).concat(validateSceneDocument(scene,new Set(ASSETS.map(asset=>asset.id))));
    if(errors.length){setNotice('Export blocked: '+errors[0].message);return;}
@@ -124,7 +134,7 @@ export default function App(){
  return <div className="studio">
   <header className="topbar">
    <div className="brand"><span className="brand-mark">◈</span><span>ATLAS <strong>STUDIO</strong></span><span className="beta">PREVIEW</span></div>
-   <div className="project-name"><PanelsTopLeft size={15}/><span>{scene.name}</span><ChevronDown size={14}/></div>
+   <label className="project-name"><PanelsTopLeft size={15}/><select aria-label="Open scene" value={scene.id} onChange={e=>switchScene(e.target.value)}>{ORIGINAL_SCENES.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select><ChevronDown size={14}/></label>
    <div className="top-actions">
     <span className="dirty-state">{dirty?<span className="dirty-mark">●</span>:'✓'} {dirty?'Modified':'Saved'}</span>
     <button className="icon-button" title="Undo" aria-label="Undo" onClick={undo} disabled={!history.length}><Undo2 size={17}/></button>
