@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {ROOMS,roomById} from './rooms.mjs';import {validateScene,newGame,nearest} from './rules.mjs';
+import {ROOMS,roomById} from './rooms.mjs';import {validate as validateScene,newGame,nearest} from './rules.mjs';
 test('six original linked rooms are individually playable',()=>{
  assert.equal(ROOMS.length,6);
  assert.equal(new Set(ROOMS.map(r=>r.id)).size,6);
