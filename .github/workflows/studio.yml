@@ -1,0 +1,36 @@
+name: Asset Studio build checks
+
+on:
+  push:
+    branches:
+      - feature/portfolio-studio-j1-j8
+    paths:
+      - 'apps/studio/**'
+      - '.github/workflows/studio.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/studio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/studio/package-lock.json
+      - name: Install Studio dependencies
+        run: npm install --no-audit --no-fund
+      - name: Type check and production build
+        run: npm run build
+      - name: Upload static Studio bundle (for inspection only)
+        uses: actions/upload-artifact@v4
+        with:
+          name: asset-studio-build
+          path: apps/studio/dist
