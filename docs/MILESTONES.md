@@ -16,7 +16,7 @@ Status: J0 documented only. Follow exact branch **feature/portfolio-studio-j1-j8
 | Gate | Goal | Acceptance proof | State |
 | --- | --- | --- | --- |
 | J0 | Audit and agree architecture, UX, asset pipeline, legal/deploy boundaries | Files documented; existing paths audited; branch created | Documentation complete; no implementation |
-| J1 | Static playable isometric original prototype | Real Pages-compatible build at repo subpath, movement, collision, interaction, accessible project fallback, no LBA binary, automated tests | **In progress: prototype committed; public Pages/browser acceptance not yet verified** |
+| J1 | Static playable isometric original prototype | Real Pages-compatible build at repo subpath, movement, collision, interaction, accessible project fallback, no LBA binary, automated tests | **In progress: CI passed; public Pages/browser acceptance not yet verified** |
 | J2 | Modern creative UI | Actual desktop/narrow interface, real library/viewport/inspector/timeline, usable edit/preview flow, a11y states | Pending |
 | J3 | Unified asset contract and manager | Runtime schema + valid manifest, tests against malformed inputs, source provenance, import/edit/export round trip | Pending |
 | J4 | Photo/model to sprites/props | Test fixtures: one character + three different furniture/props, reproducible pipeline, multi-view validation and visual review | Pending |
@@ -48,7 +48,7 @@ Status: J0 documented only. Follow exact branch **feature/portfolio-studio-j1-j8
 | Date | Gate | Commit(s) | Verification | Notes |
 | --- | --- | --- | --- | --- |
 | 2026-11-01 | J0 | 7e9bb42 | Repository audit + four checked-in specs | Completed documentation baseline |
-| 2026-11-01 | J1 (WIP) | 114e37a, cb2cb06 | Browser-static game source, original procedural scene, Node test suite, optional Pages workflow; V8 smoke of seven pure rule checks PASS; file syntax PASS | No confirmed GitHub Actions run or live Pages deployment. Do not mark accepted. |
+| 2026-11-01 | J1 (WIP) | 114e37a, cb2cb06 | Browser-static game source, original procedural scene, Node test suite, optional Pages workflow; V8 smoke of seven pure rule checks PASS; file syntax PASS | CI run 41253304495 passed (commit cb2cb06); no verified live Pages deployment or browser E2E. Do not mark accepted. |
 
 ## Docs map
 
