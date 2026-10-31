@@ -36,8 +36,8 @@ try{
  mobile.setDefaultTimeout(9000);
  await mobile.goto(url,{waitUntil:'domcontentloaded',timeout:15000});
  await mobile.locator('.asset-grid .asset-card').first().waitFor();
- const overflow=await mobile.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:window.innerWidth}));
- assert.ok(overflow.width<=overflow.viewport+3,'no mobile page-wide overflow');
+ const overflow=await mobile.evaluate(()=>({width:document.documentElement.scrollWidth,client:document.documentElement.clientWidth,viewport:window.innerWidth}));
+ assert.ok(overflow.width<=overflow.client+3,'no mobile page-wide overflow: '+JSON.stringify(overflow));
  await mobile.screenshot({path:'studio-mobile.png',fullPage:true});
  assert.deepEqual(errors,[]);
  console.log('Studio browser E2E passed (desktop, mobile, editor, export/import)');

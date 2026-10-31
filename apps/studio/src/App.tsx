@@ -132,7 +132,7 @@ export default function App(){
      const doc=parsed as SceneData;
      const issues=validateSceneDocument(doc,new Set(ASSETS.map(asset=>asset.id)));
      if(issues.length||doc.id!==scene.id)throw Error('Invalid scene document');
-     mutate({...scene,instances:doc.instances});setSelection(null);setNotice('Scene imported');
+     mutate({...scene,instances:doc.instances});setSelection(doc.instances[0]?.id||null);setNotice('Scene imported');
    }catch{setNotice('Import rejected: invalid scene JSON');}
  };
  const deleteSelection=()=>{if(!selected)return;mutate({...scene,instances:scene.instances.filter(i=>i.id!==selected.id)});setSelection(null);setNotice('Asset removed');};

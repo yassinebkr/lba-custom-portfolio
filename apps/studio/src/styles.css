@@ -36,3 +36,36 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
 
 .animation-actions{display:flex;gap:6px;margin:12px 0}.animation-actions button,.animation-save{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:#253f42;border:1px solid #456a68;color:#c8f1e7;border-radius:6px;padding:9px 8px;font-size:11px}.animation-save{width:100%;background:#286b5c;color:#f1fff8}.animation-actions button:disabled{opacity:.35}.inspector-group input[type=range]{width:100%;margin-top:12px;accent-color:#8de4d8}
+
+/* Mobile creator workspace: prevent clipped controls and wide offscreen canvas. */
+@media(max-width:670px){
+ body,.studio,.workspace,.editor-area,.viewport-container{max-width:100%;min-width:0}
+ .studio{overflow-x:clip}
+ .topbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:12px 14px}
+ .brand{font-size:13px}
+ .project-name{order:0;width:100%;min-width:0;flex-basis:auto}
+ .project-name select{width:100%;min-width:0}
+ .top-actions{justify-content:space-between;flex-wrap:nowrap;gap:4px;min-width:0}
+ .top-actions .action{font-size:11px;padding:8px 9px}
+ .top-actions .icon-button{flex-shrink:0}
+ .asset-panel{max-height:300px}
+ .asset-grid{max-width:100%;overflow-x:auto}
+ .asset-card{min-width:120px}
+ .editor-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:start;height:auto;min-height:94px;gap:3px;padding:7px 10px}
+ .toolbar-left,.toolbar-right{width:100%;max-width:100%;min-width:0}
+ .location-label{min-width:0;font-size:10px}
+ .location-label strong{display:inline-block;max-width:175px;min-width:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+ .toolbar-right{justify-content:space-between;gap:2px;overflow-x:auto;scrollbar-width:thin}
+ .toolbar-right .tool{flex-shrink:0}
+ .toolbar-right select{max-width:74px;padding:7px 3px;flex-shrink:0}
+ .viewport-container{flex:none;min-height:0;height:360px}
+ .canvas-holder{min-height:0}
+ .iso-canvas{width:100%;max-height:100%;height:auto}
+ .viewer-status{padding:0 9px;font-size:9px}
+ .viewer-status>div:last-child{display:none}
+ .status-label{max-width:230px}
+ .bottom-panel{height:125px;min-height:125px}
+ .timeline-body{padding:10px;gap:7px}
+ .frame{min-width:38px}
+ .inspector{max-height:none;overflow:visible}
+}
