@@ -96,3 +96,10 @@ The separate [V6 Visual Quality Lab](https://yassinebkr.github.io/lba-custom-por
 Source content is pinned to the green [V5 Blender Action run 41267195377](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377) and all 24 PNG hashes are checked before entering dist. The four original 768px PNGs are published **only for this explicit comparison demo**; Blender/GLB, internal conversion scripts, legacy HQR files and any non-reviewed gameplay art are excluded. The V6 page is **not** an approval of its art, a production scene, or an implementation of V7/V8.
 
 Source code: [V6 comparator](apps/portfolio/sprite-demo/compare.mjs). Visual and release policies: [Visual QA](docs/VISUAL_QA.md).
+
+
+## V7 — Original workshop, actual sprite at game scale
+
+[Open the original V7 workshop QA scene](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html). The receiver uses the same V5 256px RGBA sprite atlas in a wholly new 3D Blender room. Change the four directions, 160-color/truecolor, scale, table-lip foreground pass and contact-shadow preview; drag the instrument on the tabletop. The page uses two 960×640 original Blender PNG renders plus an approved-for-review-only layout, never a builder or original LBA game files.
+
+The [V7 technical architecture, verification and limitations](docs/IN_SCENE_QA.md) describe the world-space anchor, actual depth passes, remaining shadow/artistic issues, and explicit V8 boundary. The maintainer accepted V6; the small perceived proportion difference between the V6 views remains deferred.

@@ -74,3 +74,7 @@ The first interactive review used actual captures and confirms that the source a
 ## V6 product acceptance and deferred follow-up
 
 On 2026-11-01, the maintainer **accepted V6 as functionally sufficient** and authorized V7. A small perceived difference between views/stages 2 and 3, particularly in proportions, is expressly **deferred for investigation after V7**. Do not claim it is solved or silently adjust sprite geometry, scene pivots or the V5 atlas. Preserve the V6 comparison and its original evidence unchanged.
+
+## V7 original workshop placement review
+
+[Original room compositing and live screenshot acceptance](IN_SCENE_QA.md) documents the reference workbench, physically rendered desk-front occluder, projected world anchor and engineering QA. V6 is accepted for progression, but its observed proportion difference between stages 2 and 3 remains open. **Do not assert that the V7 scene solves this V6 question.** V8 remains unstarted.

@@ -134,6 +134,7 @@ try{
   await mobile.locator('#palette').selectOption('256');
   await mobile.waitForFunction(()=>document.body.dataset.rendered==='256px-lanczos-256.png');
   assert.equal(await mobile.locator('#alpha-levels').textContent(),'256');
+  await mobile.screenshot({path:'sprite-compare-mobile.png',fullPage:true});
   const v7mobile=await mobile.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/scene-lab.html');
   assert.equal(v7mobile.status(),200);
   await mobile.waitForFunction(()=>document.getElementById('scene').dataset.rendered==='ne-160');
@@ -144,8 +145,7 @@ try{
   await mobile.screenshot({path:'sprite-scene-v7-mobile.png',fullPage:true});
 
   const mobileOverflow=await mobile.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
-  assert.ok(mobileOverflow.scroll<=mobileOverflow.viewport+1,'V6 mobile must not overflow document');
-  await mobile.screenshot({path:'sprite-compare-mobile.png',fullPage:true});
+  assert.ok(mobileOverflow.scroll<=mobileOverflow.viewport+1,'V7 mobile must not overflow document');
 
 
   // M5: test a rights-approved original sprite via intercepted fixtures.
