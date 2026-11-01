@@ -1,4 +1,4 @@
-name: Original asset pipeline checks
+name: Asset pipeline batch and visual QA
 
 on:
   push:
@@ -22,5 +22,14 @@ jobs:
           python-version: '3.12'
       - name: Install Pillow
         run: python -m pip install Pillow==11.3.0
-      - name: Run deterministic image handling tests
+      - name: Test the legacy single-asset and new batch pipelines
         run: python -m unittest discover -s pipeline/tests -v
+      - name: Generate original QA fixtures and atlases
+        run: |
+          python pipeline/fixtures/generate_samples.py --out /tmp/atlas-fixtures
+          python pipeline/asset_batch.py /tmp/atlas-fixtures/recipe.json --out /tmp/atlas-previews
+      - name: Publish actual generated contact sheets (NOT final artwork)
+        uses: actions/upload-artifact@v4
+        with:
+          name: j3-asset-qa-contact-sheets
+          path: /tmp/atlas-previews/
