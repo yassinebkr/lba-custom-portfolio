@@ -1,0 +1,23 @@
+name: M3 Original Blender export-plan checks
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'pipeline/blender/**'
+      - '.github/workflows/blender-export.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test original rig directional export specification
+        run: python -m unittest discover -s pipeline/blender/tests -v
