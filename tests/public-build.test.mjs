@@ -31,6 +31,8 @@ test('standalone sprite demo publishes actual generated PNG and no builder',asyn
  assert.match(html,/id="dir-sw"/);
  assert.equal(atlas.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
  assert.ok(atlas.length>1000 && atlas.length<250000);
+ assert.equal(atlas.readUInt32BE(16),1024,'actual generated atlas width must be 4 × 256px');
+ assert.equal(atlas.readUInt32BE(20),256,'actual generated sprite should be 256px tall');
  const source=await readFile(join(root,'apps/portfolio/sprite-demo/telemetry-receiver.png'));
  assert.deepEqual(atlas,source,'published sprite must be byte-identical to committed pipeline atlas');
  assert.equal((await readdir(join(root,'dist/sprite-demo'))).length,2);

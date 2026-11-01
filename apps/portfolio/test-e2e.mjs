@@ -52,11 +52,14 @@ try{
   const actualSprite=await page.locator('.sheet img').evaluate(img=>({
    loaded:img.complete,width:img.naturalWidth,height:img.naturalHeight
   }));
-  assert.deepEqual(actualSprite,{loaded:true,width:384,height:112},'real generated atlas reaches browser');
+  assert.deepEqual(actualSprite,{loaded:true,width:1024,height:256},'real generated atlas reaches browser');
   const firstPosition=await page.locator('.sprite').evaluate(x=>getComputedStyle(x).backgroundPositionX);
   await page.locator('label[for="dir-sw"]').click();
   const secondPosition=await page.locator('.sprite').evaluate(x=>getComputedStyle(x).backgroundPositionX);
   assert.notEqual(firstPosition,secondPosition,'direction selection must change the rendered sprite');
+  await page.locator('label[for="crisp"]').click();
+  assert.equal(await page.locator('.sprite').evaluate(x=>getComputedStyle(x).imageRendering),'pixelated',
+    'crisp pixels should be opt-in rather than forcing enlarged 96px artifacts');
   await page.screenshot({path:'sprite-demo-desktop.png',fullPage:true});
 
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
@@ -69,7 +72,7 @@ try{
   const spriteMobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/');
   assert.equal(spriteMobileResponse.status(),200);
   await mobile.locator('label[for="dir-nw"]').click();
-  assert.equal(await mobile.locator('.sheet img').evaluate(el=>el.naturalWidth),384);
+  assert.equal(await mobile.locator('.sheet img').evaluate(el=>el.naturalWidth),1024);
   await mobile.screenshot({path:'sprite-demo-mobile.png',fullPage:true});
 
   // M5: test a rights-approved original sprite via intercepted fixtures.

@@ -29,11 +29,15 @@ input[type=radio]{position:absolute;width:1px;height:1px;opacity:0}
 #dir-sw:checked~.controls label[for=dir-sw],
 #dir-se:checked~.controls label[for=dir-se]{background:#214b4a;color:#adffec;border-color:#78dece}
 input:focus-visible~.controls{outline:2px solid #91eedc;outline-offset:4px;border-radius:5px}
-.sprite-stage{width:384px;height:448px;max-width:100%;margin:10px auto 0;overflow:hidden;position:relative;border:1px solid #536b70;border-radius:12px;background-color:#24343e;background-image:linear-gradient(45deg,#2f414a 25%,transparent 25%),linear-gradient(-45deg,#2f414a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2f414a 75%),linear-gradient(-45deg,transparent 75%,#2f414a 75%);background-size:32px 32px;background-position:0 0,0 16px,16px -16px,-16px 0}
-.sprite{width:384px;height:448px;background-image:url('./telemetry-receiver.png');background-size:1536px 448px;background-repeat:no-repeat;image-rendering:pixelated;background-position:0 0}
-#dir-nw:checked~.sprite-stage .sprite{background-position:-384px 0}
-#dir-sw:checked~.sprite-stage .sprite{background-position:-768px 0}
-#dir-se:checked~.sprite-stage .sprite{background-position:-1152px 0}
+.sprite-stage{width:448px;height:448px;max-width:100%;margin:10px auto 0;overflow:hidden;position:relative;border:1px solid #536b70;border-radius:12px;background-color:#24343e;background-image:linear-gradient(45deg,#2f414a 25%,transparent 25%),linear-gradient(-45deg,#2f414a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2f414a 75%),linear-gradient(-45deg,transparent 75%,#2f414a 75%);background-size:32px 32px;background-position:0 0,0 16px,16px -16px,-16px 0}
+.sprite{width:448px;height:448px;background-image:url('./telemetry-receiver.png');background-size:1792px 448px;background-repeat:no-repeat;image-rendering:auto;background-position:0 0}
+#dir-nw:checked~.sprite-stage .sprite{background-position:-448px 0}
+#dir-sw:checked~.sprite-stage .sprite{background-position:-896px 0}
+#dir-se:checked~.sprite-stage .sprite{background-position:-1344px 0}
+#crisp:checked~.sprite-stage .sprite{image-rendering:pixelated}
+.crisp-option{display:flex;gap:9px;align-items:center;color:#c4d6d7;font-size:13px;margin:2px 0 14px}
+.crisp-option input{accent-color:#8fe5d7;position:static;width:17px;height:17px;opacity:1}
+.crisp-option label{cursor:pointer}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
 .stat{border:1px solid #3d5560;border-radius:9px;padding:12px}
 .stat strong{display:block;font-size:22px;font-variant-numeric:tabular-nums}
@@ -47,7 +51,7 @@ input:focus-visible~.controls{outline:2px solid #91eedc;outline-offset:4px;borde
 .sheet img{max-width:100%;height:auto;image-rendering:pixelated;background:#24343e;display:block;margin:14px 0}
 footer{font-size:12px;color:#91a8b0;border-top:1px solid #324850;padding:25px 0 40px}
 @media(max-width:860px){.layout{grid-template-columns:1fr}.card{padding:17px}}
-@media(max-width:520px){.wrap{width:min(100% - 24px,1080px)}.sprite-stage{width:288px;height:336px}.sprite{width:288px;height:336px;background-size:1152px 336px}#dir-nw:checked~.sprite-stage .sprite{background-position:-288px 0}#dir-sw:checked~.sprite-stage .sprite{background-position:-576px 0}#dir-se:checked~.sprite-stage .sprite{background-position:-864px 0}.hero{padding-top:27px}}
+@media(max-width:520px){.wrap{width:min(100% - 24px,1080px)}.sprite-stage{width:288px;height:288px}.sprite{width:288px;height:288px;background-size:1152px 288px}#dir-nw:checked~.sprite-stage .sprite{background-position:-288px 0}#dir-sw:checked~.sprite-stage .sprite{background-position:-576px 0}#dir-se:checked~.sprite-stage .sprite{background-position:-864px 0}.hero{padding-top:27px}}
 </style>
 </head>
 <body>
@@ -59,23 +63,25 @@ footer{font-size:12px;color:#91a8b0;border-top:1px solid #324850;padding:25px 0 
 <p>This image is the actual output of our Blender → directional renders → sprite recipe → indexed PNG atlas pipeline. No Little Big Adventure game data, sprites, or extracted palette.</p></section>
 <div class="layout">
 <section class="card viewer" aria-label="Interactive sprite direction preview">
-<h2>Sprite viewer</h2><p>Select an orientation. The atlas is drawn at 4× scale using nearest-neighbor pixels, without interpolation.</p>
+<h2>Sprite viewer</h2><p>Select an orientation. The atlas is rendered at 256 px per frame. Preview at 1.75× with smooth scaling, or choose crisp pixels to inspect the actual grid.</p>
 <input type="radio" id="dir-ne" name="direction" checked>
 <input type="radio" id="dir-nw" name="direction">
 <input type="radio" id="dir-sw" name="direction">
 <input type="radio" id="dir-se" name="direction">
+<input type="checkbox" id="crisp" aria-label="Show crisp pixel grid">
 <div class="controls" aria-label="Direction">
 <label for="dir-ne">NE</label><label for="dir-nw">NW</label><label for="dir-sw">SW</label><label for="dir-se">SE</label>
 </div>
+<div class="crisp-option"><label for="crisp">Crisp pixels (nearest-neighbor)</label></div>
 <div class="sprite-stage" role="img" aria-label="An original telemetry receiver sprite with an antenna, rendered isometrically with visible pixels on a transparency checkerboard">
 <div class="sprite"></div></div>
 </section>
 <aside class="card"><p class="eyebrow">Build provenance</p><h2>Original telemetry receiver</h2>
-<p>Generated specifically for this pipeline test from original procedural geometry. It demonstrates actual model rendering, four camera orientations, alpha transparency and color-indexed sprite packing.</p>
+<p>Generated specifically for this pipeline test from original procedural geometry. It demonstrates real Blender rendering at 512 px per view, downsampling to 256 px, four camera orientations, transparent backgrounds and 160-color indexed sprite packing.</p>
 <div class="stats">
 <div class="stat"><strong>4</strong><span>orientations</span></div>
-<div class="stat"><strong>96×112</strong><span>pixels / frame</span></div>
-<div class="stat"><strong>64</strong><span>palette colors requested</span></div>
+<div class="stat"><strong>256×256</strong><span>pixels / frame</span></div>
+<div class="stat"><strong>160</strong><span>palette colors requested</span></div>
 <div class="stat"><strong>PNG</strong><span>transparent atlas</span></div></div>
 <ol class="stages">
 <li>Original Blender geometry exported as GLB.</li>
@@ -87,8 +93,8 @@ footer{font-size:12px;color:#91a8b0;border-top:1px solid #324850;padding:25px 0 
 </aside>
 </div>
 <section class="sheet"><h2>Actual spritesheet — 1× resolution</h2>
-<p>One row of four 96×112 frames. This is the same PNG used by the viewer above, with no redrawing.</p>
-<img src="./telemetry-receiver.png" width="384" height="112" alt="Original telemetry receiver sprite atlas containing NE, NW, SW and SE views">
+<p>One row of four 256×256 frames. This is the exact output of our Blender-to-atlas pipeline.</p>
+<img src="./telemetry-receiver.png" width="1024" height="256" alt="Original telemetry receiver sprite atlas containing NE, NW, SW and SE views">
 </section>
 </main>
 <footer>Project Atlas original 3D-to-sprite pipeline demonstration. The full local builder and original models are not distributed in the GitHub Pages artifact.</footer>
