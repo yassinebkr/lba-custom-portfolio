@@ -20,8 +20,14 @@ flowchart LR
 
 ## Cleaner future release (requires a conscious settings change)
 
-Publishing a GitHub Actions artifact containing only `dist/` would reduce the exposed source surface and avoid branch-root workarounds, but this changes Pages Source settings and is **not being done silently**. The existing workflow publish job must also be updated to include `rooms.mjs` and any future sprite files before it is usable.
+Publishing a GitHub Actions artifact containing only `dist/` would reduce the exposed source surface and avoid branch-root workarounds, but this changes Pages Source settings and is **not being done silently**. The GitHub Actions publish job now runs `scripts/build-portfolio.mjs` and uploads exactly the same allowlisted `dist/` checked by CI. No manual hard-coded copying of a subset of runtime modules remains.
 
 ## Verification gate
 
 The last recorded `pages build and deployment` run was successful, but **a successful Pages build is not proof the user-facing URL loads**. Verify the root and nested URL in a real browser after this commit, including network requests, mobile controls and all six scenes. J1/J8 remain open until live verification evidence is recorded.
+
+## J1 artifact parity and switch-over
+
+The project-subpath browser test now reads from **the built `dist/` artifact**, rather than the source directory. Both verification and deployment invoke the same builder. The workflow currently deploys only via an explicit `workflow_dispatch` event; there is no implicit release from code pushes.
+
+When switching **Settings → Pages → Source → GitHub Actions**, manually run the workflow **Portfolio CI and optional Pages deployment** on the feature branch. The publishing job must pass before visiting the root URL. Never select a `/dist` folder in branch-source settings (GitHub Pages supports branch root or `/docs`, not arbitrary directories).

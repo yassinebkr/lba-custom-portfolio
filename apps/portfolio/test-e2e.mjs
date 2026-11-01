@@ -6,7 +6,7 @@ import {join, extname} from 'node:path';
 import assert from 'node:assert/strict';
 
 const PORT=18765;
-const ROOT=new URL('./',import.meta.url);
+const ROOT=new URL('../../dist/',import.meta.url);
 const base='/lba-custom-portfolio/';
 const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8'};
 const server=createServer(async(req,res)=>{

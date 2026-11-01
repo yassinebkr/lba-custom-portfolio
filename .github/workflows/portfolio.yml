@@ -8,6 +8,9 @@ on:
       - 'apps/portfolio/**'
       - 'scripts/build-portfolio.mjs'
       - 'tests/public-build.test.mjs'
+      - 'tests/pages-root.test.mjs'
+      - 'index.html'
+      - 'docs/PAGES_DEPLOYMENT.md'
       - '.github/workflows/portfolio.yml'
   workflow_dispatch:
 
@@ -38,7 +41,9 @@ jobs:
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Browser smoke at GitHub Pages project subpath
+      - name: Build the actual public artifact
+        run: node scripts/build-portfolio.mjs
+      - name: Browser smoke from the deployed artifact at the Pages subpath
         run: node apps/portfolio/test-e2e.mjs
       - name: Capture browser screenshots
         if: always()
@@ -49,10 +54,9 @@ jobs:
             portfolio-desktop.png
             portfolio-mobile.png
           if-no-files-found: ignore
-      - name: Audit public-only Pages artifact
+      - name: Audit public-only Pages artifact and root fallback
         run: |
-          node scripts/build-portfolio.mjs
-          node --test tests/public-build.test.mjs
+          node --test tests/public-build.test.mjs tests/pages-root.test.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: portfolio-public-static
@@ -71,10 +75,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - name: Stage only public files
-        run: |
-          mkdir -p dist
-          cp apps/portfolio/index.html apps/portfolio/game.mjs apps/portfolio/rules.mjs dist/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build publishable files from the same allowlist as CI
+        run: node scripts/build-portfolio.mjs
+      - name: Verify complete published artifact
+        run: node --test tests/public-build.test.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
