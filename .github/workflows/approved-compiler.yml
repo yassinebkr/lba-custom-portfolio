@@ -1,0 +1,25 @@
+name: M5 Approved original atlas compilation
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'pipeline/compile-approved*'
+      - 'packages/scene-core/**'
+      - 'packages/public-manifest/**'
+      - '.github/workflows/approved-compiler.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-checked-originals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify original sprites become published atlases only with explicit approval
+        run: node --test pipeline/compile-approved.test.mjs
