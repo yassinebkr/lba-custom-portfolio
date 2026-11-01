@@ -32,3 +32,20 @@ Visual reference intent: rich readable 1990s isometric pre-rendering; no game-de
 The matrix script independently retains 24 PNG candidates. The source geometry/lighting is held constant, so relative RMSE compares only palette conversion at matching resolution and downscaler. The truecolor zero-loss reference is not automatically a winner; detail readability, alpha halos, clipping and material differentiation must be checked by humans.
 
 The old asset_batch pipeline still has thresholded binary alpha. The new experimental visual_matrix pipeline corrects that and does **not** silently overwrite the production encoder. A final migration is a later approval decision. The new tests explicitly reject traversal, verify 24 candidates and require fractional alpha preservation.
+
+## Verified V5 result — 2026-11-01
+
+[Headless Blender + 24 real exports, CI successful](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377). The downloadable GitHub Actions artifact contains source PNGs, actual atlases, matrix.json, and the local HTML contact sheet. All art in this test derives from original Blender geometry and not LBA1 resources.
+
+One shared 768px source crop **[103, 35, 665, 597]** is applied to all four orientations. This increases the 256px NE object's visible width from **113px to 154px**, around 36%, while preserving common view scale and spatial relationships.
+
+| 256px Lanczos option | Bytes | RMSE dark/light vs truecolor | Alpha levels |
+| --- | ---: | ---: | ---: |
+| Truecolor | 137,088 | 0 / 0 | 256 |
+| 96 colors | 106,596 | 3.693 / 3.694 | 256 |
+| 160 colors | 117,976 | 2.823 / 2.824 | 256 |
+| 256 colors | 123,530 | 2.397 / 2.398 | 256 |
+
+RMSE measures palette error only, not aesthetics. Truecolor at 256px/Lanczos is the provisional fidelity benchmark; the 160-color variant saves about 14% of bytes. Neither is a finalized release preset.
+
+V3 original model and V4 three-point PBR lighting rendered successfully at 768px. A real source render and the 24-option matrix were inspected. The test object is still a **technical golden sample** pending artistic review, and no new art was published on GitHub Pages. The old asset_batch converter still thresholds alpha; V5 safely demonstrates a better, separate exporter rather than silently changing legacy behavior.

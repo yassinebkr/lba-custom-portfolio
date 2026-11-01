@@ -83,3 +83,7 @@ New: [Original Blender renderer](pipeline/blender/README.md) → [Blender-to-rec
 The original telemetry receiver now has deliberately layered 3D detail and a shared warm-key/cool-fill/rim lighting setup. Its comparison workflow produces **24 real PNG atlas variants** from the same unchanged Blender originals: 192/224/256px, BOX/Lanczos, truecolor/96/160/256 colors. Every candidate preserves fractional alpha and relative camera framing, and the comparison is a local CI artifact rather than a public gallery.
 
 **Visual approval remains pending.** Do not confuse generated test geometry with professional quality. No V6–V8 changes, no release of new art to GitHub Pages, and no merge into main are authorized by this set of changes.
+
+## V5 verified engineering comparison
+
+[See the actual V5 GitHub Actions render, PNG matrix and comparison files](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377). Details and measurements are in [Visual QA](docs/VISUAL_QA.md). V1–V5 does not publish new art or start V6–V8.
