@@ -20,10 +20,13 @@ Blender headless support and image-quality evaluation are checked in GitHub Acti
 
 ## V5 — reversible comparison matrix
 
-The V1 binary-alpha problem is fixed **in this independent experiment**, without silently changing legacy production exports. The script reads unchanged four-direction Blender RGBA images and resizes each *full canvas* at a common origin, never cropping orientations individually.
+The V1 binary-alpha problem is fixed **in this independent experiment**, without silently changing legacy production exports. The script reads unchanged four-direction Blender RGBA images and applies one *shared crop across all four original camera canvases*, never zooming orientations independently, then resizes this single aligned region.
 
     python pipeline/visual_matrix.py /tmp/atlas-golden/animation.json --out /tmp/atlas-v5
 
 Compare the 24 actual PNG sheets in /tmp/atlas-v5/index.html (3 output sizes x 2 reduction filters x 4 color variants) and the machine-readable matrix.json. A truecolor version at each resolution is always kept, as are 96/160/256-color quantized variants. Alpha coverage is preserved byte-for-byte through quantization, unlike the previous threshold-based exporter.
 
 Dark/light RMSE measures pixel deviation versus the corresponding same-filter truecolor candidate, *not artistic quality*. Reviewer approval is required to choose a preset; V6–V8 are not part of this autonomous scope.
+
+
+The first 24-way test on the 768px real original receiver showed only about **113px of visible object width inside 256px frames**: keeping the full source canvas sacrificed readability. A single identical union-bounding-box crop with an 8% breathing margin improves useful pixel coverage while retaining the four-view relative framing. The crop coordinates are recorded in matrix.json for provenance and reproducibility. This remains experimental; a game-space pivot/ground contact validation belongs to V7.

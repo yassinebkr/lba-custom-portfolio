@@ -23,6 +23,8 @@ class TestVisualMatrix(unittest.TestCase):
    root=Path(td);m=self.fixture(root)
    result=matrix(m,root/"out",sizes=(32,48,64))
    self.assertEqual(len(result["candidates"]),24)
+   self.assertEqual(len(result["sharedCrop"]),4)
+   self.assertEqual(result["inputFrameSize"],[64,64])
    self.assertTrue(all(item["fractional_alpha"] for item in result["candidates"]))
    self.assertTrue(all(item["alpha_levels"]>2 for item in result["candidates"]))
    self.assertTrue(all(x["dark_rmse"]==0 for x in result["candidates"] if x["palette"]=="truecolor"))

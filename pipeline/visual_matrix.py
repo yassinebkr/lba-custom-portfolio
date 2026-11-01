@@ -39,6 +39,24 @@ def load_views(manifest:Path):
         raise ValueError("Original camera canvas dimensions differ")
     return result
 
+
+def shared_source_crop(views,margin=0.08):
+    """One identical camera-space crop for every direction, never per-view zoom."""
+    boxes=[]
+    for direction in DIRECTIONS:
+        alpha=views[direction].getchannel("A")
+        box=alpha.point(lambda v:255 if v>=20 else 0).getbbox()
+        if not box:raise ValueError("Original source view has no visible sprite")
+        boxes.append(box)
+    left=min(x[0] for x in boxes);top=min(x[1] for x in boxes)
+    right=max(x[2] for x in boxes);bottom=max(x[3] for x in boxes)
+    side=math.ceil(max(right-left,bottom-top)*(1+margin))
+    center_x=(left+right)/2;center_y=(top+bottom)/2
+    x=round(center_x-side/2);y=round(center_y-side/2)
+    bounds=(x,y,x+side,y+side)
+    cropped={direction:views[direction].crop(bounds) for direction in DIRECTIONS}
+    return cropped,bounds
+
 def pack(views):
     first=views[DIRECTIONS[0]]
     atlas=Image.new("RGBA",(first.width*4,first.height))
@@ -77,6 +95,8 @@ def alpha_info(im):
 
 def matrix(manifest:Path,out:Path,sizes=SIZES,palettes=PALETTES,filters=FILTERS):
     views=load_views(manifest)
+    source_frame_size=list(views["ne"].size)
+    views,crop_bounds=shared_source_crop(views)
     out.mkdir(parents=True,exist_ok=True)
     candidates=[]
     for size in sizes:
@@ -99,7 +119,8 @@ def matrix(manifest:Path,out:Path,sizes=SIZES,palettes=PALETTES,filters=FILTERS)
                     sha256=hashlib.sha256((out/file).read_bytes()).hexdigest(),
                     dark_rmse=e1,light_rmse=e2,per_direction_bbox=entries,**info))
     result={"schemaVersion":1,"sourceManifest":manifest.name,
-            "inputFrameSize":list(views["ne"].size),"directions":list(DIRECTIONS),
+            "inputFrameSize":source_frame_size,"sharedCrop":list(crop_bounds),
+            "directions":list(DIRECTIONS),
             "note":"Truecolor is the reference; numeric scores cannot certify beauty.",
             "candidates":candidates}
     (out/"matrix.json").write_text(json.dumps(result,indent=2)+"\n")
