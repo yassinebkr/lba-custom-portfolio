@@ -1,0 +1,39 @@
+name: M3 Blender original-model 3D smoke
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'pipeline/blender/**'
+      - '.github/workflows/blender-render.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render-original-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install headless Blender and Pillow
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender
+          python -m pip install Pillow==11.3.0
+      - name: Produce original asymmetrical test GLB
+        run: blender --background --python pipeline/blender/tests/build_original_fixture.py -- -- /tmp/atlas-original-fixture.glb
+      - name: Render four transparent directional frames
+        run: blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 96
+      - name: Check exact image geometry, transparency and distinct views
+        run: python pipeline/blender/tests/check_rendered_fixture.py /tmp/atlas-blender-spike
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m3-blender-original-fixture-render
+          path: /tmp/atlas-blender-spike/
+          if-no-files-found: ignore

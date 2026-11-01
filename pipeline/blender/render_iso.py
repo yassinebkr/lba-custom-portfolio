@@ -74,7 +74,7 @@ def render():
     light.data.energy=650
     light.data.shape="DISK"
     light.data.size=extent*4
-    scene.render.engine="BLENDER_EEVEE_NEXT"
+    scene.render.engine="BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items] else "BLENDER_EEVEE"
     scene.render.film_transparent=True
     scene.render.resolution_x=a.size
     scene.render.resolution_y=a.size
