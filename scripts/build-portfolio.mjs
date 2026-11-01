@@ -20,6 +20,9 @@ const entries=[
  ['apps/portfolio/sprite-demo/compare.html','sprite-demo/compare.html'],
  ['apps/portfolio/sprite-demo/compare.css','sprite-demo/compare.css'],
  ['apps/portfolio/sprite-demo/compare.mjs','sprite-demo/compare.mjs'],
+ ['apps/portfolio/sprite-demo/scene-lab.html','sprite-demo/scene-lab.html'],
+ ['apps/portfolio/sprite-demo/scene-lab.css','sprite-demo/scene-lab.css'],
+ ['apps/portfolio/sprite-demo/scene-lab.mjs','sprite-demo/scene-lab.mjs'],
  ['apps/portfolio/sprite-demo/telemetry-receiver.png','sprite-demo/telemetry-receiver.png']
 ];
 const manifest=JSON.parse(await readFile(join(root,'apps/portfolio/assets/approved-worlds.json'),'utf8'));
@@ -90,6 +93,30 @@ for(const direction of ['ne','nw','sw','se']){
  files.push(['sprite-demo/compare/'+name,bytes]);
 }
 files.push(['sprite-demo/compare/matrix.json',Buffer.from(JSON.stringify(qa,null,2)+'\n')]);
+
+// V7: separate, unapproved visual QA scene with original Blender backgrounds,
+// not a production room. Check the exact static render artefacts from green CI.
+const v7folder=join(root,'apps/portfolio/sprite-demo/scene');
+const v7Manifest=await readFile(join(v7folder,'layout.json'));
+const layout=JSON.parse(v7Manifest.toString('utf8'));
+if(layout.schemaVersion!==1||layout.approvedForPortfolio!==false||
+   layout.reviewStatus!=='pending-artistic-review'||
+   layout.width!==960||layout.height!==640||
+   !Array.isArray(layout.anchor)||layout.anchor.length!==2||
+   !Array.isArray(layout.depthLayers)||layout.depthLayers.length!==3||
+   createHash('sha256').update(v7Manifest).digest('hex')!=='3bee5d7e5cb427ae903a09fac7d6e3447b90b22eac19721fa1ae06f278561d44')
+ throw Error('V7 original review scene layout was unexpectedly changed');
+files.push(['sprite-demo/scene/layout.json',v7Manifest]);
+for(const [name,expectedHash] of [
+ ['background.png','eca5acca67862051651c0698665a0af11288aa6266f9da5e960fea50835c1dd3'],
+ ['foreground.png','5c8a3b3ae29835cd542caff09c2d855128f317dbd539fe3420f8fa0714c47d59']]){
+ const data=await readFile(join(v7folder,name));
+ const dims=pngMeta(data);
+ if(dims[0]!==960||dims[1]!==640||
+  createHash('sha256').update(data).digest('hex')!==expectedHash)
+    throw Error('V7 Blender render differs from verified QA output: '+name);
+ files.push(['sprite-demo/scene/'+name,data]);
+}
 
 if(files.reduce((n,[_name,bytes])=>n+bytes.length,0)>35_000_000)throw Error('Public bundle exceeds 35MB');
 await rm(dist,{recursive:true,force:true});

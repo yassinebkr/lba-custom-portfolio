@@ -14,7 +14,7 @@ const server=createServer(async(req,res)=>{
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const requested=url.pathname.slice(base.length)||'index.html';
   const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested;
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|telemetry-receiver\.png|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
@@ -92,6 +92,29 @@ try{
   await page.screenshot({path:'sprite-compare-desktop.png',fullPage:true});
   assert.deepEqual(errors,[],'no JS errors while switching V6 real images');
 
+  // V7: a REAL original Blender room, layered with actual 256px V5 sprite.
+  const v7response=await page.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/scene-lab.html');
+  assert.equal(v7response.status(),200);
+  await page.waitForFunction(()=>document.getElementById('scene').dataset.rendered==='ne-160',null,{timeout:12000});
+  assert.deepEqual(await page.locator('#scene').evaluate(c=>[c.width,c.height]),[960,640]);
+  assert.equal(await page.locator('#size-out').textContent(),'75%');
+  assert.equal(await page.locator('#occlusion').isChecked(),true);
+  await page.locator('#view').selectOption('sw');
+  await page.waitForFunction(()=>document.getElementById('scene').dataset.rendered==='sw-160');
+  await page.locator('#variant').selectOption('truecolor');
+  await page.waitForFunction(()=>document.getElementById('scene').dataset.rendered==='sw-truecolor');
+  await page.locator('#size').evaluate(el=>{el.value='95';el.dispatchEvent(new Event('input',{bubbles:true}));});
+  await page.waitForFunction(()=>document.getElementById('size-out').textContent==='95%');
+  await page.locator('#inspect').click();
+  assert.match(await page.locator('#inspection-title').textContent(),/selected/i);
+  await page.locator('#occlusion').uncheck();
+  await page.locator('#anchor').check();
+  await page.locator('#reset').click();
+  assert.equal(await page.locator('#occlusion').isChecked(),true);
+  assert.equal(await page.locator('#view').inputValue(),'ne');
+  await page.screenshot({path:'sprite-scene-v7-desktop.png',fullPage:true});
+  assert.deepEqual(errors,[],'V7 must not cause uncaught browser errors');
+
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base);
   assert.equal(mobileResponse.status(),200);
@@ -111,6 +134,15 @@ try{
   await mobile.locator('#palette').selectOption('256');
   await mobile.waitForFunction(()=>document.body.dataset.rendered==='256px-lanczos-256.png');
   assert.equal(await mobile.locator('#alpha-levels').textContent(),'256');
+  const v7mobile=await mobile.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/scene-lab.html');
+  assert.equal(v7mobile.status(),200);
+  await mobile.waitForFunction(()=>document.getElementById('scene').dataset.rendered==='ne-160');
+  await mobile.locator('#view').selectOption('nw');
+  await mobile.waitForFunction(()=>document.getElementById('scene').dataset.rendered==='nw-160');
+  const v7Width=await mobile.evaluate(()=>({page:document.documentElement.scrollWidth,viewport:innerWidth}));
+  assert.ok(v7Width.page<=v7Width.viewport+1,'V7 QA room must not create horizontal overflow on mobile');
+  await mobile.screenshot({path:'sprite-scene-v7-mobile.png',fullPage:true});
+
   const mobileOverflow=await mobile.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
   assert.ok(mobileOverflow.scroll<=mobileOverflow.viewport+1,'V6 mobile must not overflow document');
   await mobile.screenshot({path:'sprite-compare-mobile.png',fullPage:true});

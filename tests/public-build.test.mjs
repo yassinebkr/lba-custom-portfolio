@@ -35,7 +35,7 @@ test('standalone sprite demo publishes actual generated PNG and no builder',asyn
  assert.equal(atlas.readUInt32BE(20),256,'actual generated sprite should be 256px tall');
  const source=await readFile(join(root,'apps/portfolio/sprite-demo/telemetry-receiver.png'));
  assert.deepEqual(atlas,source,'published sprite must be byte-identical to committed pipeline atlas');
- assert.deepEqual((await readdir(join(root,'dist/sprite-demo'))).sort(),['compare','compare.css','compare.html','compare.mjs','index.html','telemetry-receiver.png']);
+ assert.deepEqual((await readdir(join(root,'dist/sprite-demo'))).sort(),['compare','compare.css','compare.html','compare.mjs','index.html','scene','scene-lab.css','scene-lab.html','scene-lab.mjs','telemetry-receiver.png']);
 });
 
 test('V6 public comparison is copied from checksum-verified original Blender PNGs only',async()=>{
@@ -54,4 +54,26 @@ test('V6 public comparison is copied from checksum-verified original Blender PNG
  const html=await readFile(join(root,'dist/sprite-demo/compare.html'),'utf8');
  assert.match(html,/id="quantized-canvas"/);
  assert.doesNotMatch(html,/base_game\/|RESS\.HQR|\.glb/i);
+});
+
+test('V7 original Blender scene is deployed with exactly two checked PNG depth passes',async()=>{
+ const sceneDir=join(root,'dist/sprite-demo/scene');
+ assert.deepEqual((await readdir(sceneDir)).sort(),['background.png','foreground.png','layout.json']);
+ const meta=JSON.parse(await readFile(join(sceneDir,'layout.json'),'utf8'));
+ assert.equal(meta.approvedForPortfolio,false,'V7 test art must not be approved for production rooms');
+ assert.deepEqual(meta.depthLayers,['background.png','radio sprite from V5','foreground.png']);
+ assert.deepEqual([meta.width,meta.height],[960,640]);
+ assert.ok(meta.anchor[0]>160&&meta.anchor[0]<800);
+ for(const name of ['background.png','foreground.png']){
+  const image=await readFile(join(sceneDir,name));
+  assert.equal(image.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  assert.equal(image.readUInt32BE(16),960);
+  assert.equal(image.readUInt32BE(20),640);
+ }
+ const html=await readFile(join(root,'dist/sprite-demo/scene-lab.html'),'utf8');
+ assert.match(html,/V7 · IN-SCENE QUALITY CONTROL/);
+ assert.doesNotMatch(html,/base_game|\.HQR|\.glb/i);
+ const loader=await readFile(join(root,'dist/sprite-demo/scene-lab.mjs'),'utf8');
+ assert.match(loader,/256px-lanczos-/);
+ assert.doesNotMatch(loader,/base_game|\.HQR|\.glb/i);
 });
