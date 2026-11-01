@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   render-original-model:
@@ -53,21 +53,6 @@ jobs:
               assert png.mode=='RGBA'
           print('Verified four-frame original sprite atlas, pending artistic review')
           PY
-      - name: Add original generated sprite atlas to feature branch for a public demo
-        if: github.event_name == 'push' && github.ref_name == 'feature/portfolio-studio-j1-j8'
-        run: |
-          target=apps/portfolio/sprite-demo/telemetry-receiver.png
-          mkdir -p apps/portfolio/sprite-demo
-          cp /tmp/atlas-blender-spike/packed/atlases/telemetry-receiver.png "$target"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$target"
-          if git diff --cached --quiet; then
-            echo "Sprite atlas already matches the committed generated output"
-          else
-            git commit -m "asset(sprite-demo): refresh detailed high-resolution original atlas"
-            git push origin HEAD:feature/portfolio-studio-j1-j8
-          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
