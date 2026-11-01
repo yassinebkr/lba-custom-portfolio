@@ -1,0 +1,1103 @@
+{
+  "schemaVersion": 1,
+  "sourceManifest": "animation.json",
+  "inputFrameSize": [
+    768,
+    768
+  ],
+  "sharedCrop": [
+    103,
+    35,
+    665,
+    597
+  ],
+  "directions": [
+    "ne",
+    "nw",
+    "sw",
+    "se"
+  ],
+  "note": "Truecolor is the reference; numeric scores cannot certify beauty.",
+  "candidates": [
+    {
+      "file": "192px-lanczos-truecolor.png",
+      "size": 192,
+      "downscale": "lanczos",
+      "palette": "truecolor",
+      "bytes": 85068,
+      "sha256": "083033f0c25e6dfd499c8ff50a86e93c48fdabfc71b9105e588458ac773bd29a",
+      "dark_rmse": 0.0,
+      "light_rmse": 0.0,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 12563
+    },
+    {
+      "file": "192px-lanczos-96.png",
+      "size": 192,
+      "downscale": "lanczos",
+      "palette": 96,
+      "bytes": 68578,
+      "sha256": "b9a0e40d0b7a53ca042fa49ee58e5e5f7c750d67ea2b24c33e23f5a5902054d7",
+      "dark_rmse": 3.572,
+      "light_rmse": 3.575,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 94
+    },
+    {
+      "file": "192px-lanczos-160.png",
+      "size": 192,
+      "downscale": "lanczos",
+      "palette": 160,
+      "bytes": 73749,
+      "sha256": "1fc5d546922ba765a6f6ea8d434a6555edfd6d888d48fc9893fe14866d96864a",
+      "dark_rmse": 2.822,
+      "light_rmse": 2.825,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 156
+    },
+    {
+      "file": "192px-lanczos-256.png",
+      "size": 192,
+      "downscale": "lanczos",
+      "palette": 256,
+      "bytes": 77151,
+      "sha256": "941c39845274f7f056ea12b61a263a51766fe58cb43774b2d4478eed83c8eeaa",
+      "dark_rmse": 2.712,
+      "light_rmse": 2.715,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 252
+    },
+    {
+      "file": "192px-box-truecolor.png",
+      "size": 192,
+      "downscale": "box",
+      "palette": "truecolor",
+      "bytes": 76665,
+      "sha256": "847f5b2d276ea3e2ac05b5ce69e7b265b6f8eeef1d9bbc3541dd6f1d0b9ccada",
+      "dark_rmse": 0.0,
+      "light_rmse": 0.0,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 11682
+    },
+    {
+      "file": "192px-box-96.png",
+      "size": 192,
+      "downscale": "box",
+      "palette": 96,
+      "bytes": 62429,
+      "sha256": "2912db26352a52e3dfaa02f7d855cc9d162890eb434ea97e2657a95b5279e04a",
+      "dark_rmse": 3.632,
+      "light_rmse": 3.633,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 96
+    },
+    {
+      "file": "192px-box-160.png",
+      "size": 192,
+      "downscale": "box",
+      "palette": 160,
+      "bytes": 68760,
+      "sha256": "61541eea308cc9ec33f65fa286b2edd564746e65f4a26a214d86448d0e275a20",
+      "dark_rmse": 2.757,
+      "light_rmse": 2.758,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 160
+    },
+    {
+      "file": "192px-box-256.png",
+      "size": 192,
+      "downscale": "box",
+      "palette": 256,
+      "bytes": 71771,
+      "sha256": "6b9a4cb21ae6ca49373c5fda99b9be39fac44ae157c722f7d0145df6550512c4",
+      "dark_rmse": 2.327,
+      "light_rmse": 2.327,
+      "per_direction_bbox": {
+        "ne": [
+          57,
+          33,
+          173,
+          172
+        ],
+        "nw": [
+          42,
+          76,
+          158,
+          185
+        ],
+        "sw": [
+          19,
+          50,
+          135,
+          175
+        ],
+        "se": [
+          34,
+          7,
+          150,
+          162
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        57,
+        7,
+        726,
+        185
+      ],
+      "opaque_colors": 255
+    },
+    {
+      "file": "224px-lanczos-truecolor.png",
+      "size": 224,
+      "downscale": "lanczos",
+      "palette": "truecolor",
+      "bytes": 109453,
+      "sha256": "3437dc12257a59196e10a7f81f920723d0a66d52a2c9278f31dc3a9a4eb8a8b1",
+      "dark_rmse": 0.0,
+      "light_rmse": 0.0,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 14943
+    },
+    {
+      "file": "224px-lanczos-96.png",
+      "size": 224,
+      "downscale": "lanczos",
+      "palette": 96,
+      "bytes": 86839,
+      "sha256": "bb4fab8ba303d6710dfb4e2d63f87a2acf7c57a55fc00b5a14185562cef3bd3a",
+      "dark_rmse": 3.745,
+      "light_rmse": 3.746,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 95
+    },
+    {
+      "file": "224px-lanczos-160.png",
+      "size": 224,
+      "downscale": "lanczos",
+      "palette": 160,
+      "bytes": 93784,
+      "sha256": "dd1c8edb8bcda6501f8d9a55a14817dd8ca5241d5232681736d73d90270f27e3",
+      "dark_rmse": 2.868,
+      "light_rmse": 2.869,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 159
+    },
+    {
+      "file": "224px-lanczos-256.png",
+      "size": 224,
+      "downscale": "lanczos",
+      "palette": 256,
+      "bytes": 98739,
+      "sha256": "dc2908e6a35590dae89793352be93e0197702fd86a339844ba53846b2baf3064",
+      "dark_rmse": 2.265,
+      "light_rmse": 2.266,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 254
+    },
+    {
+      "file": "224px-box-truecolor.png",
+      "size": 224,
+      "downscale": "box",
+      "palette": "truecolor",
+      "bytes": 100939,
+      "sha256": "b1a2e039c4dc877e9e5e9ac8f012d2833a9776c8fa0c6d8c7db298ab1e74a4f0",
+      "dark_rmse": 0.0,
+      "light_rmse": 0.0,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 13975
+    },
+    {
+      "file": "224px-box-96.png",
+      "size": 224,
+      "downscale": "box",
+      "palette": 96,
+      "bytes": 80176,
+      "sha256": "0dac8b65655e98737a603d167cde6b6832c85d6dfe6ad51ffdd58c13c42feef5",
+      "dark_rmse": 3.585,
+      "light_rmse": 3.586,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 96
+    },
+    {
+      "file": "224px-box-160.png",
+      "size": 224,
+      "downscale": "box",
+      "palette": 160,
+      "bytes": 88571,
+      "sha256": "1dd76f6d40d77bc8446da0888ded5ea85680308c78abbf743e0feb1cbc29de5c",
+      "dark_rmse": 2.694,
+      "light_rmse": 2.695,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 160
+    },
+    {
+      "file": "224px-box-256.png",
+      "size": 224,
+      "downscale": "box",
+      "palette": 256,
+      "bytes": 93628,
+      "sha256": "a72928efa815543c326caf3fea97c34f8ff27225868da8c483ba23e7ae8c6d69",
+      "dark_rmse": 2.268,
+      "light_rmse": 2.268,
+      "per_direction_bbox": {
+        "ne": [
+          66,
+          38,
+          202,
+          201
+        ],
+        "nw": [
+          49,
+          89,
+          184,
+          216
+        ],
+        "sw": [
+          22,
+          59,
+          158,
+          204
+        ],
+        "se": [
+          40,
+          8,
+          175,
+          189
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        66,
+        8,
+        847,
+        216
+      ],
+      "opaque_colors": 255
+    },
+    {
+      "file": "256px-lanczos-truecolor.png",
+      "size": 256,
+      "downscale": "lanczos",
+      "palette": "truecolor",
+      "bytes": 137088,
+      "sha256": "501e29724b908a61b3e706a9aa3c5a165d52f433184277f6d1745e00c4293254",
+      "dark_rmse": 0.0,
+      "light_rmse": 0.0,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 17471
+    },
+    {
+      "file": "256px-lanczos-96.png",
+      "size": 256,
+      "downscale": "lanczos",
+      "palette": 96,
+      "bytes": 106596,
+      "sha256": "2271771b292bf808cb0f2b4ea0b1926d20bd177925a816840dbf6ece5926d4ea",
+      "dark_rmse": 3.693,
+      "light_rmse": 3.694,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 95
+    },
+    {
+      "file": "256px-lanczos-160.png",
+      "size": 256,
+      "downscale": "lanczos",
+      "palette": 160,
+      "bytes": 117976,
+      "sha256": "4c6eed95ed506f2ce871b67e19aaae008bdaa9de0ad4d2e36b96d77064a9f3a6",
+      "dark_rmse": 2.823,
+      "light_rmse": 2.824,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 159
+    },
+    {
+      "file": "256px-lanczos-256.png",
+      "size": 256,
+      "downscale": "lanczos",
+      "palette": 256,
+      "bytes": 123530,
+      "sha256": "aa39272f576d5e94a25b793589095db87856b6cbd701dd0d5e22c652c2c48804",
+      "dark_rmse": 2.397,
+      "light_rmse": 2.398,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 255
+    },
+    {
+      "file": "256px-box-truecolor.png",
+      "size": 256,
+      "downscale": "box",
+      "palette": "truecolor",
+      "bytes": 127382,
+      "sha256": "d61bae73c16319f8d8f204f9251dd85b8f3e9689e44703e70f1a577da8b7b031",
+      "dark_rmse": 0.0,
+      "light_rmse": 0.0,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 16378
+    },
+    {
+      "file": "256px-box-96.png",
+      "size": 256,
+      "downscale": "box",
+      "palette": 96,
+      "bytes": 100606,
+      "sha256": "48d2a14c7fbad290ecadab6503c03e62410c431882ae1a86e60cf1d22d4e708c",
+      "dark_rmse": 3.61,
+      "light_rmse": 3.61,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 96
+    },
+    {
+      "file": "256px-box-160.png",
+      "size": 256,
+      "downscale": "box",
+      "palette": 160,
+      "bytes": 110823,
+      "sha256": "6b41cc876b850fab006866c313afa93c7e3f9552bfcf8ead63a0a096d1dc4940",
+      "dark_rmse": 2.765,
+      "light_rmse": 2.765,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 160
+    },
+    {
+      "file": "256px-box-256.png",
+      "size": 256,
+      "downscale": "box",
+      "palette": 256,
+      "bytes": 117791,
+      "sha256": "a8de3389c5dfdb0f1be0d7d41fc0b29268643aa535df3ac05ded1c3efaa6c572",
+      "dark_rmse": 2.325,
+      "light_rmse": 2.325,
+      "per_direction_bbox": {
+        "ne": [
+          76,
+          44,
+          230,
+          229
+        ],
+        "nw": [
+          56,
+          102,
+          210,
+          247
+        ],
+        "sw": [
+          26,
+          67,
+          180,
+          233
+        ],
+        "se": [
+          46,
+          9,
+          200,
+          216
+        ]
+      },
+      "alpha_levels": 256,
+      "fractional_alpha": true,
+      "bbox": [
+        76,
+        9,
+        968,
+        247
+      ],
+      "opaque_colors": 256
+    }
+  ]
+}
