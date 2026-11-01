@@ -1,0 +1,24 @@
+name: M3 Original Blender-to-asset recipe adapter
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'pipeline/original_recipe.py'
+      - 'pipeline/tests/test_original_recipe.py'
+      - '.github/workflows/original-recipe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-recipe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate safe Blender frame paths and fail-closed art review
+        run: python -m unittest discover -s pipeline/tests -p test_original_recipe.py -v
