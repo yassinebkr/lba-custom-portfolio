@@ -53,6 +53,18 @@ jobs:
               assert png.mode=='RGBA'
           print('Verified four-frame original sprite atlas, pending artistic review')
           PY
+      - name: Compare actual Blender source against 24 V5 exports
+        run: |
+          python pipeline/visual_matrix.py /tmp/atlas-blender-spike/animation.json --out /tmp/atlas-blender-spike/visual-matrix
+          python -m unittest discover -s pipeline/tests -p test_visual_matrix.py -v
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('/tmp/atlas-blender-spike/visual-matrix/matrix.json').read_text())
+          assert len(data['candidates'])==24
+          assert all(i['fractional_alpha'] for i in data['candidates'])
+          print('V5: 24 comparisons, all with antialiased edges')
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
