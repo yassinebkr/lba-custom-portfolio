@@ -70,3 +70,7 @@ flowchart LR
 **Browser acceptance:** Check all four orientations, two resampling filters, three sprite sizes, truecolor and the three limited palettes, actual source/truecolor/quantized canvases, changing metric values and 256 alpha levels, keyboard-accessible native selects, zoom 100/150/200%, pixelated option, background choices, nested Pages URL, and 390px mobile viewport without horizontal document overflow. Full-page desktop/mobile screenshot evidence is collected automatically.
 
 The first interactive review used actual captures and confirms that the source and unquantized export are very similar, while palette-limited images have measurable but modest differences. No numerical score establishes whether the result meets the LBA1-inspired artistic standard. V7 scene integration and V8 final preset remain unstarted. No final gameplay asset is marked approved.
+
+## V6 product acceptance and deferred follow-up
+
+On 2026-11-01, the maintainer **accepted V6 as functionally sufficient** and authorized V7. A small perceived difference between views/stages 2 and 3, particularly in proportions, is expressly **deferred for investigation after V7**. Do not claim it is solved or silently adjust sprite geometry, scene pivots or the V5 atlas. Preserve the V6 comparison and its original evidence unchanged.
