@@ -1,0 +1,24 @@
+name: Original asset-core checks
+
+on:
+  push:
+    branches:
+      - feature/portfolio-studio-j1-j8
+    paths:
+      - 'packages/asset-core/**'
+      - '.github/workflows/asset-core.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test game-independent indexed codecs and projection
+        run: node --test packages/asset-core/index.test.mjs
