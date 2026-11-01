@@ -1,87 +1,64 @@
 # Project Atlas
 
-An **original playable isometric portfolio** and a **local-first creative Asset Studio** for scenes, characters, furniture, sprites, and animations. The visitor-facing game is designed for GitHub Pages: **no ROM, installer, account, or server API**.
+An original isometric portfolio for GitHub Pages, with a **local asset-first pipeline** for characters, furniture, electronics, architectural elements and animations. **No ROM, game purchase, backend or account is required.**
 
-> **Development branch:** [feature/portfolio-studio-j1-j8](https://github.com/yassinebkr/lba-custom-portfolio/tree/feature/portfolio-studio-j1-j8). The default `main` branch remains unchanged; no merge is authorized.
->
-> **Release status:** work in progress. Six prototype rooms and editing tools exist, but final art, Studio-to-runtime export parity, full animation triggers and live Pages verification remain open. Consult [milestones](docs/MILESTONES.md) for tested evidence.
+**Development branch:** [feature/portfolio-studio-j1-j8](https://github.com/yassinebkr/lba-custom-portfolio/tree/feature/portfolio-studio-j1-j8). No merge into main.
+
+**Visual status:** the six current game rooms are functional **placeholders**, not finished art. J2/J3 test the asset pipeline on original synthetic illustrations. A polished original room is the next artistic milestone (J4).
 
 ## Architecture
 
-The [technical architecture](docs/ARCHITECTURE_TARGET.md) specifies the public hosting boundary, original asset ownership, editing pipeline and scene/runtime contracts.
-
-```mermaid
+~~~mermaid
 flowchart LR
-  SOURCE["Original photos / models / art"] --> PIPE["Local sprite pipeline"]
-  PIPE --> STUDIO["Visual Asset Studio"]
-  STUDIO --> APPROVE["Validate + approve assets"]
-  APPROVE --> BUILD["Static public build"]
-  BUILD --> PAGES["GitHub Pages"]
-  VISITOR["Visitor"] --> PAGES
-```
+  INPUT["Photos / illustrations / Blender PNG"] --> RECIPE["Single JSON recipe"]
+  RECIPE --> CONVERT["Offline Pillow converter"]
+  CONVERT --> ATLAS["PNG atlas + animation metadata"]
+  CONVERT --> QA["Real rendered contact sheets"]
+  QA --> APPROVE{"Visual and rights approval?"}
+  APPROVE -->|no| INPUT
+  APPROVE -->|yes| GAME["Future finished game scenes"]
+  GAME --> DIST["Allowlisted dist/"]
+  DIST --> PAGES["GitHub Pages"]
+~~~
 
-The Studio and pipeline run locally. Only approved static game files are eligible for publication. Legacy Little Big Adventure resources are excluded from the public build.
+The asset pipeline precedes the editor. Blender is optional for missing camera angles or complex geometry. The existing React Studio is a prototype for later simplification, not a requirement for creating assets.
 
-## Project structure
+## Run the new pipeline
 
-| Component | Path | Current capability |
-| --- | --- | --- |
-| Public portfolio | [`apps/portfolio/`](apps/portfolio/README.md) | Six original isometric rooms, keyboard/touch controls, project inspector, HTML fallback |
-| Asset Studio | [`apps/studio/`](apps/studio/README.md) | Visual asset library, isometric editor, scene selection, inspector, undo/redo, import/export and frame timeline |
-| Asset contracts | [`packages/asset-schema/`](packages/asset-schema/README.md) | Scene, asset, rights and animation validation |
-| Image pipeline | [`pipeline/`](pipeline/README.md) | PNG/photo preparation, shared-palette atlases, Blender multi-view adapter |
-| Animation rules | `packages/game-core/animation.mjs` | Deterministic clip timing and frame validation |
-| Legacy LBA tools | `scripts/hqr-tools/`, `metadata-ui/`, `web_deploy/` | Preserved for original game reverse engineering and lawful local use |
-
-## Local development
-
-**Public playable prototype** (Node.js 22, Python for local HTTP serving):
-
-```bash
-node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
-node scripts/build-portfolio.mjs
-python3 -m http.server 8765
-# Open http://127.0.0.1:8765/apps/portfolio/
-```
-
-**Asset Studio**:
-
-```bash
-cd apps/studio
-npm install
-npm run build
-npm run dev
-# Open http://127.0.0.1:5174/
-```
-
-**Image pipeline**:
-
-```bash
-python3 -m pip install Pillow
+~~~bash
+python3 -m pip install Pillow==11.3.0
+python3 pipeline/fixtures/generate_samples.py --out /tmp/atlas-source
+python3 pipeline/asset_batch.py /tmp/atlas-source/recipe.json --out /tmp/atlas-qa
+# Open /tmp/atlas-qa/index.html to inspect the real exported frames
 python3 -m unittest discover -s pipeline/tests -v
-python3 pipeline/asset_factory.py --help
-```
+~~~
 
-The Studio runs locally. The public site does not rely on its file-writing endpoints or on Blender.
+The test batch includes a four-direction character, an electronics bench, chair, cinema camera, RF console, door and four-frame lamp. They are **synthetic original fixtures**, not photographs and not production-quality, approved art. Actual QA exports are downloadable from [J3 GitHub Actions](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41259496223).
+
+For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [pipeline guide](pipeline/README.md) and [asset-first contract](pipeline/ASSET_FIRST.md).
+
+## GitHub Pages
+
+The six-room playable prototype lives in [apps/portfolio](apps/portfolio/README.md).
+
+~~~bash
+node scripts/build-portfolio.mjs
+node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
+~~~
+
+Only allowlisted public files enter dist/. The GitHub Actions publishing job uses exactly that same builder. To deploy, select **Settings → Pages → Source → GitHub Actions** and manually dispatch the Portfolio CI and optional Pages deployment workflow. The source-branch root redirect is a legacy fallback, not the intended Actions publication. A green CI result does not establish that the new live Pages URL has been verified.
 
 ## Documentation
 
-| Reference | Purpose |
+| Document | Purpose |
 | --- | --- |
-| [Technical architecture](docs/ARCHITECTURE_TARGET.md) | System design, module boundaries, data model, authoring and deployment |
-| [Asset Studio UX](docs/STUDIO_UX_SPEC.md) | Creative workspace design, readable inspectors, viewport and timeline |
-| [Asset production](docs/ASSET_PIPELINE.md) | Photo/3D to original characters, furniture, props, scenes, and animations |
-| [Milestones and commit evidence](docs/MILESTONES.md) | J0–J8 criteria, status and branch policy |
-| [Release readiness](docs/PUBLIC_RELEASE_CHECKLIST.md) | GitHub Pages, licensing, build restrictions and incomplete acceptance gates |
-| [Runtime decision](docs/ADR-001-J1-RUNTIME.md) | Initial Canvas2D selection and future renderer evaluation |
-| [Historical LBA workflow](docs/LEGACY_LBA_README.md) | Original HQR, brick, sprites, scene painting and js-dos research |
+| [Technical architecture](docs/ARCHITECTURE_TARGET.md) | Architecture, module ownership, data relationships and hosting |
+| [J1–J8 milestones](docs/MILESTONES.md) | Current asset-first order, acceptance criteria and CI evidence |
+| [Asset-first design](pipeline/ASSET_FIRST.md) | Recipe format, rights gates and third-party evaluation |
+| [Pipeline guide](pipeline/README.md) | One-command build and outputs |
+| [Pages deployment](docs/PAGES_DEPLOYMENT.md) | Branch-root fallback versus verified Actions artifacts |
+| [Studio UX](docs/STUDIO_UX_SPEC.md) | Later simplification requirements |
+| [Asset schema](packages/asset-schema/README.md) | Existing validators for rights and scene documents |
+| [Legacy LBA workspace](docs/LEGACY_LBA_README.md) | Preserved historic research; excluded from the public build |
 
-## Publication and rights
-
-The only intended GitHub Pages artifact is produced by `node scripts/build-portfolio.mjs`. The build has an explicit allowlist, and GitHub Actions runs tests before packaging. The Pages deployment job is intentionally manual while verification is incomplete. To deploy, the repository must be configured to use **GitHub Actions** as its Pages source.
-
-The original game's code license does not grant redistribution rights for its proprietary artwork and sounds. Public Project Atlas scenes use original procedural placeholders at this stage. The legacy game bundle is never part of the public artifact.
-
-## Development workflow
-
-Changes are committed and pushed to `feature/portfolio-studio-j1-j8` in small milestone-labeled commits. A milestone is complete only after its acceptance tests and required browser/legal review pass. **Do not merge or force-push `main`.**
+Original LBA art, models, archives and voices must never be part of the public portfolio. All development remains on the dedicated branch, with tests, small commits and no merge.

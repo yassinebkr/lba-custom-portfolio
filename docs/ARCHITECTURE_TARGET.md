@@ -225,3 +225,7 @@ PUSH["Push to feature branch"] --> TESTS["Tests + asset safety checks"]
 ## Documentation maintenance
 
 Diagrams are versioned directly in this Markdown file using `mermaid` fences supported by GitHub. For every change to an interface, asset schema or release boundary, update the relevant diagram **and** its textual contract; do not mark an unimplemented node as complete. Prefer several small readable diagrams over one oversized wall of arrows.
+
+## Revised production priorities
+
+The [current asset-first roadmap](MILESTONES.md) supersedes the earlier workflow ordering: J2 is the local recipe-driven asset pipeline; J3 is its actual rendered QA batch; J4 is a fully polished original playable room; J5 is the simplified creative GUI. Previous Studio and schema prototypes are preserved but are not prerequisites for conversion. See [asset pipeline instructions](../pipeline/README.md).
