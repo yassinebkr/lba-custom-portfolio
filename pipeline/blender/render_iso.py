@@ -67,23 +67,54 @@ def render():
     bpy.ops.object.camera_add()
     camera=bpy.context.object
     camera.data.type="ORTHO"
-    camera.data.ortho_scale=extent*2.85
+    # A single camera scale/pivot is used for every viewpoint and frame.
+    # Frame cropping and palette conversion must not change this framing.
+    camera.data.ortho_scale=extent*2.30
     scene.camera=camera
-    bpy.ops.object.light_add(type="AREA",location=(mid.x+extent*4,mid.y-extent*4,mid.z+extent*6))
-    light=bpy.context.object
-    light.data.energy=650
-    light.data.shape="DISK"
-    light.data.size=extent*4
+
+    def area_light(name,position,power,color,size):
+        bpy.ops.object.light_add(type="AREA",location=position)
+        light=bpy.context.object
+        light.name=name
+        light.data.energy=power
+        light.data.color=color
+        light.data.shape="DISK"
+        light.data.size=size
+        direction=mid-light.location
+        light.rotation_euler=direction.to_track_quat("-Z","Y").to_euler()
+        return light
+
+    # Three-point studio softbox arrangement; world-space stationary across rotations.
+    area_light("Warm large upper-left softbox",
+       (mid.x-extent*3,mid.y-extent*3,mid.z+extent*5),
+       1000,(1.0,.82,.67),extent*3.4)
+    area_light("Cool low-energy bounce fill",
+       (mid.x+extent*3,mid.y-extent*.8,mid.z+extent*1.5),
+       370,(.61,.79,1.0),extent*4.2)
+    area_light("Warm edge separation",
+       (mid.x+extent,mid.y+extent*4,mid.z+extent*3),
+       600,(1.0,.87,.70),extent*2.5)
+    world=bpy.data.worlds.new("Atlas neutral studio environment")
+    scene.world=world
+    world.use_nodes=True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value=(.23,.30,.36,1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value=.34
+
     scene.render.engine="CYCLES"
     scene.cycles.device="CPU"
-    scene.cycles.samples=40
-    scene.cycles.use_denoising=False
+    scene.cycles.samples=56
+    scene.cycles.use_denoising=True
+    scene.view_settings.view_transform="Standard"
+    scene.view_settings.look="Medium High Contrast"
+    scene.view_settings.exposure=0
+    scene.view_settings.gamma=1
     scene.render.film_transparent=True
     scene.render.resolution_x=a.size
     scene.render.resolution_y=a.size
     scene.render.resolution_percentage=100
     scene.render.image_settings.file_format="PNG"
     scene.render.image_settings.color_mode="RGBA"
+    scene.render.image_settings.color_depth="16"
     a.output.mkdir(parents=True,exist_ok=True)
     for direction in ANGLES:
         camera.location=camera_position(tuple(mid),extent,direction,a.elevation)

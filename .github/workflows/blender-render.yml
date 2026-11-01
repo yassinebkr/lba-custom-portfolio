@@ -30,7 +30,7 @@ jobs:
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/tests/build_original_fixture.py -- /tmp/atlas-original-fixture.glb
           test -s /tmp/atlas-original-fixture.glb
       - name: Render four transparent directional frames
-        run: PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 512
+        run: PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 768
       - name: Check exact image geometry, transparency and distinct views
         run: python pipeline/blender/tests/check_rendered_fixture.py /tmp/atlas-blender-spike
       - name: Convert real Blender PNG views with the project sprite pipeline
