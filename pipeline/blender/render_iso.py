@@ -103,7 +103,7 @@ def render():
     scene.render.engine="CYCLES"
     scene.cycles.device="CPU"
     scene.cycles.samples=56
-    scene.cycles.use_denoising=True
+    scene.cycles.use_denoising=False  # Runner Blender was built without OpenImageDenoiser
     scene.view_settings.view_transform="Standard"
     scene.view_settings.look="Medium High Contrast"
     scene.view_settings.exposure=0
