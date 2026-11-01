@@ -23,12 +23,14 @@ jobs:
       - name: Install headless Blender and Pillow
         run: |
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender python3-numpy python3-pil
           python -m pip install Pillow==11.3.0
       - name: Produce original asymmetrical test GLB
-        run: blender --background --python pipeline/blender/tests/build_original_fixture.py -- /tmp/atlas-original-fixture.glb
+        run: |
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/tests/build_original_fixture.py -- /tmp/atlas-original-fixture.glb
+          test -s /tmp/atlas-original-fixture.glb
       - name: Render four transparent directional frames
-        run: blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 96
+        run: PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 96
       - name: Check exact image geometry, transparency and distinct views
         run: python pipeline/blender/tests/check_rendered_fixture.py /tmp/atlas-blender-spike
       - uses: actions/upload-artifact@v4
