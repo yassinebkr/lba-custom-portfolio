@@ -1,0 +1,38 @@
+:root{font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#e5f1ef;background:#09171e;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0}.wrap{max-width:1480px;margin:auto;padding:0 26px}
+a{color:#8ee4d4;text-decoration:none}a:hover{text-decoration:underline}
+a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #8fe8d8;outline-offset:3px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 0;border-bottom:1px solid #2b4650}
+.brand{font-weight:800;font-size:12px;letter-spacing:.15em;color:#eef7f5}.brand span{color:#8de4cf}
+nav{display:flex;gap:19px;font-size:12px}
+.intro{max-width:850px;padding:51px 0 30px}.eyebrow{color:#82e6d6;font-weight:800;font-size:11px;letter-spacing:.18em;margin:0 0 10px}
+h1{font-size:clamp(40px,6vw,74px);line-height:1.03;letter-spacing:-.06em;margin:0 0 18px}h1 span{color:#88e6d5}
+.intro p:last-child{color:#b5cbca;font-size:15px;max-width:690px}
+.panel{border-radius:12px;background:#10252f;border:1px solid #304d59}
+.controls{display:flex;flex-wrap:wrap;align-items:end;gap:13px;padding:17px;margin-bottom:17px}
+.control{min-width:125px;flex:1 1 140px;display:grid;gap:6px}
+.control label{font-size:11px;font-weight:700;color:#b0c7c9}
+select{background:#182f3b;border:1px solid #496773;border-radius:8px;min-height:38px;padding:7px 8px;color:#f0f8f6;font:inherit;font-size:12px;width:100%}
+.crisp{display:flex;align-items:center;gap:7px;font-size:12px;min-height:38px;cursor:pointer;color:#c3d5d8}.crisp input{accent-color:#7fe4d2}
+.comparison{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.stage{min-width:0;padding:16px}.stage.accent{border-color:#6ab7a6;background:#13313a}
+.stage-head{min-height:145px}.step{font-size:10px;font-weight:900;letter-spacing:.16em;color:#8be7d6}
+.stage h2{font-size:19px;margin:6px 0;letter-spacing:-.02em}
+.stage p{font-size:12px;color:#aec4c6;line-height:1.45;margin:0}
+.stage-scroll{overflow:auto;min-height:286px;max-height:550px;display:flex;align-items:center;border:1px solid #34535d;border-radius:9px;background:#223641}
+.sprite-surface{padding:12px;flex:none;margin:auto;background:#263a44}
+body[data-background="checker"] .sprite-surface{background-image:linear-gradient(45deg,#3b515c 25%,transparent 25%),linear-gradient(-45deg,#3b515c 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#3b515c 75%),linear-gradient(-45deg,transparent 75%,#3b515c 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
+body[data-background="dark"] .sprite-surface{background:#1b2d39}
+body[data-background="light"] .sprite-surface{background:#d8dcd5}
+canvas{display:block;width:256px;height:256px;max-width:none;image-rendering:auto}
+body.crisp canvas{image-rendering:pixelated}
+.details{margin-top:13px;padding-top:11px;border-top:1px solid #2f4c57;font-size:12px;color:#c0d9dc;font-variant-numeric:tabular-nums}
+.evidence{display:grid;grid-template-columns:minmax(180px,1fr) minmax(0,2fr);gap:14px;padding:23px;margin:21px 0 38px}
+.evidence h2{font-size:19px;margin:0}.muted{font-size:13px;color:#b6cdcc}
+.evidence dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0}
+.evidence dl div{padding:12px;border:1px solid #395661;border-radius:9px}
+.evidence dt{font-size:10px;color:#b2c9cb}.evidence dd{font-size:19px;font-weight:700;margin:9px 0 0;font-variant-numeric:tabular-nums}
+.note{grid-column:1/-1;font-size:11px;color:#a7bdbe;margin:1px 0 0}
+footer{padding:25px 0 37px;border-top:1px solid #304a54;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;color:#98b4b8;font-size:12px}
+@media(max-width:1100px){.comparison{grid-template-columns:1fr}.stage-head{min-height:auto;margin-bottom:17px}.stage-scroll{justify-content:center}.evidence{grid-template-columns:1fr}}
+@media(max-width:650px){.wrap{padding:0 14px}header{flex-wrap:wrap}.intro{padding:30px 0 22px}.controls{padding:12px;gap:9px}.control{flex:1 1 43%}.stage-scroll{justify-content:flex-start}.evidence dl{grid-template-columns:repeat(2,minmax(0,1fr))}}

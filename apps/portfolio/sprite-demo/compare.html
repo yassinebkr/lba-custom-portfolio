@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Real Blender, truecolor and palette sprite comparison from Project Atlas.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; object-src 'none'; base-uri 'self'">
+<title>Visual Quality Lab · Project Atlas</title>
+<link rel="stylesheet" href="./compare.css"><script type="module" src="./compare.mjs"></script>
+</head><body data-background="checker"><div class="wrap">
+<header><a class="brand" href="./">PROJECT <span>ATLAS</span> / SPRITE LAB</a><nav aria-label="Navigation"><a href="./">Sprite Lab</a><a href="../">Portfolio</a></nav></header>
+<main><section class="intro"><p class="eyebrow">V6 / ACTUAL PIPELINE OUTPUT</p>
+<h1>What survives<br><span>the export?</span></h1>
+<p>Three versions of the <em>same original Blender object</em>. Compare the source rendering, truecolor sprite and palette-limited result without inventing any pixels.</p></section>
+<section class="panel controls" aria-label="Comparison controls">
+<div class="control"><label for="direction">View direction</label><select id="direction">
+<option value="ne">North-east</option><option value="nw">North-west</option><option value="sw">South-west</option><option value="se">South-east</option>
+</select></div>
+<div class="control"><label for="resolution">Sprite resolution</label><select id="resolution">
+<option value="192">192 px</option><option value="224">224 px</option><option value="256" selected>256 px</option></select></div>
+<div class="control"><label for="filter">Downscaler</label><select id="filter">
+<option value="lanczos" selected>Lanczos</option><option value="box">BOX / area</option></select></div>
+<div class="control"><label for="palette">Output palette</label><select id="palette">
+<option value="96">96 colors</option><option value="160" selected>160 colors</option><option value="256">256 colors</option><option value="truecolor">Truecolor RGBA</option></select></div>
+<div class="control"><label for="zoom">Zoom</label><select id="zoom">
+<option value="1" selected>100% / native pixels</option><option value="1.5">150%</option><option value="2">200%</option></select></div>
+<div class="control"><label for="background">Background</label><select id="background">
+<option value="checker" selected>Checkerboard</option><option value="dark">Dark</option><option value="light">Light</option></select></div>
+<label class="crisp"><input type="checkbox" id="crisp"> Pixelated zoom</label>
+</section>
+<section class="comparison" aria-label="Three rendering stages">
+<article class="panel stage">
+<div class="stage-head"><span class="step">01 · SOURCE</span><h2>Blender render</h2>
+<p>Original 768 px RGBA, same shared crop for all four orientations, browser-resized only for inspection.</p></div>
+<div class="stage-scroll"><div class="sprite-surface"><canvas id="source-canvas" width="256" height="256" role="img" aria-label="Cropped original Blender render"></canvas></div></div>
+<div class="details" id="source-details">Original source 768 px</div>
+</article>
+<article class="panel stage">
+<div class="stage-head"><span class="step">02 · FIDELITY REFERENCE</span><h2>Truecolor sprite</h2>
+<p>Actual transparent RGBA sprite produced by the selected Lanczos/BOX exporter, without palette reduction.</p></div>
+<div class="stage-scroll"><div class="sprite-surface"><canvas id="truecolor-canvas" width="256" height="256" role="img" aria-label="Actual truecolor sprite"></canvas></div></div>
+<div class="details" id="truecolor-details">Loading…</div>
+</article>
+<article class="panel stage accent">
+<div class="stage-head"><span class="step">03 · EXPORT CANDIDATE</span><h2>Palette-limited</h2>
+<p>Actual matching sprite from the V5 comparison matrix: preserved fractional alpha and consistent camera framing.</p></div>
+<div class="stage-scroll"><div class="sprite-surface"><canvas id="quantized-canvas" width="256" height="256" role="img" aria-label="Actual quantized sprite"></canvas></div></div>
+<div class="details" id="quantized-details">Loading…</div>
+</article>
+</section>
+<section class="panel evidence" aria-live="polite">
+<div><p class="eyebrow">V5 ORIGINAL EVIDENCE</p><h2>Export metrics</h2><p id="status" class="muted">Loading verified images…</p></div>
+<dl><div><dt>Color RMSE / dark</dt><dd id="rmse-dark">—</dd></div><div><dt>Color RMSE / light</dt><dd id="rmse-light">—</dd></div><div><dt>Alpha levels</dt><dd id="alpha-levels">—</dd></div><div><dt>Atlas PNG size</dt><dd id="file-size">—</dd></div></dl>
+<p class="note">RMSE measures color error against the same-size truecolor output; it cannot certify artistic quality. Sources and 24 PNGs were generated in CI from entirely original geometry. This is an engineering demo, not approved final portfolio artwork.</p>
+</section>
+</main><footer><span>V6 · Static GitHub Pages comparison, no builder or proprietary game resources.</span>
+<a href="https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377">Original V5 build evidence</a></footer>
+</div></body></html>
