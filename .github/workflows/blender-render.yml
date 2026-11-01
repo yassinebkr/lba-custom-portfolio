@@ -23,7 +23,7 @@ jobs:
       - name: Install headless Blender and Pillow
         run: |
           sudo apt-get update -qq
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender python3-numpy python3-pil
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender python3-numpy python3-pil libegl1 libgl1-mesa-dri
           python -m pip install Pillow==11.3.0
       - name: Produce original asymmetrical test GLB
         run: |
