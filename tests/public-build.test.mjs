@@ -37,3 +37,21 @@ test('standalone sprite demo publishes actual generated PNG and no builder',asyn
  assert.deepEqual(atlas,source,'published sprite must be byte-identical to committed pipeline atlas');
  assert.equal((await readdir(join(root,'dist/sprite-demo'))).length,2);
 });
+
+test('V6 public comparison is copied from checksum-verified original Blender PNGs only',async()=>{
+ const manifest=JSON.parse(await readFile(join(root,'dist/sprite-demo/compare/matrix.json'),'utf8'));
+ assert.equal(manifest.candidates.length,24);
+ assert.deepEqual(manifest.sharedCrop,[103,35,665,597]);
+ const contents=await readdir(join(root,'dist/sprite-demo/compare'));
+ assert.equal(contents.length,29,'24 variants, four original sources, one manifest');
+ const png=await readFile(join(root,'dist/sprite-demo/compare/256px-lanczos-truecolor.png'));
+ assert.equal(png.readUInt32BE(16),1024);
+ assert.equal(png.readUInt32BE(20),256);
+ const source=await readFile(join(root,'dist/sprite-demo/compare/source-ne.png'));
+ assert.equal(source.readUInt32BE(16),768);
+ assert.equal(source.readUInt32BE(20),768);
+ for(const path of contents)assert.match(path,/^(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:truecolor|96|160|256)\.png)$/);
+ const html=await readFile(join(root,'dist/sprite-demo/compare.html'),'utf8');
+ assert.match(html,/id="quantized-canvas"/);
+ assert.doesNotMatch(html,/base_game\/|RESS\.HQR|\.glb/i);
+});

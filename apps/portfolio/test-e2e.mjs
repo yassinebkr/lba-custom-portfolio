@@ -8,13 +8,13 @@ import assert from 'node:assert/strict';
 const PORT=18765;
 const ROOT=new URL('../../dist/',import.meta.url);
 const base='/lba-custom-portfolio/';
-const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png'};
+const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.css':'text/css; charset=utf-8'};
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost:'+PORT);
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const requested=url.pathname.slice(base.length)||'index.html';
   const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested;
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|telemetry-receiver\.png))$/.test(name)){res.writeHead(404);return res.end();}
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|telemetry-receiver\.png|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
@@ -62,6 +62,36 @@ try{
     'crisp pixels should be opt-in rather than forcing enlarged 96px artifacts');
   await page.screenshot({path:'sprite-demo-desktop.png',fullPage:true});
 
+  // V6 verifies actual stage pixels and all 24 production QA variants.
+  const v6=await page.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/compare.html');
+  assert.equal(v6.status(),200,'V6 page served under GitHub Pages subpath');
+  await page.waitForFunction(()=>document.body.dataset.rendered==='256px-lanczos-160.png',{timeout:10000});
+  assert.equal(await page.locator('canvas').count(),3);
+  assert.equal(await page.locator('#alpha-levels').textContent(),'256');
+  assert.equal(await page.locator('#resolution').inputValue(),'256');
+  assert.ok(await page.locator('#quantized-canvas').evaluate(c=>c.getContext('2d').getImageData(128,128,1,1).data.length===4));
+  await page.locator('#direction').selectOption('sw');
+  await page.locator('#resolution').selectOption('224');
+  await page.locator('#filter').selectOption('box');
+  await page.locator('#palette').selectOption('96');
+  await page.waitForFunction(()=>document.body.dataset.rendered==='224px-box-96.png');
+  assert.equal(await page.locator('#source-canvas').evaluate(c=>c.width),224);
+  const metric=Number(await page.locator('#rmse-dark').textContent());
+  assert.ok(metric>0,'quantized V6 output has measured color loss');
+  await page.locator('#zoom').selectOption('2');
+  assert.equal(await page.locator('#quantized-canvas').evaluate(c=>c.style.width),'448px');
+  await page.locator('#background').selectOption('light');
+  assert.equal(await page.locator('body').getAttribute('data-background'),'light');
+  await page.locator('#crisp').check();
+  assert.equal(await page.locator('body').evaluate(x=>getComputedStyle(x.querySelector('canvas')).imageRendering),'pixelated');
+  await page.locator('#resolution').selectOption('256');
+  await page.locator('#filter').selectOption('lanczos');
+  await page.locator('#palette').selectOption('160');
+  await page.waitForFunction(()=>document.body.dataset.rendered==='256px-lanczos-160.png');
+  await page.locator('#zoom').selectOption('1');
+  await page.screenshot({path:'sprite-compare-desktop.png',fullPage:true});
+  assert.deepEqual(errors,[],'no JS errors while switching V6 real images');
+
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base);
   assert.equal(mobileResponse.status(),200);
@@ -74,6 +104,17 @@ try{
   await mobile.locator('label[for="dir-nw"]').click();
   assert.equal(await mobile.locator('.sheet img').evaluate(el=>el.naturalWidth),1024);
   await mobile.screenshot({path:'sprite-demo-mobile.png',fullPage:true});
+  const mcompare=await mobile.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/compare.html');
+  assert.equal(mcompare.status(),200);
+  await mobile.waitForFunction(()=>document.body.dataset.rendered==='256px-lanczos-160.png');
+  await mobile.locator('#direction').selectOption('nw');
+  await mobile.locator('#palette').selectOption('256');
+  await mobile.waitForFunction(()=>document.body.dataset.rendered==='256px-lanczos-256.png');
+  assert.equal(await mobile.locator('#alpha-levels').textContent(),'256');
+  const mobileOverflow=await mobile.evaluate(()=>({scroll:document.documentElement.scrollWidth,viewport:innerWidth}));
+  assert.ok(mobileOverflow.scroll<=mobileOverflow.viewport+1,'V6 mobile must not overflow document');
+  await mobile.screenshot({path:'sprite-compare-mobile.png',fullPage:true});
+
 
   // M5: test a rights-approved original sprite via intercepted fixtures.
   // Neither this one-pixel test image nor this in-memory catalog enters dist/.
