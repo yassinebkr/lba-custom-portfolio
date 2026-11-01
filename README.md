@@ -68,3 +68,9 @@ Original LBA art, models, archives and voices must never be part of the public p
 The [milestone implementation report](docs/IMPLEMENTATION_M1_M6.md) records the extracted original sprite codec, independently generated palettes, Blender directional render specification, separate-instance scene drawing, approved-asset browser loader and strict release checklist. The approved-asset catalog is **currently empty**: no proprietary LBA graphics and no unreviewed generated placeholders are packaged as final art.
 
 Technical check: `node scripts/release-audit.mjs --ci`. Final-art gate: `node scripts/release-audit.mjs --strict` (expected to fail until a polished original scene and all rights/visual reviews are complete).
+
+### Real authored content production
+
+New: [Original Blender renderer](pipeline/blender/README.md) → [Blender-to-recipe adapter](pipeline/original_recipe.py) → [image/atlas builder](pipeline/asset_batch.py) → explicit manual art and rights approval → [public catalog compiler](pipeline/APPROVED_WORKFLOW.md) → [original-sprite browser runtime](apps/portfolio/approved-runtime.mjs). The [technical/visual acceptance status](docs/IMPLEMENTATION_M1_M6.md) contains the exact test runs and unfulfilled quality gates.
+
+**The generated Blender smoke image and browser tests are not final art.** The site still displays the old geometric rooms until genuinely polished original graphics are explicitly reviewed and approved; no HQR archives, game sprites or game-derived palettes are used to publish public art.

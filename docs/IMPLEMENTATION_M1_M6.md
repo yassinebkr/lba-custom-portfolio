@@ -25,9 +25,9 @@ The *project code* borrows algorithmic ideas from the main-branch LBA image tool
 | --- | --- | --- |
 | **M1** | Dependency-free sprite/brick RLE, palette conversion and dimetric projection; malformed-input tests and 80 deterministic fuzz frames | No right to redistribute third-party extracted game assets is assumed |
 | **M2** | Original PNG→palette→private indexed format and PNG/JSON source manifest, independent of LBA files; GitHub Actions tests | A source photograph or detailed original illustration with approved production art quality |
-| **M3** | Blender GLB four-direction export script, optional named armature action and deterministic timed frame metadata; pure export-spec tests | **Blender rendering with an actual licensed rigged GLB and artistic evaluation** |
+| **M3** | Blender GLB four-direction export script, optional named armature action, actual original static GLB → four distinct PNG images ([CI 41261590066](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41261590066)), export-spec tests, and [Blender→recipe adapter](../pipeline/original_recipe.py) | **Animated rigged GLB playback and actual production-art evaluation** (static original GLB rendering has now been verified in CI) |
 | **M4** | Instance-preserving scene renderer, painter sorting, pivots, footprint collisions and atlas frames; pure canvas tests | **A completed, rich original room composed of reviewed artwork** |
-| **M5** | Browser runtime can load approved PNG atlas scenes, preserving directory/navigation fallback; build copies only reviewed assets | There are currently **zero approved assets and zero approved scenes**, so procedural fallback remains visible |
+| **M5** | Browser runtime loads approved PNG atlases (with real-browser image drawing CI), plus the [reviewed-assets→public scene compiler](../pipeline/compile-approved.mjs) ([CI 41261554873](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41261554873)); build copies only approved art | There are currently **zero approved assets and zero approved scenes**, so procedural fallback remains visible |
 | **M6** | Technical public audit, licensing checks, allowlisted staged modules, PNG verification and strict release gate | **Visual acceptance, real Pages deployment, animation QA and final art approval** |
 
 ## Public build invariants
@@ -61,3 +61,28 @@ The strict release gate does **not** self-approve graphics. After actual visual 
 ~~~
 
 The release audit compares the exact SHA-256 digest of the approved manifest and requires all stated attestations before marking the manual part satisfied. The file is intentionally **not created** by automation. The live URL and real images must be checked by the maintainer; an automated test cannot certify art ownership or artistic quality.
+
+## Reproducible original-model → portfolio route
+
+1. Start with a model, photo or other artwork **created from scratch or properly licensed**. For 3D objects, render four views:
+
+~~~bash
+blender -b --python pipeline/blender/render_iso.py -- --input originals/my-camera.glb --output /tmp/camera-views --size 256
+python3 pipeline/original_recipe.py /tmp/camera-views/animation.json --id my-camera --kind prop --creator 'project-owner'
+python3 -m pip install Pillow==11.3.0
+python3 pipeline/asset_batch.py /tmp/camera-views/recipe.json --out /tmp/camera-atlas
+~~~
+
+2. Inspect the actual PNG outputs and rights. A manifest is **pending by default**; the scripts must not change that. Only after explicit original-content and visual review set the source review state to approved and public permission to true.
+
+3. Export the authored scene from a creator tool or a scene JSON document referencing the reviewed asset IDs. Compile and validate:
+
+~~~bash
+node pipeline/compile-approved.mjs --assets /tmp/camera-atlas/assets.json --scenes my-original-scene.json --out apps/portfolio/assets
+node scripts/build-portfolio.mjs
+node scripts/release-audit.mjs --ci
+# Strict release remains blocked pending actual art and owner evidence:
+node scripts/release-audit.mjs --strict
+~~~
+
+The Blender test's four-view object is an **original synthetic testing fixture**, not artwork ready for the site. Its actual PNG renders are attached to [GitHub Actions run 41261590066](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41261590066). The browser CI uses a one-pixel in-memory test image, never public art. The current public catalog remains empty, and the original six isometric rooms remain low-fidelity functional placeholders.
