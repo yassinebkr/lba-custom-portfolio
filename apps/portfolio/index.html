@@ -12,7 +12,7 @@
 .skip{position:absolute;top:-99px;left:12px;background:#80e4d6;color:#09202a;padding:10px}.skip:focus{top:10px}
 header,main,footer{max-width:1320px;padding:0 28px;margin:auto}
 header{display:flex;justify-content:space-between;align-items:center;padding-top:22px;padding-bottom:22px;border-bottom:1px solid #314550}
-.brand{font-weight:800;letter-spacing:.14em}.brand span{color:#83e9d8}header a{text-decoration:none;border:1px solid #36505a;border-radius:8px;padding:9px 13px;font-size:13px}
+.brand{font-weight:800;letter-spacing:.14em}.brand span{color:#83e9d8}header .header-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:end}header a{text-decoration:none;border:1px solid #36505a;border-radius:8px;padding:9px 13px;font-size:13px}
 .intro{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:38px 0 30px}
 .eyebrow{color:#86e3d7;letter-spacing:.14em;text-transform:uppercase;font-size:11px;font-weight:800}
 h1{font-size:clamp(33px,4.5vw,58px);letter-spacing:-.04em;line-height:1.1;margin:8px 0}
@@ -36,7 +36,7 @@ kbd{border:1px solid #54707d;padding:3px 6px;border-radius:4px;color:#e4f2ef}
 .project{text-align:left;padding:22px;min-height:70px}.project:hover,.project[aria-pressed=true]{border-color:#8be3d3;background:#26444c}
 footer{padding-top:24px;padding-bottom:24px;border-top:1px solid #314550;color:#829aa4;font-size:12px}
 @media(max-width:920px){.layout{grid-template-columns:1fr}.sidebar{min-height:200px}.intro{align-items:start;flex-direction:column}}
-@media(max-width:580px){header,main,footer{padding-left:14px;padding-right:14px}.list{grid-template-columns:1fr}.stage .controls{flex-direction:column;align-items:start}h1{font-size:34px}}
+@media(max-width:580px){header{flex-wrap:wrap;gap:12px}header,main,footer{padding-left:14px;padding-right:14px}.list{grid-template-columns:1fr}.stage .controls{flex-direction:column;align-items:start}h1{font-size:34px}}
 .room-nav{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:0 0 16px;margin-bottom:4px;scrollbar-width:thin}
 .room-button{white-space:nowrap;border-radius:7px;color:#9db5c1;border:1px solid #35505d;background:#162a34;padding:10px 13px;font-size:11px}
 .room-button:hover,.room-button[aria-current=page]{background:#244b49;color:#e4fff8;border-color:var(--room-accent,#84e1d2)}
@@ -46,7 +46,7 @@ footer{padding-top:24px;padding-bottom:24px;border-top:1px solid #314550;color:#
 </head>
 <body>
 <a class="skip" href="#directory">Skip game and view projects</a>
-<header><div class="brand">◆ PROJECT <span>ATLAS</span></div><a href="https://github.com/yassinebkr">GitHub profile ↗</a></header>
+<header><div class="brand">◆ PROJECT <span>ATLAS</span></div><nav class="header-links" aria-label="Project navigation"><a href="./sprite-demo/">Sprite pipeline demo</a><a href="https://github.com/yassinebkr">GitHub profile ↗</a></nav></header>
 <main>
 <div class="intro"><div><p class="eyebrow">An interactive maker portfolio</p><h1>Explore the work.<br>Discover the ideas.</h1></div><p>Walk up to an exhibit to discover an engineering project. Everything runs inside your browser.</p></div>
 <nav id="room-nav" class="room-nav" aria-label="Portfolio rooms"></nav>

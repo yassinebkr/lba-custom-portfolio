@@ -12,8 +12,9 @@ const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost:'+PORT);
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
-  const name=url.pathname.slice(base.length)||'index.html';
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png)$/.test(name)){res.writeHead(404);return res.end();}
+  const requested=url.pathname.slice(base.length)||'index.html';
+  const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested;
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|telemetry-receiver\.png))$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
@@ -44,6 +45,20 @@ try{
   assert.deepEqual(errors,[],'no browser uncaught errors');
   await page.screenshot({path:'portfolio-desktop.png',fullPage:true});
 
+  // Standalone original atlas demo: all four directions, real public-path image.
+  const demoResponse=await page.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/');
+  assert.equal(demoResponse.status(),200,'Pages sprite-demo/ route opens');
+  assert.equal(await page.locator('input[name="direction"]').count(),4);
+  const actualSprite=await page.locator('.sheet img').evaluate(img=>({
+   loaded:img.complete,width:img.naturalWidth,height:img.naturalHeight
+  }));
+  assert.deepEqual(actualSprite,{loaded:true,width:384,height:112},'real generated atlas reaches browser');
+  const firstPosition=await page.locator('.sprite').evaluate(x=>getComputedStyle(x).backgroundPositionX);
+  await page.locator('label[for="dir-sw"]').click();
+  const secondPosition=await page.locator('.sprite').evaluate(x=>getComputedStyle(x).backgroundPositionX);
+  assert.notEqual(firstPosition,secondPosition,'direction selection must change the rendered sprite');
+  await page.screenshot({path:'sprite-demo-desktop.png',fullPage:true});
+
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base);
   assert.equal(mobileResponse.status(),200);
@@ -51,6 +66,11 @@ try{
   await mobile.locator('[data-direction="w"]').click();
   await mobile.locator('#interact').click();
   await mobile.screenshot({path:'portfolio-mobile.png',fullPage:true});
+  const spriteMobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base+'sprite-demo/');
+  assert.equal(spriteMobileResponse.status(),200);
+  await mobile.locator('label[for="dir-nw"]').click();
+  assert.equal(await mobile.locator('.sheet img').evaluate(el=>el.naturalWidth),384);
+  await mobile.screenshot({path:'sprite-demo-mobile.png',fullPage:true});
 
   // M5: test a rights-approved original sprite via intercepted fixtures.
   // Neither this one-pixel test image nor this in-memory catalog enters dist/.

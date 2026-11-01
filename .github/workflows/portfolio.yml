@@ -56,6 +56,8 @@ jobs:
           path: |
             portfolio-desktop.png
             portfolio-mobile.png
+            sprite-demo-desktop.png
+            sprite-demo-mobile.png
           if-no-files-found: ignore
       - name: Audit public-only Pages artifact and root fallback
         run: |
@@ -66,7 +68,7 @@ jobs:
           path: dist
 
   publish-pages:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/feature/portfolio-studio-j1-j8' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-sprite-demo]')))
     needs: verify
     runs-on: ubuntu-latest
     permissions:

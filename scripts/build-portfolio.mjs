@@ -14,7 +14,9 @@ const entries=[
  ['packages/asset-core/index.mjs','modules/asset-core.mjs'],
  ['packages/scene-core/scene.mjs','modules/scene-core.mjs'],
  ['packages/public-manifest/index.mjs','modules/public-manifest.mjs'],
- ['apps/portfolio/assets/approved-worlds.json','assets/approved-worlds.json']
+ ['apps/portfolio/assets/approved-worlds.json','assets/approved-worlds.json'],
+ ['apps/portfolio/sprite-demo/index.html','sprite-demo/index.html'],
+ ['apps/portfolio/sprite-demo/telemetry-receiver.png','sprite-demo/telemetry-receiver.png']
 ];
 const manifest=JSON.parse(await readFile(join(root,'apps/portfolio/assets/approved-worlds.json'),'utf8'));
 validateApprovedManifest(manifest);
@@ -36,6 +38,9 @@ for(const [source,target] of entries){
   if(/\.HQR|\.jsdos|RELENT\.EXE/i.test(text))throw Error('Proprietary game dependency in public runtime');
   data=Buffer.from(text);
  }
+ if(target==='sprite-demo/telemetry-receiver.png' &&
+  (data.length>250000 || data.subarray(0,8).toString('hex')!=='89504e470d0a1a0a'))
+   throw Error('Generated original sprite demo must be a small valid PNG');
  files.push([target,data]);
 }
 for(const asset of Object.values(manifest.assets)){
