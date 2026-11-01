@@ -65,7 +65,7 @@ J0["J0: architecture and audit"] --> J1["J1: static playable proof"]
 | --- | --- | --- | --- | --- |
 | 2026-11-01 | J0 | 7e9bb42 | Repository audit + four checked-in specs | Completed documentation baseline |
 | 2026-11-01 | J1 (WIP) | 114e37a, 7323bbf, b2a32f5, 158cb0b | Six-room original static site with nested-path browser E2E | CI 41254491670 passed; no verified live Pages URL |
-| 2026-11-01 | J2 (WIP) | 87601ae, d63bbe6, b406420 | React/TS creative Studio; inspected desktop/mobile screenshots; responsive correction | CI 41254525803 passed; newest responsive screenshot recheck pending |
+| 2026-11-01 | J2 (WIP) | 87601ae, d63bbe6, b406420 | React/TS creative Studio; inspected desktop/mobile screenshots; responsive correction | CI 41254721278 passed; 390px mobile screenshot inspected with no horizontal overflow |
 | 2026-11-01 | J3 (WIP) | c4591ce | Shared v1 validators, rights metadata and Studio save/import/export validation | CI 41254091108 passed; public-runtime schema parity still incomplete |
 | 2026-11-01 | J4 (WIP) | 71c1476 | PNG-to-atlas CLI, Blender multi-view adapter, synthetic-image tests | CI 41254634053 passed; actual photographic/3D visual cases outstanding |
 | 2026-11-01 | J5 (WIP) | a6e9997 | Studio multi-scene authoring and isolated drafts | CI Studio build passed; no export-to-runtime bridge yet |
