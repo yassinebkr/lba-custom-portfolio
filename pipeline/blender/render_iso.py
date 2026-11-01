@@ -67,7 +67,7 @@ def render():
     bpy.ops.object.camera_add()
     camera=bpy.context.object
     camera.data.type="ORTHO"
-    camera.data.ortho_scale=extent*3.4
+    camera.data.ortho_scale=extent*2.85
     scene.camera=camera
     bpy.ops.object.light_add(type="AREA",location=(mid.x+extent*4,mid.y-extent*4,mid.z+extent*6))
     light=bpy.context.object
@@ -76,7 +76,7 @@ def render():
     light.data.size=extent*4
     scene.render.engine="CYCLES"
     scene.cycles.device="CPU"
-    scene.cycles.samples=16
+    scene.cycles.samples=40
     scene.cycles.use_denoising=False
     scene.render.film_transparent=True
     scene.render.resolution_x=a.size

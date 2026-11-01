@@ -30,12 +30,12 @@ jobs:
           PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/tests/build_original_fixture.py -- /tmp/atlas-original-fixture.glb
           test -s /tmp/atlas-original-fixture.glb
       - name: Render four transparent directional frames
-        run: PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 96
+        run: PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/render_iso.py -- --input /tmp/atlas-original-fixture.glb --output /tmp/atlas-blender-spike --size 512
       - name: Check exact image geometry, transparency and distinct views
         run: python pipeline/blender/tests/check_rendered_fixture.py /tmp/atlas-blender-spike
       - name: Convert real Blender PNG views with the project sprite pipeline
         run: |
-          python pipeline/original_recipe.py /tmp/atlas-blender-spike/animation.json --id telemetry-receiver --kind prop --creator 'Project Atlas original fixture'
+          python pipeline/original_recipe.py /tmp/atlas-blender-spike/animation.json --id telemetry-receiver --kind prop --creator 'Project Atlas original fixture' --width 256 --height 256 --colors 160
           python pipeline/asset_batch.py /tmp/atlas-blender-spike/recipe.json --out /tmp/atlas-blender-spike/packed
           python - <<'PY'
           import json
@@ -49,7 +49,7 @@ jobs:
           assert {f['direction'] for f in a['frames']} == {'NE','NW','SE','SW'}
           assert not a['source']['allowedForPublicBuild']
           with Image.open(out/a['atlasRef']) as png:
-              assert png.size==(384,112),png.size
+              assert png.size==(1024,256),png.size
               assert png.mode=='RGBA'
           print('Verified four-frame original sprite atlas, pending artistic review')
           PY
@@ -57,16 +57,16 @@ jobs:
         if: github.event_name == 'push' && github.ref_name == 'feature/portfolio-studio-j1-j8'
         run: |
           target=apps/portfolio/sprite-demo/telemetry-receiver.png
-          if [ ! -f "$target" ]; then
-            mkdir -p apps/portfolio/sprite-demo
-            cp /tmp/atlas-blender-spike/packed/atlases/telemetry-receiver.png "$target"
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add "$target"
-            git commit -m "asset(sprite-demo): original Blender-to-Pillow sprite atlas"
-            git push origin HEAD:feature/portfolio-studio-j1-j8
+          mkdir -p apps/portfolio/sprite-demo
+          cp /tmp/atlas-blender-spike/packed/atlases/telemetry-receiver.png "$target"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$target"
+          if git diff --cached --quiet; then
+            echo "Sprite atlas already matches the committed generated output"
           else
-            echo "Original sprite demo atlas already tracked; leaving it unchanged"
+            git commit -m "asset(sprite-demo): refresh detailed high-resolution original atlas"
+            git push origin HEAD:feature/portfolio-studio-j1-j8
           fi
       - uses: actions/upload-artifact@v4
         if: always()

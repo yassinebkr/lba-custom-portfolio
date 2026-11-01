@@ -16,7 +16,7 @@ for orientation,frames in meta["directions"].items():
     path=root/frames[0]["path"]
     assert path.is_file(),str(path)
     with Image.open(path) as png:
-        assert png.size==(96,96)
+        assert png.size==(512,512)
         rgba=png.convert("RGBA")
         assert rgba.getchannel("A").getbbox(),"Transparent or empty render: "+str(path)
         digests.add(hashlib.sha256(rgba.tobytes()).hexdigest())
