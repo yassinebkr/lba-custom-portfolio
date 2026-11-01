@@ -5,6 +5,8 @@ on:
     branches: [feature/portfolio-studio-j1-j8]
     paths:
       - 'pipeline/blender/**'
+      - 'pipeline/visual_matrix.py'
+      - 'pipeline/tests/test_visual_matrix.py'
       - '.github/workflows/blender-render.yml'
   workflow_dispatch:
 
