@@ -74,3 +74,12 @@ Technical check: `node scripts/release-audit.mjs --ci`. Final-art gate: `node sc
 New: [Original Blender renderer](pipeline/blender/README.md) → [Blender-to-recipe adapter](pipeline/original_recipe.py) → [image/atlas builder](pipeline/asset_batch.py) → explicit manual art and rights approval → [public catalog compiler](pipeline/APPROVED_WORKFLOW.md) → [original-sprite browser runtime](apps/portfolio/approved-runtime.mjs). The [technical/visual acceptance status](docs/IMPLEMENTATION_M1_M6.md) contains the exact test runs and unfulfilled quality gates.
 
 **The generated Blender smoke image and browser tests are not final art.** The site still displays the old geometric rooms until genuinely polished original graphics are explicitly reviewed and approved; no HQR archives, game sprites or game-derived palettes are used to publish public art.
+
+
+## V1–V5 — visual quality production (work in progress)
+
+[Art direction](docs/ART_DIRECTION.md) · [Source/output loss audit](docs/VISUAL_QA.md) · [Blender look-dev and V5 matrix](docs/SPRITE_RENDER_PRESETS.md)
+
+The original telemetry receiver now has deliberately layered 3D detail and a shared warm-key/cool-fill/rim lighting setup. Its comparison workflow produces **24 real PNG atlas variants** from the same unchanged Blender originals: 192/224/256px, BOX/Lanczos, truecolor/96/160/256 colors. Every candidate preserves fractional alpha and relative camera framing, and the comparison is a local CI artifact rather than a public gallery.
+
+**Visual approval remains pending.** Do not confuse generated test geometry with professional quality. No V6–V8 changes, no release of new art to GitHub Pages, and no merge into main are authorized by this set of changes.

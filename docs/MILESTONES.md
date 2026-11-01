@@ -65,3 +65,16 @@ python3 -m unittest discover -s pipeline/tests -v
 | J3 representative sources | 9e0d052 | Seven synthetic source fixtures, Python validation CI success |
 
 The original HQR/js-dos experiments are retained, but no game-derived assets are approved for redistribution. **Do not call future milestones complete based only on code or placeholder artwork.**
+
+
+## Visual Quality Pipeline — V1 to V5
+
+| Gate | Implementation | Acceptance boundary |
+| --- | --- | --- |
+| V1 | Source measurements from actual previous 512px renders and 256px atlas; reusable pixel/alpha audit and tests | Measured binary alpha and inconsistent source frame occupancy |
+| V2 | Original golden-sample art direction with material, silhouette, camera and rights rules | Direction documented; human artistic review not automated |
+| V3 | Real model source rebuilt from zero: beveled case, service panel, layered display, buttons, engraved features, vents, side knobs, handle and mast | Blender GLB fixture tests; visual quality review required |
+| V4 | Shared studio-style warm key / cool fill / rim; PBR materials and 16-bit RGBA high-res renders | Runner compatibility and rendered image inspection required |
+| V5 | Non-destructive 24-way export matrix, constant per-view frame origin, truecolor baselines, preserved fractional alpha, objective errors on two backdrops | 24 PNG tests and human preset selection; **no auto-approval** |
+
+V6–V8 are outside the current authorization. The public site retains the older demonstration until the user explicitly approves an artistic candidate. Tests show that a program works; only inspection at real game scale can establish art direction.
