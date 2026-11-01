@@ -51,6 +51,37 @@ try{
   await mobile.locator('[data-direction="w"]').click();
   await mobile.locator('#interact').click();
   await mobile.screenshot({path:'portfolio-mobile.png',fullPage:true});
+
+  // M5: test a rights-approved original sprite via intercepted fixtures.
+  // Neither this one-pixel test image nor this in-memory catalog enters dist/.
+  const authored=await browser.newPage({viewport:{width:960,height:720}});
+  await authored.addInitScript(()=>{
+    window.__originalSpriteDraws=0;
+    const original=CanvasRenderingContext2D.prototype.drawImage;
+    CanvasRenderingContext2D.prototype.drawImage=function(...args){
+      window.__originalSpriteDraws++;
+      return original.apply(this,args);
+    };
+  });
+  const source={origin:'original-art',creator:'synthetic browser fixture',
+    license:'original',reviewStatus:'approved',allowedForPublicBuild:true};
+  const doc={schemaVersion:1,assets:{
+    originalbench:{atlasRef:'atlases/originalbench.png',reviewStatus:'approved',
+      allowedForPublicBuild:true,source,
+      pivot:{x:0,y:0},frames:[{action:'idle',direction:'se',rect:[0,0,1,1]}]}
+  },rooms:{showroom:{scene:{schemaVersion:1,id:'showroom',width:10,depth:10,
+    instances:[{id:'bench1',assetId:'originalbench',x:2,y:0,z:2}]}}}};
+  await authored.route('**/assets/approved-worlds.json',route=>
+    route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(doc)}));
+  const pixel=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO96Zp4AAAAASUVORK5CYII=','base64');
+  await authored.route('**/assets/atlases/originalbench.png',route=>
+    route.fulfill({status:200,contentType:'image/png',body:pixel}));
+  await authored.goto('http://127.0.0.1:'+PORT+base);
+  await authored.waitForFunction(()=>window.__originalSpriteDraws>0,null,{timeout:10000});
+  await authored.locator('#room-nav button').nth(1).click();
+  await authored.locator('#list .project').first().waitFor();
+  await authored.close();
+
   const scroll=await mobile.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth}));
   assert.ok(scroll.width<=scroll.viewport+1,'mobile must not horizontally overflow');
   console.log('Browser E2E: desktop, mobile, controls, nested path, and project fallback passed');
