@@ -1,0 +1,78 @@
+name: V6 Import verified original image comparison
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - '.github/workflows/v6-import.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  import-verified-v5-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download pinned successful Blender V5 run
+        uses: actions/download-artifact@v4
+        with:
+          name: m3-blender-original-fixture-render
+          run-id: 41267195377
+          github-token: ${{ github.token }}
+          repository: yassinebkr/lba-custom-portfolio
+          path: .v6-source
+      - name: Stage actual PNG comparisons and Blender source images
+        run: |
+          set -euo pipefail
+          dest=apps/portfolio/sprite-demo/compare
+          mkdir -p "$dest"
+          cp .v6-source/visual-matrix/matrix.json "$dest/matrix.json"
+          cp .v6-source/visual-matrix/*.png "$dest/"
+          cp .v6-source/ne/idle-00000.png "$dest/source-ne.png"
+          cp .v6-source/nw/idle-00000.png "$dest/source-nw.png"
+          cp .v6-source/sw/idle-00000.png "$dest/source-sw.png"
+          cp .v6-source/se/idle-00000.png "$dest/source-se.png"
+          python3 - <<'PY'
+          import json,hashlib,re,struct
+          from pathlib import Path
+          root=Path("apps/portfolio/sprite-demo/compare")
+          data=json.loads((root/"matrix.json").read_text())
+          assert data['schemaVersion']==1 and len(data['candidates'])==24
+          assert data['inputFrameSize']==[768,768] and data['sharedCrop']==[103,35,665,597]
+          assert data['directions']==['ne','nw','sw','se']
+          allowed=set()
+          for item in data['candidates']:
+              name=item['file']
+              assert re.fullmatch(r'(?:192|224|256)px-(?:lanczos|box)-(?:truecolor|96|160|256)\.png',name), name
+              allowed.add(name)
+              b=(root/name).read_bytes()
+              assert b[:8]==b'\x89PNG\r\n\x1a\n'
+              width,height=struct.unpack('>II',b[16:24])
+              assert (width,height)==(4*item['size'],item['size'])
+              assert len(b)==item['bytes']
+              assert hashlib.sha256(b).hexdigest()==item['sha256']
+          assert len(allowed)==24
+          for direction in ['ne','nw','sw','se']:
+              b=(root/('source-'+direction+'.png')).read_bytes()
+              assert b[:8]==b'\x89PNG\r\n\x1a\n'
+              assert struct.unpack('>II',b[16:24])==(768,768)
+          assert len(list(root.glob('*.png')))==28
+          print("V6: byte-checked 24 original sprite atlases and four Blender source PNGs")
+          PY
+      - name: Commit comparison PNGs to feature branch (not production art)
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/portfolio/sprite-demo/compare
+          if git diff --cached --quiet; then
+            echo 'Reference source files already match the pinned artifact'
+          else
+            git commit -m 'assets(V6): pin actual Blender renders and 24 verified sprite candidates'
+            git push origin HEAD:feature/portfolio-studio-j1-j8
+          fi
