@@ -1,0 +1,26 @@
+name: M4 Original scene composition
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'packages/scene-core/**'
+      - 'packages/asset-core/**'
+      - '.github/workflows/scene-core.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scene-composition:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate independent bricks, depth, collisions and frames
+        run: |
+          node --test packages/asset-core/index.test.mjs
+          node --test packages/scene-core/scene.test.mjs
