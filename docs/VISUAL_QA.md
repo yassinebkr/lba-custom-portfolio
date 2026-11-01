@@ -49,3 +49,24 @@ One shared 768px source crop **[103, 35, 665, 597]** is applied to all four orie
 RMSE measures palette error only, not aesthetics. Truecolor at 256px/Lanczos is the provisional fidelity benchmark; the 160-color variant saves about 14% of bytes. Neither is a finalized release preset.
 
 V3 original model and V4 three-point PBR lighting rendered successfully at 768px. A real source render and the 24-option matrix were inspected. The test object is still a **technical golden sample** pending artistic review, and no new art was published on GitHub Pages. The old asset_batch converter still thresholds alpha; V5 safely demonstrates a better, separate exporter rather than silently changing legacy behavior.
+
+
+## V6 — actual interactive comparison, 2026-11-01
+
+[Review on GitHub Pages](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) once the approved branch Actions publishing workflow is complete. The comparator is intentionally *separate* from the final gameplay runtime.
+
+~~~mermaid
+flowchart LR
+  SOURCE["Original 768px Blender PNG"] --> CROP["Single shared crop"]
+  CROP --> TRUE["RGBA source / truecolor"]
+  TRUE --> FILTER["192 / 224 / 256; BOX / Lanczos"]
+  FILTER --> PALETTE["96 / 160 / 256 / RGBA"]
+  PALETTE --> MATRIX["Actual V5 PNG atlas and JSON"]
+  MATRIX --> VIEWER["Static V6 three-stage comparison on GitHub Pages"]
+~~~
+
+**Implementation details:** The 24 sprite atlases and four source PNGs are copied from the successful [V5 Actions artifact](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377). The importer checks all atlas SHA-256 digests, dimensions, and the pinned shared crop [103,35,665,597] before committing. The public builder repeats the validation before emitting the exact PNG/JSON files in dist. The page itself has no external dependencies; it uses same-origin PNGs.
+
+**Browser acceptance:** Check all four orientations, two resampling filters, three sprite sizes, truecolor and the three limited palettes, actual source/truecolor/quantized canvases, changing metric values and 256 alpha levels, keyboard-accessible native selects, zoom 100/150/200%, pixelated option, background choices, nested Pages URL, and 390px mobile viewport without horizontal document overflow. Full-page desktop/mobile screenshot evidence is collected automatically.
+
+The first interactive review used actual captures and confirms that the source and unquantized export are very similar, while palette-limited images have measurable but modest differences. No numerical score establishes whether the result meets the LBA1-inspired artistic standard. V7 scene integration and V8 final preset remain unstarted. No final gameplay asset is marked approved.

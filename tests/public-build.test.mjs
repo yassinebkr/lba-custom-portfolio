@@ -35,7 +35,7 @@ test('standalone sprite demo publishes actual generated PNG and no builder',asyn
  assert.equal(atlas.readUInt32BE(20),256,'actual generated sprite should be 256px tall');
  const source=await readFile(join(root,'apps/portfolio/sprite-demo/telemetry-receiver.png'));
  assert.deepEqual(atlas,source,'published sprite must be byte-identical to committed pipeline atlas');
- assert.equal((await readdir(join(root,'dist/sprite-demo'))).length,2);
+ assert.deepEqual((await readdir(join(root,'dist/sprite-demo'))).sort(),['compare','compare.css','compare.html','compare.mjs','index.html','telemetry-receiver.png']);
 });
 
 test('V6 public comparison is copied from checksum-verified original Blender PNGs only',async()=>{

@@ -87,3 +87,12 @@ The original telemetry receiver now has deliberately layered 3D detail and a sha
 ## V5 verified engineering comparison
 
 [See the actual V5 GitHub Actions render, PNG matrix and comparison files](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377). Details and measurements are in [Visual QA](docs/VISUAL_QA.md). V1–V5 does not publish new art or start V6–V8.
+
+
+## V6 — live comparison gallery (original pipeline evidence)
+
+The separate [V6 Visual Quality Lab](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) places three actual stages side by side: Blender source (768px), non-quantized RGBA sprite, and the selected 96/160/256-color variant. Controls cover NE/NW/SW/SE, 192/224/256px, Lanczos/BOX, 100/150/200% zoom, dark/light/checkerboard and optional crisp pixels. The metrics are loaded from the real V5 matrix.json, not generated from guesses.
+
+Source content is pinned to the green [V5 Blender Action run 41267195377](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/41267195377) and all 24 PNG hashes are checked before entering dist. The four original 768px PNGs are published **only for this explicit comparison demo**; Blender/GLB, internal conversion scripts, legacy HQR files and any non-reviewed gameplay art are excluded. The V6 page is **not** an approval of its art, a production scene, or an implementation of V7/V8.
+
+Source code: [V6 comparator](apps/portfolio/sprite-demo/compare.mjs). Visual and release policies: [Visual QA](docs/VISUAL_QA.md).
