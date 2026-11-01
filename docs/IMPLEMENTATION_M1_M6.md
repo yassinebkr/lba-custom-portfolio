@@ -51,3 +51,13 @@ node scripts/release-audit.mjs --strict
 \`--strict\` must remain failing while there is no visually approved scene. Passing code tests is not a substitute for the quality of LBA1-era sprite artwork or proof that the live GitHub Pages address is correct. The current site is a **prototype**, not a visually completed J4/J8 release.
 
 For source-to-sprite validation, see \`pipeline/compat/\`. For deterministic Blender frames, see \`pipeline/blender/\`. The generic scene compositor lives in \`packages/scene-core/\`. The approved-only catalog used for publishing lives in \`apps/portfolio/assets/approved-worlds.json\`.
+
+## M6 final attestation contract
+
+The strict release gate does **not** self-approve graphics. After actual visual inspection at game scale and checking rights, the owner can explicitly create a **nonexistent until reviewed** file at docs/art-release-approval.json with:
+
+~~~json
+{"schemaVersion":1,"manifestSha256":"<sha256 of dist/assets/approved-worlds.json>","reviewedBy":"maintainer","confirmedPagesURL":"https://yassinebkr.github.io/lba-custom-portfolio/","visualEvidence":["real desktop screenshot reference","real mobile screenshot reference"],"confirmedRights":true,"confirmedVisualQuality":true,"confirmedMobileAndDesktop":true}
+~~~
+
+The release audit compares the exact SHA-256 digest of the approved manifest and requires all stated attestations before marking the manual part satisfied. The file is intentionally **not created** by automation. The live URL and real images must be checked by the maintainer; an automated test cannot certify art ownership or artistic quality.

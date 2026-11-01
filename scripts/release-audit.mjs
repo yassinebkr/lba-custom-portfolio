@@ -44,7 +44,21 @@ if(!Object.values(m.rooms).some(r=>r.playerAssetId))
  pending.push('No original animated playable character is integrated');
 if(!Object.values(m.assets).some(a=>a.frames.length>=4))
  pending.push('No approved multi-frame asset is packaged');
-pending.push('Live GitHub Pages, mobile and desktop image quality require manual verification');
+// Release sign-off is a human artifact bound to the exact published manifest.
+const manifestBytes=await readFile(join(dist,'assets/approved-worlds.json'));
+const {createHash}=await import('node:crypto');
+const currentHash=createHash('sha256').update(manifestBytes).digest('hex');
+let approval=null;
+try{approval=JSON.parse(await readFile(join(root,'docs/art-release-approval.json'),'utf8'));}
+catch{}
+if(!approval||approval.schemaVersion!==1||approval.manifestSha256!==currentHash||
+  typeof approval.reviewedBy!=='string'||!approval.reviewedBy.trim()||
+  typeof approval.confirmedPagesURL!=='string'||!/^https:\/\/[a-z0-9.-]+\/[a-z0-9_/-]+\/?$/i.test(approval.confirmedPagesURL)||
+  !Array.isArray(approval.visualEvidence)||approval.visualEvidence.length<2||
+  approval.confirmedRights!==true||
+  approval.confirmedVisualQuality!==true||
+  approval.confirmedMobileAndDesktop!==true)
+ pending.push('Manual visual, ownership and live Pages approval record missing or outdated');
 const report={
  status:pending.length?'TECHNICAL_ONLY':'READY_FOR_MANUAL_REVIEW',
  mode:strict?'strict':'ci',staticFileCount:files.length,approvedAssets:Object.keys(m.assets).length,
