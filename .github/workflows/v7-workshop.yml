@@ -1,0 +1,52 @@
+name: V7 Original workshop visual test
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'pipeline/blender/render_workshop.py'
+      - 'pipeline/blender/tests/check_workshop.py'
+      - '.github/workflows/v7-workshop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render-review-room:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install CPU Blender and image checks
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y blender python3-numpy python3-pil libegl1 libgl1-mesa-dri
+          python3 -m pip install --break-system-packages Pillow==11.3.0
+      - name: Render unique original workshop, empty of proprietary artwork
+        run: |
+          PYTHONPATH=/usr/lib/python3/dist-packages blender --background --python pipeline/blender/render_workshop.py -- --out /tmp/v7-workshop
+          python3 pipeline/blender/tests/check_workshop.py /tmp/v7-workshop
+      - name: Preserve source render QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v7-original-workshop-render
+          path: /tmp/v7-workshop
+          if-no-files-found: warn
+      - name: Commit only generated scene images and layout (NOT Blender)
+        run: |
+          set -euo pipefail
+          mkdir -p apps/portfolio/sprite-demo/scene
+          cp /tmp/v7-workshop/background.png apps/portfolio/sprite-demo/scene/
+          cp /tmp/v7-workshop/foreground.png apps/portfolio/sprite-demo/scene/
+          cp /tmp/v7-workshop/layout.json apps/portfolio/sprite-demo/scene/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/portfolio/sprite-demo/scene
+          if git diff --cached --quiet; then
+            echo 'V7 image evidence already matches'
+          else
+            git commit -m 'assets(V7): original rendered isometric workshop QA environment'
+            git push origin HEAD:feature/portfolio-studio-j1-j8
+          fi
