@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="An original electronics workshop scene for evaluating a real isometric sprite at game scale.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; object-src 'none'; base-uri 'self'">
+<title>In-Scene Review · Project Atlas</title>
+<link href="./scene-lab.css" rel="stylesheet"><script type="module" src="./scene-lab.mjs"></script>
+</head><body>
+<div class="wrap">
+<header class="topbar"><a href="../" class="brand">PROJECT <span>ATLAS</span></a><nav aria-label="Navigation"><a href="./compare.html">Compare sprites</a><a href="./">Sprite Lab</a><a href="../">Portfolio</a></nav></header>
+<main>
+<div class="intro"><div><p class="eyebrow">V7 · IN-SCENE QUALITY CONTROL</p><h1>Does it belong<br><em>in the world?</em></h1></div>
+<p>Inspect the actual V5 receiver sprite inside an original workshop rendered in Blender. Test its scale, colors, lighting and how it sits behind the table edge — at the size a visitor would see it.</p></div>
+<div class="workspace">
+<section class="scene-panel" aria-label="Isometric workshop original visual QA">
+<div class="scene-top"><span class="live-dot"></span><span>ORIGINAL TELEMETRY WORKSHOP</span><span class="scene-kind">VISUAL TEST · NOT FINAL GAME ART</span></div>
+<div class="scene-frame"><canvas id="scene" width="960" height="640" role="img" aria-label="Original Blender-rendered electronics workshop with the original telemetry receiver sprite on the table"></canvas>
+<div class="overlay-coordinate" id="overlay-coordinate">V7 / TEST ROOM · 01</div>
+<div id="scene-loading" class="loading" role="status">Loading actual workshop render…</div></div>
+<div class="scene-foot"><span>Drag the receiver slightly across the bench to check its placement.</span><span id="scene-status">Preparing scene</span></div>
+</section>
+<aside class="tool-panel" aria-label="Scene visual controls">
+<div class="tool-head"><p class="eyebrow">REVIEW CONTROLS</p><h2>Field radio / 01</h2><p>Original Blender geometry rendered to sprites — not a model rendered live by the browser.</p></div>
+<div class="control"><label for="view">Sprite orientation</label><select id="view"><option value="ne">North-east</option><option value="nw">North-west</option><option value="sw">South-west</option><option value="se">South-east</option></select></div>
+<div class="control"><label for="variant">Palette</label><select id="variant"><option value="160">160 colors / smaller</option><option value="truecolor">Truecolor / full fidelity</option></select></div>
+<div class="control"><label for="size">Scale <strong id="size-out">75%</strong></label><input id="size" type="range" min="55" max="115" step="5" value="75"></div>
+<fieldset class="checks"><legend>Render diagnostics</legend>
+<label><input id="occlusion" type="checkbox" checked> Foreground desk occlusion</label>
+<label><input id="shadow" type="checkbox" checked> Approximate contact shadow</label>
+<label><input id="anchor" type="checkbox"> Show placement anchor</label>
+</fieldset>
+<div class="actions"><button id="inspect" type="button">Inspect receiver</button><button id="reset" type="button">Reset placement</button></div>
+<section class="inspector" aria-live="polite"><p class="eyebrow">CONTEXT</p><h3 id="inspection-title">In-scene fidelity</h3><p id="inspection-copy">Use the controls to compare the same actual atlas inside the authored Blender environment.</p></section>
+<div class="review"><p class="eyebrow">REVIEW TARGETS</p><p>Legible silhouette · grounded tabletop contact · coherent materials · consistent orientation · visible 3D occlusion</p></div>
+</aside>
+</div>
+<section class="below"><div><span class="eyebrow">TRUE ORIGINAL ASSETS</span><h2>A real 3D room, not painted Canvas blocks</h2>
+<p>The floor, two walls, instrument shelf, workbench, controls, and loose workshop equipment are independently modeled and lit in Blender. The radio itself uses the exact V5 256 px/Lanczos atlas, composited between the background and the desk-lip render.</p></div>
+<div><span class="eyebrow">LIMITATIONS</span><h2>A visual QA environment</h2><p>Placement movement is intentionally limited to the tabletop. The radio's shadow is an approximation, not yet a physically rendered cast-shadow pass. This is a test for V7; it is not a finished playable room, navigation system or V8 production preset.</p></div></section>
+</main><footer>V7 · Engineering preview, original geometry and sprites only. No LBA game assets, models or archive files. <a href="https://github.com/yassinebkr/lba-custom-portfolio">GitHub source</a></footer>
+</div></body></html>
