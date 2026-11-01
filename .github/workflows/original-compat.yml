@@ -1,0 +1,29 @@
+name: M2 Original source PNG conversion
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'pipeline/compat/**'
+      - 'packages/asset-core/**'
+      - '.github/workflows/original-compat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-png:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install PNG parser (local-only dependency)
+        working-directory: pipeline/compat
+        run: npm install --no-audit --no-fund
+      - name: Test independent palette and lossless codec
+        run: |
+          node --test packages/asset-core/index.test.mjs
+          node --test pipeline/compat/test.mjs
