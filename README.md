@@ -62,3 +62,9 @@ Only allowlisted public files enter dist/. The GitHub Actions publishing job use
 | [Legacy LBA workspace](docs/LEGACY_LBA_README.md) | Preserved historic research; excluded from the public build |
 
 Original LBA art, models, archives and voices must never be part of the public portfolio. All development remains on the dedicated branch, with tests, small commits and no merge.
+
+## M1–M6 implementation and public rights boundary
+
+The [milestone implementation report](docs/IMPLEMENTATION_M1_M6.md) records the extracted original sprite codec, independently generated palettes, Blender directional render specification, separate-instance scene drawing, approved-asset browser loader and strict release checklist. The approved-asset catalog is **currently empty**: no proprietary LBA graphics and no unreviewed generated placeholders are packaged as final art.
+
+Technical check: `node scripts/release-audit.mjs --ci`. Final-art gate: `node scripts/release-audit.mjs --strict` (expected to fail until a polished original scene and all rights/visual reviews are complete).

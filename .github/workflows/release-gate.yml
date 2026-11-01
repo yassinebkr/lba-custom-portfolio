@@ -1,0 +1,35 @@
+name: M6 Public release safety gate
+
+on:
+  push:
+    branches:
+      - feature/portfolio-studio-j1-j8
+    paths:
+      - 'scripts/release-audit.mjs'
+      - 'scripts/build-portfolio.mjs'
+      - 'tests/release-audit.test.mjs'
+      - 'packages/public-manifest/**'
+      - '.github/workflows/release-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  technical-and-artistic-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate fail-closed technical build
+        run: node scripts/release-audit.mjs --ci
+      - name: Assert strict release does not falsely pass with unapproved placeholders
+        run: node --test tests/release-audit.test.mjs
+      - name: Archive release audit report
+        run: node scripts/release-audit.mjs --ci > release-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m6-release-audit
+          path: release-report.json
