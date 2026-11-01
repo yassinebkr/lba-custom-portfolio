@@ -22,12 +22,12 @@ export async function loadApprovedWorld(roomId,{fetcher=fetch,imageLoader=loadIm
  await Promise.all([...refs].map(async ref=>{
   images[ref]=await imageLoader(new URL('./assets/'+ref,import.meta.url));
  }));
- return {roomId,paint(ctx,player,timeMs=0){
+ return {roomId,paint(ctx,player,timeMs=0,facing='se'){
   const actors=room.playerAssetId?[{id:'moving-player',assetId:room.playerAssetId,
-   x:player.x,y:0,z:player.z,action:'idle',direction:'se'}]:[];
+   x:player.x,y:0,z:player.z,action:'idle',direction:facing}]:[];
   const scene={...room.scene,instances:[...room.scene.instances,...actors]};
   const commands=commandsForScene(scene,manifest.assets,{
-   originX:480,originY:110,scale:1.29,frameIndex:Math.floor(timeMs/150)
+   originX:480,originY:110,scale:1.29,timeMs
   });
   drawScene(ctx,commands,images);
  }};

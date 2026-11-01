@@ -46,3 +46,13 @@ test('reject bad positions, duplicated identities, unknown art and overflow',()=
  s.instances[1].assetId='floor';s.instances[1].x=130;
  assert.throws(()=>validateScene(s,catalog),/outside/);
 });
+
+test('animation timing follows per-asset durations rather than global frame index',()=>{
+ const authored={...catalog,lamp:{...catalog.lamp,frames:[
+  {action:'active',direction:'se',rect:[0,0,32,48],durationMs:100},
+  {action:'active',direction:'se',rect:[32,0,32,48],durationMs:300}
+ ]}};
+ const findAt=ms=>commandsForScene(scene(),authored,{timeMs:ms}).find(c=>c.assetId==='lamp').sourceX;
+ assert.equal(findAt(99),0);assert.equal(findAt(100),32);assert.equal(findAt(399),32);
+ assert.equal(findAt(400),0);
+});

@@ -25,7 +25,7 @@ export function validateScene(scene,catalog){
  return true;
 }
 export function commandsForScene(scene,catalog,{
- originX=0,originY=0,scale=1,frameIndex=0,projection={halfWidth:24,depth:12,height:15}
+ originX=0,originY=0,scale=1,frameIndex=0,timeMs=null,projection={halfWidth:24,depth:12,height:15}
 }={}){
  validateScene(scene,catalog);
  if(!Number.isFinite(scale)||scale<=0||scale>8||![originX,originY].every(Number.isFinite))fail('Invalid scene render transform');
@@ -37,7 +37,17 @@ export function commandsForScene(scene,catalog,{
   const available=asset.frames.filter(f=>(f.action||'idle')===action&&(f.direction||'se')===direction);
   const candidates=available.length?available:asset.frames.filter(f=>(f.direction||'se')===direction);
   if(!candidates.length)fail('No frames for direction '+direction+' of '+item.assetId);
-  const frame=candidates[frameIndex%candidates.length];
+  let frame=candidates[frameIndex%candidates.length];
+  if(timeMs!==null){
+   if(!Number.isFinite(timeMs)||timeMs<0)fail('Invalid animation timestamp');
+   const total=candidates.reduce((n,f)=>n+(Number.isInteger(f.durationMs)&&f.durationMs>=16?f.durationMs:150),0);
+   let tick=timeMs%total;
+   for(const candidate of candidates){
+    const duration=Number.isInteger(candidate.durationMs)&&candidate.durationMs>=16?candidate.durationMs:150;
+    if(tick<duration){frame=candidate;break;}
+    tick-=duration;
+   }
+  }
   const rect=frame.rect;
   if(!Array.isArray(rect)||rect.length!==4||rect.some(n=>!Number.isInteger(n)||n<0)||!rect[2]||!rect[3])fail('Invalid atlas frame rect');
   const pivot=asset.pivot;
