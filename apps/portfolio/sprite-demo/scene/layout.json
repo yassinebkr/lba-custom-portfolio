@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "source": "original-v7-blender-workshop",
+  "reviewStatus": "pending-artistic-review",
+  "approvedForPortfolio": false,
+  "width": 960,
+  "height": 640,
+  "view": "original isometric, fixed camera",
+  "anchor": [
+    477.41,
+    355.54
+  ],
+  "spriteSource": "../compare/256px-lanczos-160.png",
+  "defaultFrame": "ne",
+  "spritePixels": 256,
+  "defaultScale": 0.75,
+  "sampleWorldPosition": [
+    0.36,
+    0.35,
+    1.28
+  ],
+  "depthLayers": [
+    "background.png",
+    "radio sprite from V5",
+    "foreground.png"
+  ],
+  "manualReviewRequired": [
+    "sprite scale and table contact",
+    "light consistency",
+    "depth order",
+    "contact shadows",
+    "material readability",
+    "mobile fidelity"
+  ]
+}
