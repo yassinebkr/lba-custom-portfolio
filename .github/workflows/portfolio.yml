@@ -6,6 +6,9 @@ on:
       - feature/portfolio-studio-j1-j8
     paths:
       - 'apps/portfolio/**'
+      - 'packages/asset-core/**'
+      - 'packages/scene-core/**'
+      - 'packages/public-manifest/**'
       - 'scripts/build-portfolio.mjs'
       - 'tests/public-build.test.mjs'
       - 'tests/pages-root.test.mjs'
@@ -26,7 +29,7 @@ jobs:
         with:
           node-version: '22'
       - name: Run pure game rule tests
-        run: node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
+        run: node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs packages/scene-core/scene.test.mjs packages/asset-core/index.test.mjs packages/public-manifest/index.test.mjs
       - name: Prevent proprietary game files in public bundle
         run: |
           if find apps/portfolio -type f \( -iname '*.hqr' -o -iname '*.exe' -o -iname '*.jsdos' -o -iname '*.iso' -o -iname '*.vox' -o -iname '*.fla' \) | grep . ; then

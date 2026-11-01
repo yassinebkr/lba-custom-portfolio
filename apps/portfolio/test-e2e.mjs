@@ -8,12 +8,12 @@ import assert from 'node:assert/strict';
 const PORT=18765;
 const ROOT=new URL('../../dist/',import.meta.url);
 const base='/lba-custom-portfolio/';
-const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8'};
+const types={'.html':'text/html; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png'};
 const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost:'+PORT);
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const name=url.pathname.slice(base.length)||'index.html';
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs)$/.test(name)){res.writeHead(404);return res.end();}
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png)$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});

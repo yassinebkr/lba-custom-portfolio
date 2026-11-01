@@ -1,30 +1,52 @@
 #!/usr/bin/env node
-/** Build a fail-closed GitHub Pages artifact. It must never include LBA game data. */
-import {readFile,writeFile,rm,mkdir,stat} from 'node:fs/promises';
-import {resolve,join} from 'node:path';
-import {createHash} from 'node:crypto';
-const root=resolve(new URL('..',import.meta.url).pathname);
-const source=join(root,'apps/portfolio');
-const output=join(root,'dist');
-export const ALLOWED=['index.html','game.mjs','rules.mjs','rooms.mjs'];
-const forbidden=/\.(?:exe|hqr|jsdos|iso|vox|fla|rom|dll|bin|zip)$/i;
-const unsafeText=/(?:fetch\s*\(\s*['"]https?:|import\s*\(\s*['"]https?:|from\s*['"]https?:|<script[^>]*src\s*=\s*["']https?:|eval\s*\()/i;
-const manifest=[];
-for(const name of ALLOWED){
- if(forbidden.test(name))throw Error('Forbidden artifact type: '+name);
- const bytes=await readFile(join(source,name));
- const text=bytes.toString('utf8');
- if(unsafeText.test(text))throw Error('Unexpected remote/executable dependency: '+name);
- if(/(?:\.HQR|RELENT\.EXE|lba1_portfolio\.jsdos)/i.test(text))
-   throw Error('Original game data reference in public source: '+name);
- manifest.push({name,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
+/** M5: allowlisted GitHub Pages build, never the complete builder or legacy assets. */
+import {readFile,writeFile,rm,mkdir} from 'node:fs/promises';
+import {resolve,join,dirname} from 'node:path';
+import {validateApprovedManifest} from '../packages/public-manifest/index.mjs';
+import {validateScene} from '../packages/scene-core/scene.mjs';
+const root=resolve(new URL('..',import.meta.url).pathname),dist=join(root,'dist');
+const entries=[
+ ['apps/portfolio/index.html','index.html'],
+ ['apps/portfolio/game.mjs','game.mjs'],
+ ['apps/portfolio/rules.mjs','rules.mjs'],
+ ['apps/portfolio/rooms.mjs','rooms.mjs'],
+ ['apps/portfolio/approved-runtime.mjs','approved-runtime.mjs'],
+ ['packages/asset-core/index.mjs','modules/asset-core.mjs'],
+ ['packages/scene-core/scene.mjs','modules/scene-core.mjs'],
+ ['packages/public-manifest/index.mjs','modules/public-manifest.mjs'],
+ ['apps/portfolio/assets/approved-worlds.json','assets/approved-worlds.json']
+];
+const manifest=JSON.parse(await readFile(join(root,'apps/portfolio/assets/approved-worlds.json'),'utf8'));
+validateApprovedManifest(manifest);
+for(const room of Object.values(manifest.rooms))validateScene(room.scene,manifest.assets);
+const replacements={
+ 'approved-runtime.mjs':[['../../packages/scene-core/scene.mjs','./modules/scene-core.mjs'],
+                            ['../../packages/public-manifest/index.mjs','./modules/public-manifest.mjs']],
+ 'modules/scene-core.mjs':[['../asset-core/index.mjs','./asset-core.mjs']]
+};
+const files=[];
+for(const [source,target] of entries){
+ let data=await readFile(join(root,source));
+ if(target.endsWith('.mjs')){
+  let text=data.toString('utf8');
+  for(const [a,b] of replacements[target]||[]){
+   if(!text.includes(a))throw Error('Source module import no longer matches: '+a);
+   text=text.replace(a,b);
+  }
+  if(/\.HQR|\.jsdos|RELENT\.EXE/i.test(text))throw Error('Proprietary game dependency in public runtime');
+  data=Buffer.from(text);
+ }
+ files.push([target,data]);
 }
-const total=manifest.reduce((sum,file)=>sum+file.bytes,0);
-if(total>500_000)throw Error('J8 static JS/HTML bundle budget exceeded: '+total);
-if(!manifest.some(f=>f.name==='index.html'))throw Error('Missing public entrypoint');
-await rm(output,{recursive:true,force:true});
-await mkdir(output,{recursive:true});
-for(const name of ALLOWED)await writeFile(join(output,name),await readFile(join(source,name)));
-console.log('Public-only bundle built: '+ALLOWED.length+' files, '+total+' bytes');
-console.log('Original/proprietary game files excluded by explicit allowlist.');
-for(const m of manifest)console.log(m.name+' '+m.bytes+'B '+m.sha256.slice(0,12));
+for(const asset of Object.values(manifest.assets)){
+ const file='assets/'+asset.atlasRef;
+ const data=await readFile(join(root,'apps/portfolio/assets',asset.atlasRef));
+ if(data.length<24||data.subarray(1,4).toString()!=='PNG')throw Error('Approved atlas is not a PNG: '+file);
+ files.push([file,data]);
+}
+if(files.reduce((n,[_name,bytes])=>n+bytes.length,0)>35_000_000)throw Error('Public bundle exceeds 35MB');
+await rm(dist,{recursive:true,force:true});
+for(const [name,bytes] of files){
+ const target=join(dist,name);await mkdir(dirname(target),{recursive:true});await writeFile(target,bytes);
+}
+console.log('Public artifact: '+files.length+' allowlisted files; '+Object.keys(manifest.assets).length+' approved original assets');

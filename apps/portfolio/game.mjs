@@ -1,6 +1,7 @@
+import {loadApprovedWorld} from './approved-runtime.mjs';
 import {scene,newGame,move,nearest,inspect} from './rules.mjs';
 import {ROOMS} from './rooms.mjs';
-let game=newGame(ROOMS[0]);
+let game=newGame(ROOMS[0]);let approvedWorld=null;
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const info=document.getElementById('info'),msg=document.getElementById('status');
 const list=document.getElementById('list');
@@ -42,6 +43,10 @@ function player(){
  ctx.fillStyle='#293d49';ctx.fillRect(q.x-7,q.y-41,14,5);
 }
 function render(){
+ if(approvedWorld&&approvedWorld.roomId===game.map.id){
+  ctx.fillStyle='#101e29';ctx.fillRect(0,0,canvas.width,canvas.height);
+  approvedWorld.paint(ctx,game.player,performance.now());return;
+ }
  ctx.fillStyle='#101e29';ctx.fillRect(0,0,canvas.width,canvas.height);
  for(let depth=0;depth<game.map.width+game.map.depth-1;depth++)
   for(let x=0;x<game.map.width;x++){const z=depth-x;if(z<0||z>=game.map.depth)continue;
@@ -81,7 +86,7 @@ function populateList(){
 const nav=document.getElementById('room-nav');
 const roomLabel=document.querySelector('.stage .bar');
 function openRoom(room){
- game=newGame(room);
+ game=newGame(room);approvedWorld=null;
  info.replaceChildren();
  const heading=document.createElement('p');heading.className='eyebrow';heading.textContent='ROOM INTRODUCTION';
  const title=document.createElement('h2');title.textContent=room.name;
@@ -95,6 +100,9 @@ function openRoom(room){
  Array.from(nav.children).forEach(button=>button.setAttribute('aria-current',
   button.dataset.room===room.id?'page':'false'));
  render();
+ loadApprovedWorld(room.id).then(world=>{
+  if(game.map.id===room.id){approvedWorld=world;render();}
+ }).catch(error=>console.warn('Using prototype fallback:',error.message));
 }
 for(const [index,room] of ROOMS.entries()){
  const button=document.createElement('button');button.type='button';button.dataset.room=room.id;
@@ -114,3 +122,5 @@ window.addEventListener('keydown',e=>{
 document.querySelectorAll('[data-direction]').forEach(b=>b.addEventListener('click',()=>navigate(...moves[b.dataset.direction])));
 document.getElementById('interact').addEventListener('click',interact);
 render();
+
+window.setInterval(()=>{if(approvedWorld&&document.visibilityState==='visible')render();},150);
