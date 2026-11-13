@@ -105,6 +105,12 @@
         }
 
         #launch-btn:hover { background: #0cc; }
+        #launch-btn:disabled { opacity: .55; cursor: progress; }
+        #bundle-import { max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #22454a; border-radius: 10px; background: #111b21; }
+        #bundle-import[hidden] { display: none; }
+        #bundle-status { color: #cde6e5; font-size: .82rem; margin-top: 14px; line-height: 1.55; }
+        .privacy-hint { color: #9cafb4; font-size: .78rem; margin-top: 10px; line-height: 1.6; }
+        :focus-visible { outline: 3px solid #00eeee; outline-offset: 4px; }
 
         .hint {
             margin-top: 12px;
@@ -219,10 +225,15 @@
     </div>
 </div>
 
-<div class="launch-section">
-    <button id="launch-btn" onclick="launchGame()">Enter the World</button>
-    <p class="hint">Runs in-browser via DOSBox · Use keyboard &amp; mouse · ~80 MB download</p>
-</div>
+<section class="launch-section" aria-label="Run a local DOS game bundle">
+    <div id="bundle-import">
+        <button id="launch-btn" type="button">Import local .jsdos bundle</button>
+        <input id="bundle-file" type="file" accept=".jsdos" hidden>
+        <p id="bundle-status" role="status" aria-live="polite">Select your own compatible js-dos bundle to start.</p>
+        <p class="privacy-hint">Your game files stay on this device. The archive is read locally in your browser and is never uploaded to this site.</p>
+    </div>
+    <p class="hint">js-dos 6.22 · DOSBox in your browser · Keyboard controls · Private test build</p>
+</section>
 
 <footer>
     Built on <a href="https://github.com/LBALab/lba-classic-builder" target="_blank">Little Big Adventure 1</a> (1994) ·
@@ -231,39 +242,17 @@
 
 <!-- Game overlay (hidden until launched) -->
 <div id="game-overlay">
-    <button id="close-btn" onclick="closeGame()">✕ Close</button>
+    <button id="close-btn" type="button">✕ Close</button>
     <div id="loading-overlay">
         <div class="spinner"></div>
-        <p>Loading game engine...</p>
+        <p id="loading-message" role="status" aria-live="polite">Loading game engine…</p>
     </div>
     <div id="jsdos-wrap">
-        <canvas id="jsdos" width="640" height="480"></canvas>
+        <canvas id="jsdos" width="640" height="480" tabindex="0" aria-label="DOS game canvas"></canvas>
     </div>
 </div>
 
 <script src="./vendor/jsdos622/js-dos.js" crossorigin="anonymous"></script>
-<script>
-    function launchGame() {
-        document.getElementById('game-overlay').classList.add('active');
-        var el = document.getElementById('jsdos');
-        Dos(el, { wdosboxUrl: './vendor/jsdos622/wdosbox.js' })
-            .ready(function(fs, main) {
-                var url = './lba1_portfolio.jsdos?v=' + Date.now();
-                fs.extract(url).then(function() {
-                    document.getElementById('loading-overlay').classList.add('hidden');
-                    return main([
-                        '-c', 'imgmount d LBA.ISO -t iso',
-                        '-c', 'RELENT.EXE',
-                    ]);
-                }).catch(function(e) {
-                    document.getElementById('loading-overlay').innerHTML =
-                        '<p style="color:#f66">Extract failed: ' + e + '</p>';
-                });
-            });
-    }
-
-    function closeGame() { location.reload(); }
-</script>
-
+<script type="module" src="./local-bundle.mjs"></script>
 </body>
 </html>

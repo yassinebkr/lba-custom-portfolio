@@ -5,7 +5,7 @@ const root=resolve(new URL('../',import.meta.url).pathname);
 test('public build emits runtime code and only approved art',async()=>{
  const run=spawnSync(process.execPath,['scripts/build-portfolio.mjs'],{cwd:root,encoding:'utf8'});
  assert.equal(run.status,0,run.stderr||run.stdout);
- assert.deepEqual((await readdir(join(root,'dist'))).sort(),['approved-runtime.mjs','assets','game.mjs','index.html','modules','rooms.mjs','rules.mjs','sprite-demo']);
+ assert.deepEqual((await readdir(join(root,'dist'))).sort(),['approved-runtime.mjs','assets','game.mjs','index.html','modules','rooms.mjs','rules.mjs','sprite-demo','web_deploy']);
  assert.deepEqual((await readdir(join(root,'dist/modules'))).sort(),['asset-core.mjs','public-manifest.mjs','scene-core.mjs']);
 });
 test('default artwork catalog is empty instead of shipping fixture art',async()=>{
@@ -76,4 +76,20 @@ test('V7 original Blender scene is deployed with exactly two checked PNG depth p
  const loader=await readFile(join(root,'dist/sprite-demo/scene-lab.mjs'),'utf8');
  assert.match(loader,/256px-lanczos-/);
  assert.doesNotMatch(loader,/base_game|\.HQR|\.glb/i);
+});
+
+
+test('public Pages ships the client-only DOS importer and self-hosted js-dos 6.22 runtime',async()=>{
+ const source=await readFile(join(root,'dist/web_deploy/index.html'),'utf8');
+ const importer=await readFile(join(root,'dist/web_deploy/local-bundle.mjs'),'utf8');
+ const vendor=await readdir(join(root,'dist/web_deploy/vendor/jsdos622'));
+ assert.deepEqual(vendor.sort(),['js-dos.js','wdosbox.js','wdosbox.wasm.js']);
+ assert.match(source,/id="bundle-file"[^>]*type="file"/);
+ assert.match(source,/type="module" src="\.\/local-bundle\.mjs"/);
+ assert.doesNotMatch(source,/lba1_portfolio\.jsdos\?v=|onclick="launchGame/);
+ assert.match(importer,/createObjectURL\(file\)/);
+ assert.match(importer,/revokeObjectURL\(url\)/);
+ assert.doesNotMatch(importer,/(?:fetch\(|XMLHttpRequest|navigator\.sendBeacon|localStorage|indexedDB|FormData)/);
+ const contents=await readdir(join(root,'dist/web_deploy'));
+ assert.deepEqual(contents.sort(),['index.html','local-bundle.mjs','vendor']);
 });

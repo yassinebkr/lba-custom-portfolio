@@ -13,6 +13,9 @@ on:
       - 'tests/public-build.test.mjs'
       - 'tests/pages-root.test.mjs'
       - 'index.html'
+      - 'web_deploy/index.html'
+      - 'web_deploy/local-bundle.mjs'
+      - 'web_deploy/vendor/jsdos622/**'
       - 'docs/PAGES_DEPLOYMENT.md'
       - '.github/workflows/portfolio.yml'
   workflow_dispatch:

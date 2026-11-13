@@ -39,6 +39,11 @@ For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [p
 
 ## DOS browser bootstrap and visual verification
 
+**[Launch the js-dos browser test — import your own local .jsdos](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/)**
+
+This public page hosts only the js-dos 6.22 emulator and the import UI. Choose a locally built private .jsdos ZIP. Import happens inside the browser, and the selected archive is not uploaded. The actual DOS gameplay remains unverified pending the fresh private game bundle; the link's live deployment must be checked after publishing.
+
+
 [Open the V6 sprite comparison](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) · [Open the V7 original workshop review](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html)
 
 The R04 milestone puts js-dos on GitHub Pages with a local .jsdos import control and no hosted commercial game data. The launcher is a separate development route until its Pages deployment and real gameplay have been verified. These are the existing **original-art browser previews**. The live URLs need re-verification. They show the sprite production and original test scene. Reconstructed DOS gameplay through js-dos is still pending an owner-local game build.
