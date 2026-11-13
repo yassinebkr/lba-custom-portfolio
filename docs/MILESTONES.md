@@ -6,7 +6,9 @@ The initial roadmap emphasized a large GUI before proving visual production. The
 
 ## Current DOS runtime plan
 
-The reconstructed js-dos adaptation is the selected portfolio runtime subject to licensing and actual quality gates. R04 published a GitHub Pages emulator loader with browser-only import of a privately held .jsdos ZIP. A real js-dos ZIP extraction has passed with synthetic files in CI; real commercial-game boot remains R05. The R04 deployment ran successfully, with direct live-URL verification pending. [R04–R09 reconstruction, browser smoke testing and Pages visual QA](DOS_REBUILD_PLAN.md) govern this work. R01 and R02 are complete. R03 has a verified codec experiment and pending private in-game validation. The J-series below records the earlier original Canvas prototype and authoring pipeline history.
+The reconstructed js-dos adaptation is the selected portfolio runtime subject to licensing and actual quality gates. R04 published a GitHub Pages emulator loader with browser-only import of a privately held .jsdos ZIP. Real js-dos extraction, Debian ISO/ZIP packaging and historical Museum save inclusion have passed synthetic CI. The owner reported successful GOG-derived game startup through the live import page (2026-11-13). R05.1 tracks real audio output, in-game save loading and black-screen-on-death recovery; these behaviors remain unverified. [R04–R09 reconstruction, browser smoke testing and Pages visual QA](DOS_REBUILD_PLAN.md) govern this work. R01 and R02 are complete. R03 has a verified codec experiment and pending private in-game validation. The J-series below records the earlier original Canvas prototype and authoring pipeline history.
+
+[R05.1 historical runtime recovery and private experiments](R05_RUNTIME_RECOVERY.md) document the original scripts, limitations and exact acceptance tests.
 
 ## Delivery sequence
 
