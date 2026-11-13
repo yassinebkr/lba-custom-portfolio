@@ -2,6 +2,8 @@
  * Browser-only js-dos 6.22 bundle import.
  * The selected ZIP remains local; js-dos extracts it from a temporary blob URL.
  */
+import {startR05Diagnostics} from './r05-diagnostics.mjs';
+
 const MAX_BUNDLE_BYTES = 512 * 1024 * 1024;
 const ZIP_HEADER = [0x50, 0x4b, 0x03, 0x04];
 
@@ -51,6 +53,7 @@ export async function extractLocalBundle(fs, file, urlApi = URL) {
 }
 
 function bindImporter(doc, host) {
+  const diagnostics = startR05Diagnostics(doc, host);
   const input = doc.getElementById('bundle-file');
   const button = doc.getElementById('launch-btn');
   const panel = doc.getElementById('bundle-import');
@@ -65,7 +68,7 @@ function bindImporter(doc, host) {
   }
 
   let busy = false;
-  const message = text => { status.textContent = text; loadingText.textContent = text; };
+  const message = text => { status.textContent = text; loadingText.textContent = text; diagnostics.mark('status', text); };
   button.addEventListener('click', () => { if (!busy) input.click(); });
   close.addEventListener('click', () => host.location.reload());
   input.addEventListener('change', async () => {
@@ -93,6 +96,7 @@ function bindImporter(doc, host) {
               try {
                 main(['-c', 'imgmount d LBA.ISO -t iso', '-c', 'RELENT.EXE']);
                 loading.classList.add('hidden');
+                diagnostics.mark('dos-main-dispatched');
                 canvas.focus();
                 resolve();
               } catch (error) {
@@ -105,6 +109,7 @@ function bindImporter(doc, host) {
         }
       });
     } catch (error) {
+      diagnostics.mark('import-failed', error?.message || String(error));
       overlay.classList.remove('active');
       panel.hidden = false;
       message('Import failed: ' + (error?.message || String(error)) + ' Select a file to retry.');
