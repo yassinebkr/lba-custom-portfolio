@@ -103,3 +103,16 @@ Source code: [V6 comparator](apps/portfolio/sprite-demo/compare.mjs). Visual and
 [Open the original V7 workshop QA scene](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html). The receiver uses the same V5 256px RGBA sprite atlas in a wholly new 3D Blender room. Change the four directions, 160-color/truecolor, scale, table-lip foreground pass and contact-shadow preview; drag the instrument on the tabletop. The page uses two 960×640 original Blender PNG renders plus an approved-for-review-only layout, never a builder or original LBA game files.
 
 The [V7 technical architecture, verification and limitations](docs/IN_SCENE_QA.md) describe the world-space anchor, actual depth passes, remaining shadow/artistic issues, and explicit V8 boundary. The maintainer accepted V6; the small perceived proportion difference between the V6 views remains deferred.
+
+
+## DOS runtime integration — R01 to R03
+
+The existing js-dos 6.22 LBA adaptation is the target for the R-series. The reusable creator workflow exports [WorldPackage v1](docs/R02_WORLD_PACKAGE.md), and the independent DOS adapter converts original images into native indexed sprite and brick payloads.
+
+- [R01 — source and runtime dependency audit](docs/R01_DOS_AUDIT.md)
+- [R02 — versioned portable world contract](docs/R02_WORLD_PACKAGE.md)
+- [R03 — real V5/V7 image compatibility, size and fidelity report](docs/R03_DOS_COMPAT.md)
+
+Original DOS files and repacked HQR archives remain private local inputs. The [R03 GitHub Actions run](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43347166066) verifies actual original-image conversion to four 128px DOS sprite payloads and one original scene brick. The live js-dos runtime integration is a separate pending gate.
+
+The final GitHub Pages deployment will contain the playable portfolio and its reviewed runtime resources. The creator pipeline, editor, source models and QA galleries stay in the authoring project.

@@ -1,5 +1,20 @@
 # Architecture — Project Atlas and Asset Studio
 
+## R-series runtime direction (November 2026)
+
+The R-series architecture selects the previously working js-dos 6.22 adaptation as the game runtime. The earlier J-series Canvas prototype and asset Studio remain useful validation tools and development references. The creator and runtime are separate products with a versioned world package between them.
+
+~~~mermaid
+flowchart LR
+  CREATOR["Independent world editor"] --> PACKAGE["WorldPackage v1"]
+  PACKAGE --> ADAPTER["DOS runtime adapter"]
+  ADAPTER --> ENGINE["Adapted LBA DOS engine"]
+  ENGINE --> JSDOS["js-dos 6.22"]
+  JSDOS --> RELEASE["Minimal portfolio site"]
+~~~
+
+The [runtime resource audit](R01_DOS_AUDIT.md), [world contract](R02_WORLD_PACKAGE.md) and [DOS compatibility evidence](R03_DOS_COMPAT.md) supersede earlier assumptions about shipping a Canvas-driven public game. Technical experiments using the original game files stay in the owner-local workspace. Public redistribution requires executable and resource rights verification.
+
 Status: **target architecture with partial J1–J8 implementation; diagrams include planned components and are not evidence of finished features.** Branch: feature/portfolio-studio-j1-j8.
 This supersedes the public-delivery assumptions in the historical LBA mod plan; those documents and tools remain available as legacy references.
 
