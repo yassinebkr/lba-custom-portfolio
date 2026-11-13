@@ -155,7 +155,8 @@ def write_bundle(folder: Path, destination: Path) -> None:
             archive.writestr(zip_entry(rel, b"", True), b"")
         for file in files:
             rel = file.relative_to(folder).as_posix()
-            archive.writestr(zip_entry(rel, b""), file.read_bytes())
+            with file.open("rb") as source, archive.open(zip_entry(rel, b""), "w") as dest:
+                shutil.copyfileobj(source, dest, length=1024 * 1024)
     with zipfile.ZipFile(destination) as archive:
         names = archive.namelist()
         if not names or names[0] != ".jsdos/":
@@ -219,7 +220,11 @@ def build(base: Path, mods: Path, output: Path) -> dict[str, object]:
         write_bundle(game, candidate)
         os.replace(candidate, output)
 
-    digest = hashlib.sha256(output.read_bytes()).hexdigest()
+    digest_state = hashlib.sha256()
+    with output.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest_state.update(chunk)
+    digest = digest_state.hexdigest()
     return {"bundle": str(output), "bytes": output.stat().st_size,
             "sha256": digest, "originalFiles": len(sources),
             "overlays": len(overlays) + int(exe_override is not None),
