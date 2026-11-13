@@ -27,3 +27,7 @@ jobs:
         run: |
           node scripts/runtime/audit.mjs > /tmp/r01-audit.json
           node --test tests/runtime-audit.test.mjs
+      - name: Validate original world package and files
+        run: |
+          node --test tests/runtime-world.test.mjs tests/runtime-files.test.mjs
+          node scripts/runtime/validate-world.mjs examples/world-package/telemetry.json --root . > /tmp/r02-world.json

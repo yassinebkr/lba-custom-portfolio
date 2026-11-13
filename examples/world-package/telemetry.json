@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "atlas-electronics",
+  "name": "Project Atlas electronics workshop",
+  "entrySceneId": "workshop",
+  "assets": [
+    {
+      "id": "telemetry-receiver",
+      "name": "Telemetry receiver",
+      "kind": "prop",
+      "source": {
+        "origin": "original-model",
+        "creator": "Project Atlas original model",
+        "sourceUrl": null,
+        "license": "original",
+        "attribution": null,
+        "reviewStatus": "pending",
+        "allowedForPublicBuild": false
+      },
+      "sprite": {
+        "imageRef": "apps/portfolio/sprite-demo/compare/192px-lanczos-160.png",
+        "widthPx": 768,
+        "heightPx": 192,
+        "frameWidthPx": 192,
+        "frameHeightPx": 192,
+        "pivotPx": {
+          "x": 96,
+          "y": 190
+        },
+        "footprint": {
+          "widthCells": 2,
+          "depthCells": 2
+        },
+        "views": {
+          "ne": {
+            "x": 0,
+            "y": 0,
+            "durationMs": 150
+          },
+          "nw": {
+            "x": 192,
+            "y": 0,
+            "durationMs": 150
+          },
+          "sw": {
+            "x": 384,
+            "y": 0,
+            "durationMs": 150
+          },
+          "se": {
+            "x": 576,
+            "y": 0,
+            "durationMs": 150
+          }
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "schemaVersion": 1,
+      "id": "workshop",
+      "name": "Original electronics workshop",
+      "width": 12,
+      "depth": 12,
+      "backgroundRef": "apps/portfolio/sprite-demo/scene/background.png",
+      "instances": [
+        {
+          "id": "radio-station",
+          "assetId": "telemetry-receiver",
+          "x": 5,
+          "z": 5,
+          "layer": 3,
+          "rotation": 0,
+          "interactive": true,
+          "label": "Inspect the telemetry receiver"
+        }
+      ]
+    }
+  ]
+}
