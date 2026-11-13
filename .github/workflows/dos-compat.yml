@@ -35,7 +35,7 @@ jobs:
         working-directory: adapters/lba-dos
         run: npm install --no-audit --no-fund
       - name: Test original image to indexed DOS codec and private archive index safeguards
-        run: node --test adapters/lba-dos/index.test.mjs adapters/lba-dos/overlay.test.mjs adapters/lba-dos/cli.test.mjs
+        run: node --test adapters/lba-dos/index.test.mjs adapters/lba-dos/overlay.test.mjs adapters/lba-dos/cli.test.mjs adapters/lba-dos/cli-safety.test.mjs
       - name: Produce real R03 indexed compatibility previews
         run: |
           node adapters/lba-dos/cli.mjs examples/world-package/telemetry.json --root . --target 128 --out output/r03-dos-compat
