@@ -88,6 +88,35 @@ class ProbeTest(unittest.TestCase):
         with zipfile.ZipFile(self.out / "r05-silent.jsdos") as archive:
             self.assertIn(b"WaveDriver: NoWave\r\n", archive.read("LBA.CFG"))
 
+    def test_comparison_matrix_has_separate_audio_bundles_and_stable_saves(self):
+        (self.base / "LBA.CFG").write_bytes(b"WaveDriver: NoWave\r\n")
+        (self.base / "W_SB16.DLL").write_bytes(b"synthetic 16-bit driver" * 1024)
+        (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8-bit driver" * 1024)
+        (self.base / "M_SB16.DLL").write_bytes(b"synthetic mixer" * 80)
+        report = probe.execute(self.base, self.out)
+        self.assertEqual(
+            [p["audio"] for p in report["bundles"]],
+            ["off", "sb16", "sb16-8", "sb16-mixer", "sb16-mixer-loud"]
+        )
+        self.assertEqual(len(report["saves"]), 7)
+        for item in report["bundles"]:
+            self.assertEqual(item["slotsVerified"], 7)
+        for profile in ("sb16-8", "sb16-mixer", "sb16-mixer-loud"):
+            self.assertEqual(
+                report["audioVariants"][profile]["state"],
+                "packaged; audible SFX not verified"
+            )
+        with zipfile.ZipFile(self.out / "r05-sb16-8.jsdos") as z:
+            self.assertIn(b"WaveDriver: W_SB16_8.DLL\r\n", z.read("LBA.CFG"))
+            self.assertIn(b"MixerDriver: NoMixer\r\n", z.read("LBA.CFG"))
+        with zipfile.ZipFile(self.out / "r05-sb16-mixer.jsdos") as z:
+            self.assertIn(b"MixerDriver: M_SB16.DLL\r\n", z.read("LBA.CFG"))
+            self.assertIn(b"WaveVolume: 163\r\n", z.read("LBA.CFG"))
+        with zipfile.ZipFile(self.out / "r05-sb16-mixer-loud.jsdos") as z:
+            self.assertIn(b"MixerDriver: M_SB16.DLL\r\n", z.read("LBA.CFG"))
+            self.assertIn(b"WaveVolume: 240\r\n", z.read("LBA.CFG"))
+            self.assertIn(b"MasterVolume: 240\r\n", z.read("LBA.CFG"))
+
     def test_refuses_public_output_path(self):
         with self.assertRaisesRegex(ValueError, "ignored output"):
             probe.execute(self.base, ROOT / "web_deploy/r05-probes")
