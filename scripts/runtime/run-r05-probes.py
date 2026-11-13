@@ -152,11 +152,24 @@ def execute(base: Path, output: Path) -> dict[str, object]:
         bundles.append(verify_bundle(candidate, saves, "source-wave"))
         wave = {"state": "packaged; audible SFX not verified", "file": str(candidate)}
 
+    # Explicit SB16 fallback for a genuine GOG DOS driver even if LBA.CFG
+    # disables wave effects. This is another *experimental*, isolated bundle.
+    try:
+        builder.prepare_audio(builder.owner_files(base), "sb16")
+    except (ValueError, OSError) as error:
+        sb16 = {"state": "not built", "reason": str(error)}
+    else:
+        candidate = output / "r05-sb16.jsdos"
+        build_bundle(base, mods, saves, candidate, "sb16")
+        bundles.append(verify_bundle(candidate, saves, "sb16"))
+        sb16 = {"state": "packaged; audible SFX not verified", "file": str(candidate)}
+
     report = {
         "installation": str(base),
         "audioGate": inventory["audio_gate"],
         "gameOverResources": gameover_resources,
         "wave": wave,
+        "sb16": sb16,
         "saves": slots,
         "bundles": bundles,
         "manualGates": [
