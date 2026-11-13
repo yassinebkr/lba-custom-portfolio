@@ -2,7 +2,7 @@ name: DOS runtime compatibility milestones
 
 on:
   push:
-    branches: [feature/portfolio-studio-j1-j8]
+    branches: [feature/portfolio-studio-j1-j8, 'fix/r05-*']
     paths:
       - 'scripts/runtime/**'
       - 'packages/world-package/**'
