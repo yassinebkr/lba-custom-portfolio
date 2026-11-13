@@ -41,7 +41,7 @@ def owner_voice_files(voice_dir: Path | None) -> dict[str, Path]:
         if item.is_symlink() or not item.is_file():
             raise ValueError("VOX folder must contain regular files only")
         # Historical language and bank names from SOURCES/MESSAGE.C.
-        if not re.fullmatch(r"(EN|FR|DE|SP|IT)_(SYS|CRE|GAM|[0-9]{3})\\.VOX", item.name.upper()):
+        if not re.fullmatch(r"(EN|FR|DE|SP|IT)_(SYS|CRE|GAM|[0-9]{3})\.VOX", item.name.upper()):
             raise ValueError("Unexpected legacy voice file: " + item.name)
         if not 8 <= item.stat().st_size <= 128 * 1024 * 1024:
             raise ValueError("Unexpected legacy voice file size: " + item.name)
@@ -146,7 +146,7 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
         "source": str(source), "destination": str(destination), "cdImage": cd_image,
         "sourceSha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "destinationSha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
-        "unchangedEntries": len(names) - 2,
+        "unchangedEntries": len(names) - 1 - int(new_cfg != cfg),
         "waveDriver": wave_driver,
         "voiceFiles": len(voices),
         "state": "Archive and binary resource equivalence verified; guest audio/voices not tested",
