@@ -95,16 +95,17 @@ class ProbeTest(unittest.TestCase):
         (self.base / "M_SB16.DLL").write_bytes(b"synthetic mixer" * 80)
         (self.base / "W_SB16_M.DLL").write_bytes(b"synthetic mono driver" * 1024)
         (self.base / "A32SBFM.DLL").write_bytes(b"synthetic FM driver" * 1024)
+        (self.base / "A32ALGFM.DLL").write_bytes(b"synthetic AdLib FM driver" * 1024)
         (self.base / "MIDI_SB.HQR").write_bytes(b"synthetic MIDI bank" * 1024)
         report = probe.execute(self.base, self.out)
         self.assertEqual(
             [p["audio"] for p in report["bundles"]],
-            ["off", "sb16", "sb16-8", "sb16-mono", "sb16-8-fm", "sb16-mixer", "sb16-mixer-loud"]
+            ["off", "sb16", "sb16-8", "sb16-mono", "sb16-8-fm", "sb16-8-adlib", "sb16-mixer", "sb16-mixer-loud"]
         )
         self.assertEqual(len(report["saves"]), 7)
         for item in report["bundles"]:
             self.assertEqual(item["slotsVerified"], 7)
-        for profile in ("sb16-8", "sb16-mono", "sb16-8-fm", "sb16-mixer", "sb16-mixer-loud"):
+        for profile in ("sb16-8", "sb16-mono", "sb16-8-fm", "sb16-8-adlib", "sb16-mixer", "sb16-mixer-loud"):
             self.assertEqual(
                 report["audioVariants"][profile]["state"],
                 "packaged; audible SFX not verified"
@@ -119,6 +120,12 @@ class ProbeTest(unittest.TestCase):
             self.assertIn(b"WaveDriver: W_SB16_8.DLL\r\n", z.read("LBA.CFG"))
             self.assertIn(b"MidiDriver: A32SBFM.DLL\r\n", z.read("LBA.CFG"))
             self.assertIn(b"MixerDriver: NoMixer\r\n", z.read("LBA.CFG"))
+        with zipfile.ZipFile(self.out / "r05-sb16-8-adlib.jsdos") as z:
+            cfg = z.read("LBA.CFG")
+            self.assertIn(b"WaveDriver: W_SB16_8.DLL\r\n", cfg)
+            self.assertIn(b"MidiDriver: A32ALGFM.DLL\r\n", cfg)
+            self.assertIn(b"MidiBase: 388h\r\n", cfg)
+            self.assertIn(b"MixerDriver: NoMixer\r\n", cfg)
         with zipfile.ZipFile(self.out / "r05-sb16-mixer.jsdos") as z:
             self.assertIn(b"MixerDriver: M_SB16.DLL\r\n", z.read("LBA.CFG"))
             self.assertIn(b"WaveVolume: 163\r\n", z.read("LBA.CFG"))
