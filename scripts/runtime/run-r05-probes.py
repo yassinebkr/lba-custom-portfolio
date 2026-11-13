@@ -98,7 +98,7 @@ def verify_bundle(path: Path, saves: Path, audio: str) -> dict[str, object]:
             raise ValueError("Silent control unexpectedly enables wave audio")
         if audio != "off" and b"WaveDriver: NoWave" in cfg:
             raise ValueError("Experimental audio bundle unexpectedly disables wave audio")
-        wave_name = {"sb16-8": "W_SB16_8.DLL", "sb16-8-fm": "W_SB16_8.DLL", "sb16-mono": "W_SB16_M.DLL"}.get(audio, "W_SB16.DLL")
+        wave_name = {"sb16-8": "W_SB16_8.DLL", "sb16-8-fm": "W_SB16_8.DLL", "sb16-8-adlib": "W_SB16_8.DLL", "sb16-mono": "W_SB16_M.DLL"}.get(audio, "W_SB16.DLL")
         if audio.startswith("sb16") and (
             f"WaveDriver: {wave_name}".encode("ascii") not in cfg
             or wave_name not in names
@@ -117,6 +117,17 @@ def verify_bundle(path: Path, saves: Path, audio: str) -> dict[str, object]:
             or b"MixerDriver: NoMixer" not in cfg
         ):
             raise ValueError("Original FM/Miles MIDI probe is improperly configured")
+        if audio == "sb16-8-adlib" and (
+            b"MidiDriver: A32ALGFM.DLL" not in cfg
+            or b"MidiBase: 388h" not in cfg
+            or b"MidiIRQ: -1" not in cfg
+            or b"MidiDMA: -1" not in cfg
+            or b"MidiType: Fm" not in cfg
+            or "A32ALGFM.DLL" not in names
+            or "MIDI_SB.HQR" not in names
+            or b"MixerDriver: NoMixer" not in cfg
+        ):
+            raise ValueError("AdLib fixed-port FM probe is improperly configured")
         if audio == "sb16-mixer-loud" and (
             b"WaveVolume: 240" not in cfg or b"MasterVolume: 240" not in cfg
         ):
@@ -192,7 +203,7 @@ def execute(base: Path, output: Path) -> dict[str, object]:
     # - sb16-mixer isolates the hardware mixer vs no mixer.
     # - sb16-mixer-loud isolates volume vs sb16-mixer.
     audio_variants = {}
-    for profile in ("sb16-8", "sb16-mono", "sb16-8-fm", "sb16-mixer", "sb16-mixer-loud"):
+    for profile in ("sb16-8", "sb16-mono", "sb16-8-fm", "sb16-8-adlib", "sb16-mixer", "sb16-mixer-loud"):
         try:
             builder.prepare_audio(builder.owner_files(base), profile)
         except (ValueError, OSError) as error:
