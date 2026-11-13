@@ -1,5 +1,7 @@
 # R05 Audio Root-Cause Research and Architecture Decision
 
+**2026-11-13 update:** New code review identified that the 6.22 browser importer never explicitly passes the generated `.jsdos/dosbox.conf` to DOSBox, while the logs show default configuration. The owner also confirmed all nine GOG MP3 tracks and the logo jingle are available locally. The earlier preference for switching to ScummVM was therefore premature; consult [R05 DOS-first reassessment](R05_JSDOS_REASSESSMENT.md) before making a runtime decision. ScummVM remains a valid independent fidelity reference.
+
 Research date: 2026-11-13. Scope: owner-local LBA1 DOS/js-dos 6.22 experiments, the historical open-source engine, and the modern ScummVM/TwinE implementation. This is a source investigation and decision record, **not** an audio fix or a proof of browser fidelity. No copyrighted game content is checked in.
 
 ## Owner-observed baseline
