@@ -18,7 +18,25 @@ function flag(args,key,defaultValue=null){
   const i=args.indexOf(key);
   return i<0?defaultValue:args[i+1]??null;
 }
+export function validateOutputDirectory(root,output){
+  const relativeOutput=relative(root,output);
+  const withinRoot=relativeOutput!==''&&!relativeOutput.startsWith('..'+sep)&&relativeOutput!=='..'&&!isAbsolute(relativeOutput);
+  if(withinRoot){
+    const allowed=resolve(root,'output');
+    const withinOutput=output===allowed||output.startsWith(allowed+sep);
+    if(!withinOutput)throw Error('Generated compatibility outputs must use the ignored output/ directory');
+  }else if(output===root){
+    throw Error('Repository root cannot be used for generated binary outputs');
+  }
+}
 function loadPng(bytes){
+  if(bytes.length<24||bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a'){
+    throw Error('Unsupported PNG source');
+  }
+  const width=bytes.readUInt32BE(16),height=bytes.readUInt32BE(20);
+  if(width<1||height<1||width>4096||height>4096||width*height>4_194_304){
+    throw Error('Source PNG dimensions exceed compatibility budget');
+  }
   const png=PNG.sync.read(bytes,{checkCRC:true});
   return {width:png.width,height:png.height,rgba:Uint8Array.from(png.data)};
 }
@@ -41,6 +59,15 @@ async function run(argv){
   if(!worldPath)throw Error('Usage: node adapters/lba-dos/cli.mjs world.json --root . --out /tmp/r03 [--asset id] [--target 128] [--private-base directory --indices a,b,c,d]');
   const root=resolve(flag(argv,'--root','.'));
   const out=resolve(flag(argv,'--out','output/r03-dos-compat'));
+  validateOutputDirectory(root,out);
+  const privateBase=flag(argv,'--private-base');
+  const indexText=flag(argv,'--indices');
+  if((!!privateBase)!=(!!indexText)){
+    throw Error('Private game directory and four sprite indices must be supplied together');
+  }
+  const indices=indexText&&/^[0-9]+(,[0-9]+){3}$/.test(indexText)
+    ?indexText.split(',').map(Number):null;
+  if(indexText&&!indices)throw Error('Invalid private sprite indices');
   const world=assertWorldPackage(JSON.parse(await readFile(resolve(worldPath),'utf8')));
   await inspectWorldFiles(world,root);
   const assetId=flag(argv,'--asset',world.assets[0]?.id);
@@ -50,7 +77,6 @@ async function run(argv){
   if(!scene)throw Error('Missing entry scene');
   const atlas=loadPng(await readFile(pathInRoot(root,asset.sprite.imageRef)));
   const background=loadPng(await readFile(pathInRoot(root,scene.backgroundRef)));
-  const privateBase=flag(argv,'--private-base');
   const privatePalette=privateBase?await loadPrivateGamePalette(privateBase):null;
   const target=Number(flag(argv,'--target','128'));
   const result=convertWorldImages({world,assetId,atlas,background,palette:privatePalette,target});
@@ -64,11 +90,6 @@ async function run(argv){
   await writeFile(join(out,'palette.rgb'),result.palette);
   let privateArchive=null;
   if(privateBase){
-    const value=flag(argv,'--indices');
-    if(!value||!new RegExp('^[0-9]+(,[0-9]+){3}$').test(value)){
-      throw Error('Private archive overlay requires --indices i,j,k,l');
-    }
-    const indices=value.split(',').map(Number);
     privateArchive=await writePrivateSpriteArchive({
       privateDir:privateBase,outputPath:join(out,'SPRITES.HQR'),
       sprites:result.sprites,indices
