@@ -98,8 +98,20 @@ def verify_bundle(path: Path, saves: Path, audio: str) -> dict[str, object]:
             raise ValueError("Silent control unexpectedly enables wave audio")
         if audio != "off" and b"WaveDriver: NoWave" in cfg:
             raise ValueError("Experimental audio bundle unexpectedly disables wave audio")
-        if audio == "sb16" and (b"WaveDriver: W_SB16.DLL" not in cfg or "W_SB16.DLL" not in names):
+        wave_name = "W_SB16_8.DLL" if audio == "sb16-8" else "W_SB16.DLL"
+        if audio.startswith("sb16") and (
+            f"WaveDriver: {wave_name}".encode("ascii") not in cfg
+            or wave_name not in names
+        ):
             raise ValueError("SB16 bundle missing its configured original DOS driver")
+        if audio in ("sb16-mixer", "sb16-mixer-loud") and (
+            b"MixerDriver: M_SB16.DLL" not in cfg or "M_SB16.DLL" not in names
+        ):
+            raise ValueError("SB16 mixer bundle missing original mixer driver")
+        if audio == "sb16-mixer-loud" and (
+            b"WaveVolume: 240" not in cfg or b"MasterVolume: 240" not in cfg
+        ):
+            raise ValueError("SB16 high-volume probe has unexpected attenuation")
     return {"file": str(path), "bytes": path.stat().st_size,
             "audio": audio, "slotsVerified": len(SLOTS),
             "state": "ZIP verified; in-game audio/scene/death behavior not verified"}
@@ -166,12 +178,32 @@ def execute(base: Path, output: Path) -> dict[str, object]:
         bundles.append(verify_bundle(candidate, saves, "sb16"))
         sb16 = {"state": "packaged; audible SFX not verified", "file": str(candidate)}
 
+    # Controlled audio comparisons:
+    # - sb16-8 isolates the 8-bit vs 16-bit driver.
+    # - sb16-mixer isolates the hardware mixer vs no mixer.
+    # - sb16-mixer-loud isolates volume vs sb16-mixer.
+    audio_variants = {}
+    for profile in ("sb16-8", "sb16-mixer", "sb16-mixer-loud"):
+        try:
+            builder.prepare_audio(builder.owner_files(base), profile)
+        except (ValueError, OSError) as error:
+            audio_variants[profile] = {"state": "not built", "reason": str(error)}
+        else:
+            candidate = output / f"r05-{profile}.jsdos"
+            build_bundle(base, mods, saves, candidate, profile)
+            bundles.append(verify_bundle(candidate, saves, profile))
+            audio_variants[profile] = {
+                "state": "packaged; audible SFX not verified",
+                "file": str(candidate),
+            }
+
     report = {
         "installation": str(base),
         "audioGate": inventory["audio_gate"],
         "gameOverResources": gameover_resources,
         "wave": wave,
         "sb16": sb16,
+        "audioVariants": audio_variants,
         "saves": slots,
         "bundles": bundles,
         "manualGates": [
