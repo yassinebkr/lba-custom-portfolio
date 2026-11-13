@@ -106,10 +106,10 @@ def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
     """
     if profile == "off":
         return GAME_CONFIG.encode("ascii")
-    if profile in ("sb16", "sb16-8", "sb16-mixer", "sb16-mixer-loud"):
+    if profile in ("sb16", "sb16-8", "sb16-mono", "sb16-8-fm", "sb16-mixer", "sb16-mixer-loud"):
         # The historical build uses 16-bit stereo for W_SB16.DLL and 8-bit
         # stereo for W_SB16_8.DLL. Keep all variants isolated and opt-in.
-        driver_name = "W_SB16_8.DLL" if profile == "sb16-8" else "W_SB16.DLL"
+        driver_name = {"sb16-8": "W_SB16_8.DLL", "sb16-8-fm": "W_SB16_8.DLL", "sb16-mono": "W_SB16_M.DLL"}.get(profile, "W_SB16.DLL")
         driver = sources.get(driver_name)
         if driver is None:
             raise ValueError(f"{profile} needs owner-provided {driver_name}")
@@ -140,6 +140,29 @@ def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
                 ).replace(
                     "MasterVolume: 128\r\n", "MasterVolume: 240\r\n"
                 )
+        if profile == "sb16-8-fm":
+            # Test original Miles FM / OPL synthesis separately from CD audio.
+            # The 2.8 MB test ISO contains DATA tracks only; in the
+            # historical engine most scene music selects CDDA when CDEnable.
+            fm_driver = sources.get("A32SBFM.DLL")
+            midi_bank = sources.get("MIDI_SB.HQR")
+            if fm_driver is None or not (8192 <= fm_driver.stat().st_size <= 128 * 1024):
+                raise ValueError("sb16-8-fm needs owner-provided A32SBFM.DLL")
+            if midi_bank is None or not (1024 <= midi_bank.stat().st_size <= 16 * 1024 * 1024):
+                raise ValueError("sb16-8-fm needs owner-provided MIDI_SB.HQR")
+            # -1 tells the original Miles API to use its driver's default
+            # device parameters; this avoids overriding AdLib/SB FM ports
+            # with the old MT-32 MIDI UART default base 330h.
+            for key, previous, new in (
+                ("MidiDriver", "NoMidi", "A32SBFM.DLL"),
+                ("MidiBase", "330h", "-1"),
+                ("MidiIRQ", "", "-1"),
+                ("MidiDMA", "", "-1"),
+            ):
+                old_line = f"{key}: {previous}\r\n"
+                if configuration.count(old_line) != 1:
+                    raise ValueError("Unexpected FM MIDI config template: " + key)
+                configuration = configuration.replace(old_line, f"{key}: {new}\r\n")
         return configuration.encode("ascii")
     if profile != "source-wave":
         raise ValueError(f"Unknown audio profile: {profile}")
@@ -367,7 +390,7 @@ def main(argv: list[str] | None = None) -> int:
                      help="A separate lawful installation, not a damaged disk")
     cli.add_argument("--mods", type=Path, default=ROOT / "output")
     cli.add_argument("--out", type=Path, default=ROOT / "web_deploy/lba1_portfolio.jsdos")
-    cli.add_argument("--audio", choices=("off", "source-wave", "sb16", "sb16-8", "sb16-mixer", "sb16-mixer-loud"), default="off",
+    cli.add_argument("--audio", choices=("off", "source-wave", "sb16", "sb16-8", "sb16-mono", "sb16-8-fm", "sb16-mixer", "sb16-mixer-loud"), default="off",
                      help="Experimental SFX: source config DLL or owner-provided W_SB16.DLL")
     cli.add_argument("--saves-dir", type=Path,
                      help="Optional private directory containing DOS Snnn.LBA save files")
