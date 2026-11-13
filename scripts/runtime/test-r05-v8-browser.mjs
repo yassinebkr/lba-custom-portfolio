@@ -1,5 +1,5 @@
 /**
- * Genuine pinned js-dos 8.5.4 browser smoke: local ZIP -> DOSBox Worker.
+ * Genuine pinned js-dos 8.5.4 portfolio homepage smoke: local ZIP -> DOSBox Worker.
  * Synthetic DOS autoexec only (no copyrighted game data). It proves that
  * the isolated test page can start its real backend, NOT LBA1 fidelity.
  */
@@ -15,11 +15,11 @@ const bytes=await readFile(resolve(process.argv[2]||'output/r05-browser-fixture/
 const prefix='/lba-custom-portfolio/web_deploy/';
 const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript',
  '.css':'text/css','.wasm':'application/wasm','.json':'application/json'};
-const allowed=new Set(['v8-local.html','v8-local.mjs','local-bundle.mjs','r05-diagnostics.mjs']);
+const allowed=new Set(['index.html','v6-local.html','v8-local.html','v8-local.mjs','local-bundle.mjs','r05-diagnostics.mjs']);
 const server=createServer(async(req,res)=>{
  const url=new URL(req.url,'http://127.0.0.1');
  if(!url.pathname.startsWith(prefix)){res.writeHead(404);return res.end();}
- const part=decodeURIComponent(url.pathname.slice(prefix.length));
+ const part=decodeURIComponent(url.pathname.slice(prefix.length)) || 'index.html';
  if(!(allowed.has(part)||part.startsWith('vendor/jsdos854/'))){
    res.writeHead(404);return res.end();
  }
@@ -43,28 +43,34 @@ try {
   page.on('pageerror',err=>errors.push('JS: '+err.message));
   page.on('console',msg=>{if(msg.type()==='error')errors.push('console: '+msg.text());});
   page.on('response',res=>{if(res.status()>=400)errors.push('HTTP '+res.status()+' '+res.url());});
-  const url='http://127.0.0.1:'+server.address().port+prefix+'v8-local.html';
+  const url='http://127.0.0.1:'+server.address().port+prefix;
   const response=await page.goto(url);
   assert.equal(response.status(),200);
   await page.waitForFunction(()=>typeof window.Dos==='function',null,{timeout:20000});
-  await page.locator('#bundle').setInputFiles({
+  assert.match(await page.locator('h1').textContent(),/Yassine Benkhira/);
+  assert.equal(await page.locator('.loc-card').count(),6,'Portfolio landing must be preserved');
+  assert.equal(await page.locator('a[href="./v6-local.html"]').count(),1,'Legacy route must remain linked');
+  await page.locator('#bundle-file').setInputFiles({
     name:'r05-v8-synthetic.jsdos',mimeType:'application/octet-stream',buffer:bytes
   });
   await page.waitForFunction(()=>{
     const state=window.r05V8DiagnosticReport?.();
     return state?.events?.some(x=>x.type==='emulator-event'&&x.value==='ci-ready')
       || state?.errors?.length>0
-      || document.querySelector('#status')?.textContent?.startsWith('v8 startup failed');
+      || document.querySelector('#bundle-status')?.textContent?.startsWith('v8 startup failed');
   },null,{timeout:90000});
   const result=await page.evaluate(()=>window.r05V8DiagnosticReport());
   assert.ok(result.events.some(x=>x.type==='emulator-event'&&x.value==='ci-ready'),
     'Real v8 DOSBox backend not ready: '+JSON.stringify({result,errors}));
   assert.equal(result.backend,'dosbox');
+  assert.equal(await page.locator('#game-overlay.active').count(),1,'Main portfolio must present the v8 player');
+  assert.equal(await page.locator('#stop').isEnabled(),true);
+  assert.match(await page.locator('#player-status').textContent(),/DOSBox backend initialized/i);
   assert.ok(result.version,'Expected pinned v8 version');
   assert.deepEqual(result.errors,[],'unexpected startup diagnostic errors');
   assert.ok(!errors.some(x=>/404|wasm|Uncaught|ReferenceError/i.test(x)),
     'Asset or initialization failures: '+errors.join('; '));
-  console.log('js-dos 8.5.4 pinned local frontend + real DOSBox Worker started using synthetic local ZIP.');
+  console.log('Portfolio / loads js-dos 8.5.4 and starts the real pinned DOSBox Worker from a synthetic local ZIP.');
   console.log('No real LBA1 executable is run by this smoke test.');
 } finally {
   await browser?.close();
