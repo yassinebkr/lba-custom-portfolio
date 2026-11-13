@@ -135,13 +135,13 @@ converter rejects that input. Do not waste time repeating a silent MP3
 CUE experiment.
 
 After the raw synthetic CD tone gate actually passes, transcode **one**
-30-second sample of the owner's Track_02.mp3 with local FFmpeg to
+30-second sample of the owner's Track_10.mp3 (triggered by the original main menu) with local FFmpeg to
 44.1 kHz, signed 16-bit, stereo, raw sector-aligned CDDA:
 
     python3 scripts/runtime/make-cdda-pcm-preview.py \
       --input output/r05-probes/r05-cdda-tone.jsdos \
       --gog-root /mnt/fast-ssd/Games/Heroic/tlba-classic \
-      --track 2 --seconds 30 \
+      --track 10 --seconds 30 \
       --out output/r05-probes/r05-cdda-pcm-preview.jsdos
 
 Then prepare it for the v8 browser backend:
