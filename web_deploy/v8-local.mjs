@@ -15,8 +15,9 @@ export function comparisonOptions(url, onEvent) {
     workerThread: true,
     offscreenCanvas: false,
     mouseCapture: false,
-    fullScreen: false,
+    // Upstream Play component only invokes onPlay when countDownStart > 0.
     autoStart: true,
+    countDownStart: 1,
     autoSave: false,
     fsChanges: {local: false},
     pathPrefix: './vendor/jsdos854/emulators/',
@@ -32,7 +33,7 @@ export function setupV8Test(doc, host) {
   const status = doc.getElementById('status');
   const player = doc.getElementById('player');
   if (![choose, input, stop, copy, status, player].every(Boolean)) return;
-  const report = {runtime: 'js-dos@8.5.4', backend: 'dosbox', events: [], errors: [], comparison: 'manual'};
+  const report = {runtime: 'js-dos@8.5.4', backend: 'dosbox', events: [], errors: [], warnings: [], comparison: 'manual'};
   let props = null;
   let url = null;
   let busy = false;
@@ -46,7 +47,16 @@ export function setupV8Test(doc, host) {
     report.errors.push(String(event.message || 'Unknown script error'));
   });
   host.addEventListener('unhandledrejection', (event) => {
-    report.errors.push(String(event.reason?.message || event.reason || 'Unknown rejection'));
+    const message = String(event.reason?.message || event.reason || 'Unknown rejection');
+    // js-dos 8.5.4 upstream calls document.exitFullscreen() when already
+    // windowed. Some browsers reject it with "Document not active".
+    // It is an unrelated player UI warning, not a DOSBox audio failure.
+    if (message.includes('exitFullscreen') && message.includes('Document not active')) {
+      report.warnings.push(message);
+      event.preventDefault();
+      return;
+    }
+    report.errors.push(message);
   });
 
   async function dispose() {
