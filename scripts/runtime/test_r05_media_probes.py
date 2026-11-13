@@ -144,6 +144,19 @@ class MediaProbeTest(unittest.TestCase):
             self.assertIn('FILE "Track_10.mp3" MP3', z.read("LBA.CUE").decode("ascii"))
             self.assertEqual(z.read("Track_09.mp3")[:4], b"\xff\xfb\x90\x64")
 
+    def test_v8_rejects_mp3_cue_without_compiled_decoder(self):
+        music = self.root / "gog/Common/Music"
+        music.mkdir(parents=True)
+        for number in range(2, 11):
+            (music / f"Track_{number:02d}.mp3").write_bytes(
+                b"\xff\xfb\x90\x64" + b"\x00" * 2048
+            )
+        direct = self.root / "r05-mp3-control.jsdos"
+        cdda.make(self.source, direct, mode="owner-mp3", gog_root=self.root / "gog")
+        with self.assertRaisesRegex(ValueError, "C_SDL_SOUND disabled"):
+            v8.prepare(direct, self.v8target, "LBA.CUE")
+        self.assertFalse(self.v8target.exists())
+
     def test_one_real_track_transcode_is_bounded_and_preserves_other_tracks(self):
         tone = self.root / "r05-original-tone.jsdos"
         cdda.make(self.source, tone, mode="tone", tone_seconds=1)
