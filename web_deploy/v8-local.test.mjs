@@ -11,7 +11,8 @@ test('v8 comparison is DOSBox worker-only with local private blob URL and no aut
  assert.equal(config.autoStart,true);
  assert.equal(config.autoSave,false);
  assert.equal(config.mouseCapture,false);
- assert.equal(config.fullScreen,false);
+ assert.equal(config.countDownStart,1);
+ assert.ok(!Object.hasOwn(config,'fullScreen'));
  assert.equal(config.pathPrefix,'./vendor/jsdos854/emulators/');
  assert.deepEqual(config.fsChanges,{local:false});
  assert.equal(config.onEvent,fn);
