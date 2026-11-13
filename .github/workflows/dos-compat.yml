@@ -11,6 +11,7 @@ on:
       - 'tests/runtime-*.test.mjs'
       - 'scripts/hqr-tools/patch-relent.js'
       - 'scripts/build-web-bundle.sh'
+      - 'scripts/runtime/test-r05-browser.mjs'
       - '.github/workflows/dos-compat.yml'
   workflow_dispatch:
 
@@ -52,3 +53,34 @@ jobs:
           name: r03-original-dos-codec-evidence
           path: output/r03-dos-compat/
           if-no-files-found: error
+
+
+  browser-archive:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build synthetic archive with the Debian R05 packer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xorriso
+          mkdir -p output/r05-browser-fixture/base output/r05-browser-fixture/mods
+          python3 - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'scripts/runtime')
+          from test_private_jsdos import fixture_game
+          fixture_game(Path('output/r05-browser-fixture/base'))
+          PY
+          python3 scripts/runtime/build-private-jsdos.py \
+            --base output/r05-browser-fixture/base \
+            --mods output/r05-browser-fixture/mods \
+            --out output/r05-browser-fixture/synthetic.jsdos
+      - name: Install browser smoke dependencies
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Validate real js-dos 6.22 extraction of Debian bundle
+        run: node scripts/runtime/test-r05-browser.mjs output/r05-browser-fixture/synthetic.jsdos
