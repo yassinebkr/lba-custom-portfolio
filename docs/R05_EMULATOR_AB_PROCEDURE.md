@@ -122,29 +122,44 @@ To try the **same** synthetic CD test on the v8 page:
       --out output/r05-probes/r05-v8-cdda-tone.jsdos \
       --cd-image LBA.CUE
 
-## Gate 2b: the owner's MP3 tracks, ONLY after a successful CD-DA tone
+## Gate 2b: raw owner CDDA preview, NOT an MP3 CUE
 
-The GOG installation has all nine original tracks at
-`/mnt/fast-ssd/Games/Heroic/tlba-classic/Common/Music/Track_02.mp3`
-through `Track_10.mp3`. Keep this experiment private:
+The owner GOG installation has all nine original MP3 tracks at
+`Common/Music/Track_02.mp3` through `Track_10.mp3`. Source inspection
+of the pinned emulators 8.5.3 DOSBox backend proves that its
+`native/config/config.h` explicitly leaves `C_SDL_SOUND` undefined.
+The old DOSBox CD image code relies on that macro to decode MP3/OGG CUE
+audio. Therefore `r05-cdda-owner.jsdos` with direct MP3s is **not**
+a supported test for our chosen v8 DOSBox Worker. The v8 private
+converter rejects that input. Do not waste time repeating a silent MP3
+CUE experiment.
 
-    python3 scripts/runtime/make-cdda-probe.py \
-      --input output/r05-probes/r05-sb16-8.jsdos \
-      --mode owner-mp3 \
+After the raw synthetic CD tone gate actually passes, transcode **one**
+30-second sample of the owner's Track_02.mp3 with local FFmpeg to
+44.1 kHz, signed 16-bit, stereo, raw sector-aligned CDDA:
+
+    python3 scripts/runtime/make-cdda-pcm-preview.py \
+      --input output/r05-probes/r05-cdda-tone.jsdos \
       --gog-root /mnt/fast-ssd/Games/Heroic/tlba-classic \
-      --out output/r05-probes/r05-cdda-owner.jsdos
+      --track 2 --seconds 30 \
+      --out output/r05-probes/r05-cdda-pcm-preview.jsdos
 
-Use the same 6.22 CUE test URL and import this new archive.
-MP3 in a DOSBox CUE requires a decoder in the chosen WASM build.
-The historical DOSBox fork guards compressed audio in
-src/dos/cdrom_image.cpp with C_SDL_SOUND; **we have not confirmed**
-that either released WASM binary includes this decoder. A PCM-tone
-success followed by MP3 failure would narrow the defect to the
-compressed-audio decoder path.
+Then prepare it for the v8 browser backend:
 
-To compare v8 CD music, convert the owner MP3 CUE bundle with
-prepare-jsdos8-bundle.py and `--cd-image LBA.CUE`, then import that
-private resulting bundle on the v8 route.
+    python3 scripts/runtime/prepare-jsdos8-bundle.py \
+      --input output/r05-probes/r05-cdda-pcm-preview.jsdos \
+      --cd-image LBA.CUE \
+      --out output/r05-probes/r05-v8-cdda-pcm-preview.jsdos
+
+The original game still issues CD-track commands against the emulated
+drive. This experiment only substitutes compatible PCM track bytes for
+the compressed track media, while leaving the other eight synthetic
+tones and all original game files unchanged.
+
+If one original preview plays, measure the full nine-track decoded size
+and browser memory before generating the complete owner-local CD image.
+Do not automatically promote that large private game bundle into the
+public deployment.
 
 The Adeline logo is **MIDI index 31**, not a CD-DA track. Its missing
 jingle is separately explained by the existing `MidiDriver: NoMidi`.
@@ -161,7 +176,7 @@ browser audio overlay is part of these tests.
 | Identical S003 footstep clarity | Owner check | Historical attenuated baseline | Owner check |
 | Checkpoint respawn | Owner check | Previously confirmed | Owner check |
 | CUE accepted, synthetic tone actually heard | Owner check | N/A | Owner check |
-| MP3 played after tone passed | Owner check | N/A | Owner check |
+| One original raw PCM music preview played after tone passes | Optional | N/A | Owner check |
 
 If v8 materially worsens startup, saved-game movement or performance, do
 not migrate. If both versions fail CUE/PCM, do not blindly add MP3 tracks
@@ -174,3 +189,5 @@ References:
 - js-dos v8 UI API: https://js-dos.com/player-api.html
 - js-dos latest verified 8.5.4 release: https://github.com/caiiiycuk/js-dos/releases/tag/v8.5.4
 - DOSBox mixed-mode CUE implementation: https://github.com/js-dos/dosbox/blob/main/src/dos/cdrom_image.cpp
+
+Recent owner evidence: js-dos 8.5.4 has clearly improved PCM SFX relative to v6.22; left/right balance is reversed under the 8-bit original driver. Neither version had VOX banks or real CDDA mounted at that point. See [R05.5 audio results and stereo/voice gates](R05_AUDIO_85_RESULTS.md).
