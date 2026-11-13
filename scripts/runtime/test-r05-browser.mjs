@@ -106,7 +106,7 @@ try {
   assert.equal(result.state.volume,'ADELINE');
   assert.deepEqual(result.state.patch2,[235,15]);
   assert.match(result.state.config,/machine=svga_s3/);
-  assert.deepEqual(result.state.commands,['-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE']);
+  assert.deepEqual(result.state.commands,['-conf','.jsdos/dosbox.conf','-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE']);
   assert.deepEqual(errors,[],'no uncaught errors');
   console.log('R05: actual js-dos 6.22 ZIP extraction accepted the output of the Debian builder');
   console.log('R05: ISO descriptor, volume label, patched EXE, HQR entries and DOS main arguments validated');
