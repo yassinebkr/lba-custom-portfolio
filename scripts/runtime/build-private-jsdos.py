@@ -235,7 +235,13 @@ def main(argv: list[str] | None = None) -> int:
     args = cli.parse_args(argv)
     try:
         report = build(args.base.resolve(), args.mods.resolve(), args.out.resolve())
-    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
+    except subprocess.CalledProcessError as error:
+        detail = (error.stderr or error.stdout or "").strip()
+        print(f"R05 build failed: external tool returned {error.returncode}", file=sys.stderr)
+        if detail:
+            print(detail[-2500:], file=sys.stderr)
+        return 1
+    except (OSError, ValueError, RuntimeError) as error:
         print(f"R05 build failed: {error}", file=sys.stderr)
         return 1
     print("R05 private bundle ready for local browser import")
