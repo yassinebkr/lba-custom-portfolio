@@ -1,0 +1,29 @@
+name: DOS runtime compatibility milestones
+
+on:
+  push:
+    branches: [feature/portfolio-studio-j1-j8]
+    paths:
+      - 'scripts/runtime/**'
+      - 'packages/world-package/**'
+      - 'adapters/lba-dos/**'
+      - 'examples/world-package/**'
+      - 'tests/runtime-*.test.mjs'
+      - '.github/workflows/dos-compat.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  runtime-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit legacy resource boundaries
+        run: |
+          node scripts/runtime/audit.mjs > /tmp/r01-audit.json
+          node --test tests/runtime-audit.test.mjs
