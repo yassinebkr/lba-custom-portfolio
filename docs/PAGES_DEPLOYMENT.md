@@ -8,6 +8,16 @@ The [R04–R09 plan](DOS_REBUILD_PLAN.md) prioritizes a GitHub Pages js-dos load
 
 The public loader is intentionally empty until a visitor selects their local .jsdos archive. A privately reconstructed DOS bundle assembled from an owned commercial game installation is used for verification. Publishing that bundle requires independent redistribution clearance for all embedded components. The final Pages artifact will contain only the finished portfolio. All preview links must be verified against the deployed site before they are described as working.
 
+## R04 client-side importer verification
+
+The public development endpoint is [js-dos local bundle import](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/), linked from the repository README.
+
+GitHub Actions validates the allowlisted js-dos 6.22 browser files and checks a local test ZIP using a mock of the DOS execution callback. The browser acceptance run does not establish that a full commercial-game bundle has launched. The first real private .jsdos boot remains R05.
+
+The static release ships the importer and js-dos vendor JavaScript only. Imported archives are selected in the visitor's browser and read through a temporary blob URL. Commercial HQR/EXE/ISO files must never be committed to the feature branch or included in the deployed artifact.
+
+A release-tagged development commit may run the optional Pages publishing job. A passing job must be followed by an actual browser check of the endpoint.
+
 ## Current publication route (no settings change)
 
 ```mermaid
