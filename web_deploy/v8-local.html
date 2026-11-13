@@ -31,10 +31,11 @@
     <a href="./?r05debug=1">Return to js-dos 6.22 control</a>
   </header>
   <p class="muted note">
-    Use only <code>output/r05-probes/r05-v8-sb16-8.jsdos</code> generated locally
-    from the verified 6.22 archive. This test keeps DOSBox, original RELENT.EXE,
-    seven DOS save slots and the same 8-bit wave driver. It is not an upgrade
-    to the public player. The selected game archive is read locally; it is never uploaded.
+    Use only privately converted <code>output/r05-probes/r05-v8-*.jsdos</code>
+    archives generated locally from the same known-good DOS bundle. The new
+    experiments can compare the original 8-bit and 16-bit SB16 drivers, include
+    private English VOX banks, or mount a mixed-mode CD-DA CUE. Original
+    RELENT.EXE, HQR and DOS save bytes remain unchanged. Nothing is uploaded.
   </p>
   <div class="controls">
     <button id="import" type="button">Choose private v8 comparison bundle</button>
@@ -45,9 +46,10 @@
   <p id="status" role="status" aria-live="polite">Checking pinned local runtime assets…</p>
   <div id="player" aria-label="js-dos 8 experimental player"></div>
   <p class="muted note">
-    Boot, select Museum S003 using the game's save menu, compare the same footsteps
-    to js-dos 6.22, and check a checkpoint respawn. Disable fullscreen/mouse capture
-    to retain desktop control. Keep 6.22 untouched as the reference.
+    Boot and load Museum S003 using the game's save menu. Compare left/right
+    footstep panning between 8-bit and 16-bit driver variants. For voice tests,
+    initiate an actual English dialogue. For CD-DA tests, verify the track-10
+    tone on the main menu. The original 6.22 reader remains available as control.
   </p>
 </main>
 <script defer src="./vendor/jsdos854/js-dos.js"></script>
