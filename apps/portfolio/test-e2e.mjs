@@ -1,6 +1,7 @@
 /** Browser acceptance smoke for the public static bundle under a GitHub Pages project subpath. */
 import { chromium } from 'playwright';
 import {createServer} from 'node:http';
+import {spawnSync} from 'node:child_process';
 import {readFile} from 'node:fs/promises';
 import {join, extname} from 'node:path';
 import assert from 'node:assert/strict';
@@ -160,6 +161,64 @@ try{
   ]);
   assert.match(await page.evaluate(()=>window.__dosSmoke.blobUrl),/^blob:/);
   assert.deepEqual(errors,[],'DOS import route reports no uncaught browser exceptions');
+
+  // R04 integration: the unmodified js-dos 6.22 ZIP extractor reads a real
+  // synthetic local archive. The DOS main callback is intercepted to prevent
+  // execution of placeholder executable bytes.
+  const zipCode=[
+    'import io, sys, zipfile',
+    'data = io.BytesIO()',
+    'with zipfile.ZipFile(data, "w", zipfile.ZIP_STORED) as archive:',
+    '    archive.writestr(".jsdos/", b"")',
+    '    archive.writestr(".jsdos/dosbox.conf", "[cpu]\\ncycles=auto\\n")',
+    '    archive.writestr("RELENT.EXE", b"synthetic placeholder")',
+    '    archive.writestr("LBA.ISO", b"synthetic placeholder")',
+    'sys.stdout.buffer.write(data.getvalue())'
+  ].join('\n');
+  const zip=spawnSync('python3',['-c',zipCode],{maxBuffer:1048576});
+  assert.equal(zip.status,0,zip.stderr?.toString()||'ZIP fixture failed');
+  assert.equal(zip.stdout[0],0x50);
+  const actual=await browser.newPage();
+  const actualErrors=[];
+  actual.on('pageerror',error=>actualErrors.push(error.message));
+  await actual.goto('http://127.0.0.1:'+PORT+base+'web_deploy/');
+  await actual.waitForFunction(()=>typeof window.Dos==='function');
+  await actual.evaluate(()=>{
+    const realDos=window.Dos;
+    window.Dos=(canvas,options)=>{
+      const realInstance=realDos(canvas,options);
+      return {
+        ready(cb){
+          return realInstance.ready((fs,_main)=>{
+            cb(fs,commands=>{
+              window.__actualZip={commands,hasExecutable:fs.fs.analyzePath('/RELENT.EXE').exists,
+                hasIso:fs.fs.analyzePath('/LBA.ISO').exists};
+            });
+          });
+        }
+      };
+    };
+  });
+  await actual.locator('#bundle-file').setInputFiles({
+    name:'synthetic-local.jsdos',mimeType:'application/octet-stream',buffer:zip.stdout
+  });
+  await actual.waitForFunction(
+    ()=>Boolean(window.__actualZip) || document.querySelector('#bundle-status')?.textContent.includes('Import failed'),
+    null,{timeout:45000}
+  );
+  const actualResult=await actual.evaluate(()=>({
+    status:document.querySelector('#bundle-status').textContent,
+    info:window.__actualZip || null,
+    hidden:document.querySelector('#bundle-import').hidden
+  }));
+  assert.ok(actualResult.info,'Actual js-dos 6.22 ZIP extraction failed: '+actualResult.status+
+    ' | page errors: '+actualErrors.join(', '));
+  assert.equal(actualResult.info.hasExecutable,true);
+  assert.equal(actualResult.info.hasIso,true);
+  assert.equal(actualResult.hidden,true,'import hides after actual js-dos extraction');
+  assert.deepEqual(actualErrors,[],'js-dos extraction has no browser exceptions');
+  console.log('Actual js-dos 6.22 local blob ZIP extraction passed');
+  await actual.close();
 
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base);
