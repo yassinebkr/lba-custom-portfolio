@@ -1,6 +1,6 @@
 # DOS portfolio reconstruction and visual verification roadmap
 
-Status: **R04 public loader verified; R05 Debian private bundle packaging passed synthetic CI; real DOS game boot pending clean source files**.
+Status: **R04 public loader deployed; R05 Linux packaging and real js-dos 6.22 archive extraction passed synthetic CI; real DOS game boot remains pending clean owner-provided resources**.
 Branch: `feature/portfolio-studio-j1-j8`.
 Scope: reconstruction from a clean, lawfully obtained game installation, separate authoring and runtime products, reproducible evidence and reviewed GitHub Pages previews.
 
@@ -48,7 +48,7 @@ flowchart LR
 
 ### R05 — Rebuild the private DOS bundle from a clean game installation
 
-**Packaging evidence:** [R05 Debian ISO/ZIP CI](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088). [Private owner-local build instructions](R05_PRIVATE_DOS_BUILD.md). The full DOS game boot remains unverified.
+**Technical evidence:** [Linux ISO/ZIP packaging](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088) and [real js-dos 6.22 extraction of the Linux-generated ZIP](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43360752067). [Private owner-local build instructions](R05_PRIVATE_DOS_BUILD.md). Real DOS gameplay is still unverified.
 
 - Obtain a fresh, lawfully acquired DOS-compatible game installation independently of the damaged NVMe; use official assets locally during early engine validation.
 - Inventory `RELENT.EXE`, original HQR archives and palette, required CD inputs, patch-site bytes and source version. Prefer a compatible open-source engine build where verified.
