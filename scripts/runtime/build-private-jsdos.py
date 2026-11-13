@@ -143,7 +143,7 @@ def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
         "WaveRate": fields["waverate"],
     }.items():
         configuration = re.sub(
-            rf"(?m)^{re.escape(key)}:.*$",
+            rf"(?m)^{re.escape(key)}:[^\r\n]*",
             lambda match, k=key, v=value: f"{k}: {v}",
             configuration,
         )
