@@ -35,7 +35,7 @@ BASE=/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows
 python3 scripts/runtime/audit-dos-install.py --base "$BASE"
 ~~~
 
-The diagnostic prints only resource names, `LBA.CFG` audio settings and installed driver filenames. The private builder supports `--audio off` (the known working baseline) and an explicitly experimental `--audio source-wave` mode. The latter requires `LBA.CFG` to name a DOS wave DLL present in the same directory, `WaveExec=NoExec`, port 220h, IRQ 7, DMA 1 and a checked sample rate. MIDI and mixer remain disabled. If no valid local DLL exists, the builder aborts instead of fabricating one.
+The diagnostic prints only resource names, `LBA.CFG` audio settings and installed driver filenames. The private builder supports `--audio off` (the known working baseline), experimental `--audio source-wave` and guarded `--audio sb16`. The source-wave mode requires `LBA.CFG` to name an installed DOS wave DLL, `WaveExec=NoExec`, port 220h, IRQ 7, DMA 1 and a checked sample rate. The `sb16` mode is an independent experiment using the owner-supplied `W_SB16.DLL` at the same 220h/IRQ7/DMA1 settings even if the source configuration disables audio. If the local DOS DLL is missing or has an unexpected size, the SB16 builder fails closed. MIDI and mixer remain disabled; successful packaging does not prove sound.
 
 **Audio validation sequence:** first prove that a real wave DLL is available; then create separate baseline and wave-enabled private ZIPs; test SFX in the same scene and compare startup, responsiveness and browser errors. Music and voices require separate backends, asset sizes and test gates. The presence of `SAMPLES.HQR` alone does not prove that effects are audible.
 
@@ -159,3 +159,38 @@ In the community game source, GameOver() uses a 3D model from RESS.HQR,
 sample 37 and TimerRef-dependent loops, followed by a display transition.
 There is no direct FLA playback in this routine. In-game recovery therefore
 requires evidence about this specific path before patching the executable.
+
+
+### November 2026: verified driver family, separate SB16 test
+
+The historical game supports a Sound Blaster 16 FX profile. A file inventory
+for the Windows Speedrunner distribution lists W_SB16.DLL, and the
+lba1-classic-community compilation guide also names W_SB16.DLL as the wave
+driver. The presence of that file on the owner's particular GOG installation
+must be checked rather than inferred from a storefront listing.
+
+References:
+- https://steamdb.info/depot/397332/history/
+- https://lba-classic-doc.readthedocs.io/en/latest/lba1/compile.html
+- https://github.com/mitigd/lba-hle/blob/main/docs/project.md
+
+The runner now builds a silent control and attempts source-wave and SB16
+experiments independently. Depending on the actual local GOG files, it creates
+one, two or three .jsdos bundles under output/r05-probes/. Compare the same
+save slot and action in the silent control and any enabled-audio candidate.
+The test driver in synthetic CI is intentionally non-working; only the
+manual browser test can confirm audible SFX.
+
+The report includes read-only structural checks for RESS.HQR index 21
+(GameOver 3D model) and SAMPLES.HQR index 37 (game-over sample), using
+the original sources' index-table and entry-header layout. Run the standalone
+inspection on the owner-provided GOG directory:
+
+~~~bash
+python3 scripts/runtime/inspect_gameover_resources.py --base "$BASE"
+~~~
+
+A result marked present means the entry is within HQR bounds with a supported
+compression method, not that its decoded payload is semantically valid.
+A missing or invalid entry is a concrete lead; a present entry leaves palette,
+timer, model decoding and the game transition to investigate.
