@@ -5,6 +5,8 @@ on:
     branches: [feature/portfolio-studio-j1-j8, 'fix/r05-*']
     paths:
       - 'scripts/runtime/**'
+      - 'web_deploy/r05-diagnostics*'
+      - 'web_deploy/local-bundle.mjs'
       - 'packages/world-package/**'
       - 'adapters/lba-dos/**'
       - 'examples/world-package/**'
@@ -30,6 +32,8 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y xorriso
       - name: Verify private DOS Linux packaging with synthetic inputs
         run: python3 -m unittest discover -s scripts/runtime -p 'test_*.py' -v
+      - name: Check opt-in browser diagnostics and private importer
+        run: node --test web_deploy/r05-diagnostics.test.mjs web_deploy/local-bundle.test.mjs
       - name: Audit legacy resource boundaries
         run: |
           node scripts/runtime/audit.mjs > /tmp/r01-audit.json
