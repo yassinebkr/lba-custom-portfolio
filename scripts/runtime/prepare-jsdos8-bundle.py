@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Prepare a private js-dos 8 comparison ZIP from an existing R05 6.22 ZIP.
 
-Changes ONLY the embedded DOSBox startup configuration. All original private
-game files, Snnn.LBA saves, DLLs, HQRs, and patched RELENT.EXE remain unchanged.
+By default changes ONLY the embedded DOSBox startup configuration. Optional
+controlled experiments may switch between owner-provided 8/16-bit SB16 wave
+DLLs or include original EN_*.VOX banks. All original private game files,
+Snnn.LBA saves, DLLs, HQRs, and patched RELENT.EXE remain byte-identical.
 Never publish the resulting bundle.
 """
 from __future__ import annotations
@@ -165,7 +167,7 @@ def main() -> int:
     p.add_argument("--wave-driver", choices=("W_SB16_8.DLL", "W_SB16.DLL"),
                    default="W_SB16_8.DLL")
     p.add_argument("--voices-dir", type=Path,
-                   help="Optional owner-provided DOS VOX directory; files are included only in private output")
+                   help="Optional owner DOS VOX directory; only English EN_*.VOX files are included privately")
     args = p.parse_args()
     try:
         print(json.dumps(prepare(args.input, args.out, args.cd_image,
