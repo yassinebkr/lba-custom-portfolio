@@ -47,13 +47,13 @@ The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO
 
 [**Recover the previous LBA workflows and run the controlled tests**](docs/R05_RUNTIME_RECOVERY.md) · [**R05.5 verified v8 PCM, stereo/voices/CDDA follow-up**](docs/R05_AUDIO_85_RESULTS.md) · [**R05 6.22 vs 8.5.4 and CDDA acceptance procedure**](docs/R05_EMULATOR_AB_PROCEDURE.md) · [**R05 DOS-first reassessment (js-dos 8.5.4, config bug, CDDA)**](docs/R05_JSDOS_REASSESSMENT.md) · [**R05 audio root-cause analysis and architecture decision**](docs/R05_AUDIO_ARCHITECTURE_RESEARCH.md)
 
-The owner confirmed that generated DOS saves (including Museum S003) load and a death returns to the checkpoint. **js-dos 8.5.4 produces markedly cleaner, accepted Sound Blaster effects**, but the 8-bit driver reverses left/right spatialization, and neither CD music nor voices has been restored yet. New isolated tests compare the original 16-bit driver and optionally include owner-local English DOS VOX banks, while the existing CDDA test creates owner-local mixed-mode CUE bundles. The Adeline logo jingle is separately suppressed by `MidiDriver: NoMidi`. Do not infer playable music/voices from packaging tests. No automatic scene boot patch is proven yet.
+The owner confirmed that generated DOS saves (including Museum S003) load and a death returns to the checkpoint. **js-dos 8.5.4 with the original W_SB16.DLL 16-bit stereo driver has owner-validated clean Sound Blaster effects and correct left/right spatialization.** The earlier 8-bit driver reversed stereo. English VOX voice playback remains unverified because the owner's first voice-bundle import stalled; CD music is still absent from the tested data-only ISO. The Adeline logo jingle remains disabled by `MidiDriver: NoMidi`. Browser packaging tests do not establish voice or CD audio fidelity. No automatic scene boot patch is proven yet.
 
 ## DOS browser bootstrap and visual verification
 
 **[Launch the js-dos browser test — import your own local .jsdos](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/)**
 
-This public page hosts only the js-dos 6.22 emulator and the import UI. Choose a locally built private .jsdos ZIP. Import happens inside the browser, and the selected archive is not uploaded. The local-file import page is live and the owner has played the real GOG-derived game. Original game files remain owner-local, outside this public site.
+On this experimental branch, `web_deploy/` now uses **js-dos 8.5.4 as the primary importer at `/`** while `/v6-local.html` retains the earlier 6.22 control. Local runtime artifacts are installed into gitignored `web_deploy/vendor/jsdos854/` via `scripts/runtime/install-jsdos8.py`; therefore the new v8 homepage is **validated locally but must not be described as deployed publicly** until the release packaging supplies the freely redistributable js-dos runtime files. The original GOG-derived game and private `.jsdos` files are never uploaded to the page.
 
 
 [Open the V6 sprite comparison](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) · [Open the V7 original workshop review](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html)
@@ -134,7 +134,7 @@ The [V7 technical architecture, verification and limitations](docs/IN_SCENE_QA.m
 
 ## DOS runtime integration — R01 to R03
 
-The existing js-dos 6.22 LBA adaptation is the target for the R-series. The reusable creator workflow exports [WorldPackage v1](docs/R02_WORLD_PACKAGE.md), and the independent DOS adapter converts original images into native indexed sprite and brick payloads.
+The DOS LBA adaptation targets js-dos 8.5.4 for current private runtime testing, while 6.22 remains a regression control. The reusable creator workflow exports [WorldPackage v1](docs/R02_WORLD_PACKAGE.md), and the independent DOS adapter converts original images into native indexed sprite and brick payloads.
 
 - [R01 — source and runtime dependency audit](docs/R01_DOS_AUDIT.md)
 - [R02 — versioned portable world contract](docs/R02_WORLD_PACKAGE.md)
