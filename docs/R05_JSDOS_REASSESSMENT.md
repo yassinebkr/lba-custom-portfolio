@@ -17,12 +17,12 @@ Current [web_deploy/local-bundle.mjs](../web_deploy/local-bundle.mjs) calls:
 
     main(['-c', 'imgmount d LBA.ISO -t iso', '-c', 'RELENT.EXE']);
 
-But [scripts/runtime/build-private-jsdos.py](../scripts/runtime/build-private-jsdos.py) writes the emulation parameters into \`.jsdos/dosbox.conf\` inside the archive. The JavaScript importer unpacks that file and invokes the 6.22 DOSBox runtime without \`-conf\`. The owner's console showed DOSBox loading \`/home/web_user/.dosbox/dosbox-jsdos.conf\` instead. **This is a source-backed contract error in our integration.** All previous audio variations changed LBA.CFG (the original game's driver settings), while the intended emulator-side SB16/OPL/mixer/rate settings were not demonstrably loaded.
+But [scripts/runtime/build-private-jsdos.py](../scripts/runtime/build-private-jsdos.py) writes the emulation parameters into `.jsdos/dosbox.conf` inside the archive. The JavaScript importer unpacks that file and invokes the 6.22 DOSBox runtime without `-conf`. The owner's console showed DOSBox loading `/home/web_user/.dosbox/dosbox-jsdos.conf` instead. **This is a source-backed contract error in our integration.** All previous audio variations changed LBA.CFG (the original game's driver settings), while the intended emulator-side SB16/OPL/mixer/rate settings were not demonstrably loaded.
 
 Official sources:
-- DOSBox manual: \`-conf <configfile>\` loads a specified configuration; without it DOSBox loads its default/user config. https://www.dosbox.com/DOSBoxManual.html
+- DOSBox manual: `-conf <configfile>` loads a specified configuration; without it DOSBox loads its default/user config. https://www.dosbox.com/DOSBoxManual.html
 - js-dos 7 bundle guide explicitly distinguishes 6.22's *manual emulator configuration* from the automatic bundle config loaded by 7+: https://js-dos.com/v7/build/docs/jsdos-bundle/
-- 6.22 API reference supports direct \`main([...])\` execution and options. https://js-dos.com/6.22/docs/api/generate.html?page=js-dos-options
+- 6.22 API reference supports direct `main([...])` execution and options. https://js-dos.com/6.22/docs/api/generate.html?page=js-dos-options
 
 Next focused correction (to be tested in a separate commit, **not yet applied**):
 
@@ -45,10 +45,10 @@ https://github.com/caiiiycuk/js-dos/releases/tag/v8.5.0
 v8.4.0 previously added AudioWorklet, persistence improvements, and browser performance controls:
 https://github.com/caiiiycuk/js-dos/releases/tag/v8.4.0
 
-Current js-dos emulator API supports \`dosboxWorker\`, \`dosboxXWorker\`, \`dosboxXDebugWorker\`, file-system bundle inspection, \`audioWorklet\` backend option, and DOSBox-X debugger/MCP backend:
+Current js-dos emulator API supports `dosboxWorker`, `dosboxXWorker`, `dosboxXDebugWorker`, file-system bundle inspection, `audioWorklet` backend option, and DOSBox-X debugger/MCP backend:
 https://js-dos.com/emulators.html
 
-These features are credible relevance signals for our current audio defect and native debugger/guest liveness problem, but they **do not prove** LBA1's Miles driver compatibility or CD audio output in v8. The existing patched RELENT.EXE and HQR file formats are preserved in a DOS emulator. Adapter changes are required: js-dos 8's bundle-driven startup must include the mount/start commands in \`.jsdos/dosbox.conf\` [autoexec], or use a backend API explicitly implementing the same sequence. A \`.jsdos/jsdos.json\` may be added; verify actual validation rules rather than assuming 6.22's manual launch command is reused unchanged. Keep v6.22 and v8 launchers on separate local test routes.
+These features are credible relevance signals for our current audio defect and native debugger/guest liveness problem, but they **do not prove** LBA1's Miles driver compatibility or CD audio output in v8. The existing patched RELENT.EXE and HQR file formats are preserved in a DOS emulator. Adapter changes are required: js-dos 8's bundle-driven startup must include the mount/start commands in `.jsdos/dosbox.conf` [autoexec], or use a backend API explicitly implementing the same sequence. A `.jsdos/jsdos.json` may be added; verify actual validation rules rather than assuming 6.22's manual launch command is reused unchanged. Keep v6.22 and v8 launchers on separate local test routes.
 
 ## Original CD music: use the real media path instead of inventing a JS jukebox
 
@@ -59,7 +59,7 @@ DOSBox's documented route is to mount a mixed-mode CUE with a data track (track 
 - https://www.dosbox.com/wiki/Cuesheet
 - https://www.dosbox.com/DOSBoxManual.html
 
-**Critical build-specific caveat:** in the open-source DOSBox fork's \`src/dos/cdrom_image.cpp\`, compressed CUE audio is guarded by \`#if defined(C_SDL_SOUND)\`; \`configure.ac\` enables it only if SDL_sound headers/libs/seek support are found:
+**Critical build-specific caveat:** in the open-source DOSBox fork's `src/dos/cdrom_image.cpp`, compressed CUE audio is guarded by `#if defined(C_SDL_SOUND)`; `configure.ac` enables it only if SDL_sound headers/libs/seek support are found:
 - https://github.com/js-dos/dosbox/blob/main/src/dos/cdrom_image.cpp
 - https://github.com/js-dos/dosbox/blob/main/configure.ac
 
