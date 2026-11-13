@@ -29,7 +29,7 @@ jobs:
       - name: Install Linux ISO9660 writer
         run: sudo apt-get update -qq && sudo apt-get install -y xorriso
       - name: Verify private DOS Linux packaging with synthetic inputs
-        run: python3 -m unittest discover -s scripts/runtime -p 'test_private_jsdos.py' -v
+        run: python3 -m unittest discover -s scripts/runtime -p 'test_*.py' -v
       - name: Audit legacy resource boundaries
         run: |
           node scripts/runtime/audit.mjs > /tmp/r01-audit.json
