@@ -1,0 +1,13 @@
+{
+  "name": "project-atlas-lba-dos-adapter",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "dependencies": {
+    "@lbalab/hqr": "^1.0.0",
+    "pngjs": "^7.0.0"
+  },
+  "scripts": {
+    "test": "node --test index.test.mjs overlay.test.mjs"
+  }
+}
