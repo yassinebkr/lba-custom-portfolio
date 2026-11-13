@@ -87,6 +87,14 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
                        ".jsdos/dosbox.conf", "W_SB16_8.DLL"):
             if needed not in names:
                 raise ValueError("Missing comparison input: " + needed)
+        if cd_image == "LBA.CUE":
+            cue = z.read("LBA.CUE")
+            if re.search(rb'(?im)^\\s*FILE\\s+"[^"]+\\.(?:mp3|ogg)"\\s', cue):
+                raise ValueError(
+                    "Pinned js-dos 8 DOSBox backend has C_SDL_SOUND disabled: "
+                    "compressed MP3/OGG CUE audio cannot be decoded. "
+                    "Use synthetic/raw PCM tracks first."
+                )
         cfg = z.read("LBA.CFG")
         if b"WaveDriver: W_SB16_8.DLL" not in cfg or b"MixerDriver: NoMixer" not in cfg:
             raise ValueError("Expected the tested 8-bit, no-mixer audio profile")
