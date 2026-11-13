@@ -2,8 +2,10 @@
 
 Scope: owner-local Debian tests only. No original LBA1 files, MIDI assets,
 GOG MP3s, or generated .jsdos bundles may be committed, deployed, or uploaded.
-The maintained public route remains the 6.22 importer; all 8.5.4 tests are
-isolated under /web_deploy/v8-local.html.
+On this experimental branch, the *local* /web_deploy/ homepage launches
+js-dos 8.5.4; /web_deploy/v6-local.html preserves the old 6.22 control.
+The upstream js-dos 8 vendor files are installed locally and ignored by git.
+Do not assume the experimental v8 homepage is publicly deployed yet.
 
 ## One-time branch update
 
@@ -25,7 +27,7 @@ Serve local static files, leaving the server in a terminal:
 
 ## Gate 0: verify the 6.22 emulator-side config is actually loaded
 
-Open **http://127.0.0.1:8765/?r05debug=1**, import the
+Open **http://127.0.0.1:8765/v6-local.html?r05debug=1**, import the
 owner-local `output/r05-probes/r05-sb16-8.jsdos`, then open developer tools.
 
 The launcher now passes:
@@ -39,7 +41,7 @@ The browser-only diagnostics may display the argv string, but this is
 not a substitute for a DOSBox log proving that the file was read.
 
 Control without explicit config: open
-**http://127.0.0.1:8765/?r05debug=1&r05config=legacy** and import exactly
+**http://127.0.0.1:8765/v6-local.html?r05debug=1&r05config=legacy** and import exactly
 the same owner file. This route reproduces the previous DOSBox invocation;
 only the "-conf" part differs. Reload the page between trials. Compare
 Museum S003 footsteps at a fixed OS/browser volume, listen for attenuation,
@@ -70,7 +72,7 @@ DOSBox startup sequence in `.jsdos/dosbox.conf` by adding:
     imgmount d LBA.ISO -t iso
     RELENT.EXE
 
-Open **http://127.0.0.1:8765/v8-local.html**. Import the new
+Open **http://127.0.0.1:8765/**. Import the new
 `r05-v8-sb16-8.jsdos` file. The v8 player is pinned to js-dos 8.5.4
 and emulators 8.5.3 and locked to the DOSBox Worker, **not DOSBox-X**.
 It automatically starts after a one-second built-in countdown; initial
@@ -105,7 +107,7 @@ Generate a mixed-mode CUE with:
       --out output/r05-probes/r05-cdda-tone.jsdos
 
 On the 6.22 test page use
-**http://127.0.0.1:8765/?r05debug=1&r05cdda=1** to explicitly mount
+**http://127.0.0.1:8765/v6-local.html?r05debug=1&r05cdda=1** to explicitly mount
 LBA.CUE, then import `r05-cdda-tone.jsdos`. Confirm the DOSBox console
 says the CUE was accepted and both CD track listing and an *actual*
 CD-music trigger in the game produce a short audible tone.
@@ -191,3 +193,14 @@ References:
 - DOSBox mixed-mode CUE implementation: https://github.com/js-dos/dosbox/blob/main/src/dos/cdrom_image.cpp
 
 Recent owner evidence: js-dos 8.5.4 has clearly improved PCM SFX relative to v6.22; left/right balance is reversed under the 8-bit original driver. Neither version had VOX banks or real CDDA mounted at that point. See [R05.5 audio results and stereo/voice gates](R05_AUDIO_85_RESULTS.md).
+
+## 2026-11-13 runtime promotion
+
+Owner confirmed substantially improved js-dos 8 effects and successful stereo
+orientation with original 16-bit W_SB16.DLL. Therefore / on this branch now
+uses v8 while the 6.22 control moved to /v6-local.html. The old /v8-local.html
+is retained only for existing bookmarks and secondary diagnostics. CI checks
+v8 DOSBox Worker startup from the actual portfolio homepage and 6.22 from its
+new legacy path. The large VOX import previously appeared stalled; this is
+still an open bug and cannot be attributed to the wrong version simply from a
+loading-label string. Do not publish third-party or GOG assets implicitly.
