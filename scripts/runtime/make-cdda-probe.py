@@ -15,6 +15,7 @@ from pathlib import Path
 import struct
 import sys
 import zipfile
+import copy
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = (ROOT / "output").resolve()
@@ -102,7 +103,7 @@ def make(source: Path, dest: Path, *, mode: str, gog_root: Path | None = None,
         try:
             with zipfile.ZipFile(pending, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as out:
                 for info in z.infolist():
-                    out.writestr(info, z.read(info.filename))
+                    out.writestr(copy.copy(info), z.read(info.filename))
                 out.writestr("LBA.CUE", cue)
                 for name, data in sorted(tracks.items()):
                     out.writestr(name, data)
