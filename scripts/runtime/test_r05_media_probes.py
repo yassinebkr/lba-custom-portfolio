@@ -3,6 +3,8 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
+from types import SimpleNamespace
 import zipfile
 
 
@@ -19,6 +21,7 @@ def load(name):
 
 v8 = load("prepare-jsdos8-bundle.py")
 cdda = load("make-cdda-probe.py")
+pcm = load("make-cdda-pcm-preview.py")
 
 
 class MediaProbeTest(unittest.TestCase):
@@ -140,6 +143,39 @@ class MediaProbeTest(unittest.TestCase):
         with zipfile.ZipFile(self.cddatarget) as z:
             self.assertIn('FILE "Track_10.mp3" MP3', z.read("LBA.CUE").decode("ascii"))
             self.assertEqual(z.read("Track_09.mp3")[:4], b"\xff\xfb\x90\x64")
+
+    def test_one_real_track_transcode_is_bounded_and_preserves_other_tracks(self):
+        tone = self.root / "r05-original-tone.jsdos"
+        cdda.make(self.source, tone, mode="tone", tone_seconds=1)
+        gog = self.root / "gog"
+        music = gog / "Common/Music"
+        music.mkdir(parents=True)
+        (music / "Track_02.mp3").write_bytes(b"synthetic MP3 metadata" * 80)
+        target = self.root / "r05-cdda-original-preview.jsdos"
+        # No real GOG data or FFmpeg process is required in CI.
+        with mock.patch.object(pcm.shutil, "which", return_value="ffmpeg"), \
+             mock.patch.object(pcm.subprocess, "run", return_value=SimpleNamespace(
+                 returncode=0, stdout=bytes([0, 12, 24, 36]) * 44100, stderr=b""
+             )):
+            report = pcm.make(tone, target, gog_root=gog, track=2, seconds=30)
+        self.assertEqual(report["selectedTrack"], 2)
+        self.assertEqual(report["durationSeconds"], 1)
+        with zipfile.ZipFile(tone) as src, zipfile.ZipFile(target) as out:
+            self.assertEqual(len(out.read("track_02.bin")), 176400)
+            for name in src.namelist():
+                if name != "track_02.bin":
+                    self.assertEqual(out.read(name), src.read(name))
+            self.assertEqual(out.read("LBA.CUE"), src.read("LBA.CUE"))
+
+    def test_pcm_preview_rejects_bad_track_and_public_output(self):
+        tone = self.root / "r05-original-tone.jsdos"
+        cdda.make(self.source, tone, mode="tone", tone_seconds=1)
+        gog = self.root / "gog"
+        gog.mkdir()
+        with self.assertRaisesRegex(ValueError, "02..10"):
+            pcm.make(tone, self.root / "invalid.jsdos", gog_root=gog, track=11)
+        with self.assertRaisesRegex(ValueError, "ignored output"):
+            pcm.make(tone, ROOT / "web_deploy/public.jsdos", gog_root=gog)
 
     def test_refuses_public_output_and_unsupported_profile(self):
         with self.assertRaisesRegex(ValueError, "ignored output"):
