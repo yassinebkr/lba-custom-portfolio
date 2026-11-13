@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -33,6 +34,17 @@ CONFIG = (
     "[dosbox]\r\n"
     "machine=svga_s3\r\n"
     "memsize=16\r\n"
+    "[sblaster]\r\n"
+    "sbtype=sb16\r\n"
+    "sbbase=220\r\n"
+    "irq=7\r\n"
+    "dma=1\r\n"
+    "hdma=5\r\n"
+    "sbmixer=true\r\n"
+    "oplmode=auto\r\n"
+    "[mixer]\r\n"
+    "nosound=false\r\n"
+    "rate=22050\r\n"
     "[cpu]\r\n"
     "core=auto\r\n"
     "cputype=auto\r\n"
@@ -76,7 +88,7 @@ def owner_files(directory: Path) -> dict[str, Path]:
     for child in directory.iterdir():
         if child.is_symlink():
             raise ValueError(f"Private input symlinks are unsupported: {child.name}")
-        if child.is_file() and child.suffix.upper() in {".EXE", ".HQR", ".CFG"}:
+        if child.is_file() and child.suffix.upper() in {".EXE", ".HQR", ".CFG", ".DLL"}:
             key = child.name.upper()
             if key in result:
                 raise ValueError(f"Case-insensitive duplicate game file: {key}")
@@ -84,6 +96,83 @@ def owner_files(directory: Path) -> dict[str, Path]:
                 result[key] = child
     return result
 
+
+
+def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
+    """Verify the historical driver exists before enabling WaveDriver.
+
+    The old DOS runtime loads WaveDriver as a DLL filename. The DOSBox SB16
+    hardware emulation alone cannot supply a missing game-specific driver.
+    """
+    if profile == "off":
+        return GAME_CONFIG.encode("ascii")
+    if profile != "source-wave":
+        raise ValueError(f"Unknown audio profile: {profile}")
+    original = sources.get("LBA.CFG")
+    if original is None:
+        raise ValueError("source-wave needs the owner-provided LBA.CFG")
+    raw = original.read_bytes()
+    if len(raw) > 128 * 1024:
+        raise ValueError("Source LBA.CFG is unexpectedly large")
+    fields = {}
+    for line in raw.decode("latin1").splitlines():
+        line = line.strip()
+        if not line or line.startswith((";", "#")) or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip().lower()
+        if key in fields:
+            raise ValueError(f"Duplicate game audio configuration key: {key}")
+        fields[key] = value.strip()
+    driver = fields.get("wavedriver", "")
+    if not re.fullmatch(r"[a-z0-9_-]{1,8}\.dll", driver, flags=re.I):
+        raise ValueError("source-wave requires a DOS WaveDriver .DLL filename in LBA.CFG")
+    if driver.upper() not in sources:
+        raise ValueError(f"Source WaveDriver {driver} missing from DOS installation")
+    if fields.get("waveexec", "NoExec").lower() not in ("", "noexec"):
+        raise ValueError("WaveExec requires an unverified setup program; refusing source-wave")
+    required = {"wavebase": ("220h", "220"), "waveirq": ("7",),
+                "wavedma": ("1",), "waverate": ("11025", "22000", "22050")}
+    for key, supported in required.items():
+        if fields.get(key, "").lower() not in supported:
+            raise ValueError(f"Source LBA.CFG has unsupported {key}: {fields.get(key, '(missing)')}")
+    configuration = GAME_CONFIG
+    for key, value in {
+        "WaveDriver": driver.upper(), "WaveBase": fields["wavebase"],
+        "WaveIRQ": fields["waveirq"], "WaveDMA": fields["wavedma"],
+        "WaveRate": fields["waverate"],
+    }.items():
+        configuration = re.sub(
+            rf"(?m)^{re.escape(key)}:.*$",
+            lambda match, k=key, v=value: f"{k}: {v}",
+            configuration,
+        )
+    return configuration.encode("ascii")
+
+
+def selected_dos_saves(directory: Path | None) -> dict[str, Path]:
+    """Include only explicit DOS Snnn.LBA saves; never follow links."""
+    if directory is None:
+        return {}
+    if not directory.is_dir() or directory.is_symlink():
+        raise ValueError(f"Unsafe or missing DOS save directory: {directory}")
+    saves = {}
+    for file in directory.iterdir():
+        if file.is_symlink():
+            raise ValueError(f"Symlinks not permitted in DOS save directory: {file.name}")
+        if not file.is_file():
+            continue
+        if not re.fullmatch(r"S[0-9]{3}\.LBA", file.name, flags=re.I):
+            raise ValueError(f"Invalid DOS save slot filename: {file.name}")
+        name = file.name.upper()
+        if name in saves:
+            raise ValueError(f"Duplicate DOS save slot: {name}")
+        if not 12 <= file.stat().st_size <= 65536:
+            raise ValueError(f"Unexpected DOS save size: {file.name}")
+        saves[name] = file
+    if not saves:
+        raise ValueError("No DOS Snnn.LBA saves found")
+    return saves
 
 def assert_patched(executable: Path) -> None:
     with executable.open("rb") as handle:
@@ -170,13 +259,16 @@ def write_bundle(folder: Path, destination: Path) -> None:
             raise ValueError("ZIP integrity test failed")
 
 
-def build(base: Path, mods: Path, output: Path) -> dict[str, object]:
+def build(base: Path, mods: Path, output: Path, *, audio: str = "off",
+          saves_dir: Path | None = None) -> dict[str, object]:
     validate_output_path(output)
     if base.resolve() == mods.resolve():
         raise ValueError("Source and modification directories must differ")
     sources = owner_files(base)
     if missing := set(REQUIRED).difference(sources):
         raise ValueError("Missing owner-provided files: " + ", ".join(sorted(missing)))
+    game_config = prepare_audio(sources, audio)
+    dos_saves = selected_dos_saves(saves_dir)
     overlays = owner_files(mods) if mods.exists() else {}
     exe_override = overlays.pop("RELENT.EXE", None)
     for key in overlays:
@@ -210,8 +302,10 @@ def build(base: Path, mods: Path, output: Path) -> dict[str, object]:
                 check=True, capture_output=True, text=True
             )
         assert_patched(game / "RELENT.EXE")
+        for filename, source in sorted(dos_saves.items()):
+            shutil.copyfile(source, game / filename)
         (game / ".jsdos/dosbox.conf").write_bytes(CONFIG.encode("ascii"))
-        (game / "LBA.CFG").write_bytes(GAME_CONFIG.encode("ascii"))
+        (game / "LBA.CFG").write_bytes(game_config)
         (cd / "CD_LBA").write_bytes(b'"15/08/94 Lba Demo" \r\n')
         shutil.copyfile(sources["SAMPLES.HQR"], cd / "SAMPLES.HQR")
         run_iso_tool(cd, game / "LBA.ISO")
@@ -228,7 +322,8 @@ def build(base: Path, mods: Path, output: Path) -> dict[str, object]:
     return {"bundle": str(output), "bytes": output.stat().st_size,
             "sha256": digest, "originalFiles": len(sources),
             "overlays": len(overlays) + int(exe_override is not None),
-            "status": "package-verified; real-DOS-boot-pending"}
+            "audio": audio, "saves": len(dos_saves),
+            "status": "package-verified; audio-and-scene-behavior-pending"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -237,9 +332,15 @@ def main(argv: list[str] | None = None) -> int:
                      help="A separate lawful installation, not a damaged disk")
     cli.add_argument("--mods", type=Path, default=ROOT / "output")
     cli.add_argument("--out", type=Path, default=ROOT / "web_deploy/lba1_portfolio.jsdos")
+    cli.add_argument("--audio", choices=("off", "source-wave"), default="off",
+                     help="Enable game SFX only if its source WaveDriver DLL exists")
+    cli.add_argument("--saves-dir", type=Path,
+                     help="Optional private directory containing DOS Snnn.LBA save files")
     args = cli.parse_args(argv)
     try:
-        report = build(args.base.resolve(), args.mods.resolve(), args.out.resolve())
+        report = build(args.base.resolve(), args.mods.resolve(), args.out.resolve(),
+                       audio=args.audio,
+                       saves_dir=args.saves_dir.resolve() if args.saves_dir else None)
     except subprocess.CalledProcessError as error:
         detail = (error.stderr or error.stdout or "").strip()
         print(f"R05 build failed: external tool returned {error.returncode}", file=sys.stderr)
