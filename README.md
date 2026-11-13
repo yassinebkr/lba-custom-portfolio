@@ -39,7 +39,7 @@ For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [p
 
 ## R05 — Private DOS bundle reconstruction on Debian
 
-[**Rebuild your private .jsdos from a clean LBA1 installation**](docs/R05_PRIVATE_DOS_BUILD.md) · [Linux ISO/ZIP test evidence](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088)
+[**Rebuild your private .jsdos from a clean LBA1 installation**](docs/R05_PRIVATE_DOS_BUILD.md) · [Linux ISO/ZIP test evidence](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088) · [Real js-dos ZIP extraction CI](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43360752067)
 
 The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO9660 volume, required root files and guarded RELENT.EXE patches. Synthetic integration tests pass. Real DOS gameplay remains pending a fresh owner-provided installation and a private browser test.
 
