@@ -22,34 +22,39 @@ The existing public browser renderer in `apps/portfolio/` remains a visual proto
 
 ~~~mermaid
 flowchart LR
-  SOURCE["R04: clean game input and patch compatibility"] --> BUILD["R05: reproducible Debian js-dos bundle"]
-  BUILD --> RENDER["R06: in-engine sprite fidelity study"]
+  HOST["R04: public Pages DOS loader"] --> SOURCE["R05: private game source and repeatable bundle"]
+  SOURCE --> RENDER["R06: in-engine sprite fidelity study"]
   RENDER --> ROOM["R07: playable original workshop"]
   ROOM --> REVIEW["R08: GitHub Pages visual QA"]
   REVIEW --> RELEASE["R09: approved public portfolio release"]
 ~~~
 
-### R04 — Recover a legally obtained baseline
+### R04 — Public GitHub Pages runtime bootstrap
 
-- Obtain a fresh, legitimate DOS-compatible installation independently of the damaged NVMe.
-- Inventory `RELENT.EXE`, required HQR archives, palette, executable version and CD inputs.
-- Record hashes and executable patch-site byte signatures. Apply only verified patches.
-- Inspect executable and asset redistribution terms. Document whether a distributable engine build is actually available.
-- Keep original and derived proprietary files in ignored private directories.
+- Serve the existing js-dos 6.22 browser runtime and a local-file import interface on GitHub Pages.
+- Provide a clearly labeled **Import local .jsdos** control. The browser reads the file selected by its visitor through a temporary blob URL and passes it to the legacy `fs.extract` ZIP loader.
+- Preserve the private game archive on the visitor's device. No archive upload, GitHub commit, external telemetry, permanent storage or automatic fetch of official assets is allowed.
+- Validate file extension, minimum ZIP signature and size before extraction. Report ZIP and emulator startup errors with a recoverable import control.
+- Hide the import prompt only after extraction succeeds, then start the game in the existing js-dos canvas. A page reload clears the selected archive.
+- Publish only the loader, js-dos runtime code, original/approved preview artwork, and verification tools. Keep proprietary HQR/EXE/ISO/.jsdos bytes out of Git and Pages.
+- Add an explicit README link, branch-root route, allowlisted Actions artifact and a browser test under the repository Pages subpath.
 
-**Acceptance:** the patch script identifies a known binary version, every required private input is accounted for, and incompatible patch sites fail safely.
+**Acceptance:** the live Pages URL loads the js-dos import page; a test ZIP exercises the import, error and visibility states; the public artifact contains zero proprietary game data.
 
-**Stop condition:** no compatible lawful input is available. Continue only with the original-data-free visual QA track while this is unresolved.
+**Runtime gate:** loading the actual private game and rendering a frame remain open until R05 supplies a compatible bundle. An upload UI passing tests alone is insufficient.
 
-### R05 — Rebuild js-dos 6.22 on Debian
+### R05 — Rebuild the private DOS bundle from a clean game installation
 
-- Reconcile `scripts/build-web-bundle.sh` and `scripts/hqr-tools/build-bundle.js` into a single documented Linux build path.
-- Replace Windows PowerShell and IMAPI2 ISO packaging with a deterministic, validated Linux-compatible implementation.
-- Verify the ISO9660 volume label, required CD entries, ZIP directory entries, `.jsdos/dosbox.conf`, relative paths and command line.
-- Run private browser smoke tests for boot, menu, scene entry, input and rendering. Record browser console errors and bundle size.
-- Keep generated DOS binaries and game archives outside Git and the public Pages artifact.
+- Obtain a fresh, lawfully acquired DOS-compatible game installation independently of the damaged NVMe; use official assets locally during early engine validation.
+- Inventory `RELENT.EXE`, original HQR archives and palette, required CD inputs, patch-site bytes and source version. Prefer a compatible open-source engine build where verified.
+- Reconcile the Windows-based `build-bundle.js` and Linux shell script into a reproducible Debian build, with ISO9660 volume label checks and portable ZIP packaging.
+- Confirm `RELENT.EXE`, `LBA.ISO`, `.jsdos/dosbox.conf` and resource paths at bundle root.
+- Test private bundle startup through the **R04 GitHub Pages import page**: upload, ZIP extraction, emulator start, first DOS frame, menu, input and scene load.
+- Record a real in-engine screenshot for a controlled visual baseline. Keep official content in local private files throughout.
 
-**Acceptance:** a new private bundle starts the DOS game without using the old bundle. A real browser test records the result. The result can be repeated from the same private inputs.
+**Acceptance:** a fresh private .jsdos bundle boots through the publicly hosted loader after a local file selection, with evidence from the real DOS runtime.
+
+**Stop condition:** no compatible licensed game files are available, or the engine cannot boot. Do not move to the rendering pipeline or DOS gameplay integration until the failure has been diagnosed.
 
 ### R06 — Compare source art and the real DOS rendering path
 
@@ -74,9 +79,9 @@ flowchart LR
 
 **Acceptance:** an original workshop runs in the DOS game with one interactive original object, correct depth, collisions and a repeatable private gameplay recording.
 
-### R08 — Public GitHub Pages visual QA
+### R08 — Extended GitHub Pages visual QA
 
-- Add a dedicated, clearly labeled **visual QA** route under the existing GitHub Pages site.
+- Extend the already functioning R04 GitHub Pages runtime page with a separate, clearly labeled **original-asset comparison** route.
 - Display only original/licensed graphics: source artwork, original test-scene frames, 128/160/192 px codec previews and measurements.
 - Include directional selection, side-by-side comparisons, checkerboard and dark/light backgrounds, integer scaling and pixel-grid inspection.
 - Offer a direct clickable link near the top of `README.md`.
@@ -107,7 +112,7 @@ The project already records these links for **original-asset review**:
 - [V6 directional sprite comparison](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html)
 - [V7 original workshop scene lab](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html)
 
-Their current live availability has not been confirmed during this plan revision. The R08 DOS-compatibility QA page is planned and must acquire a separately verified URL. Existing V6/V7 Pages demos exercise the original browser preview rather than `RELENT.EXE`.
+Their current live availability has not been confirmed during this plan revision. The R04 local-bundle import page is the next deployment gate. The extended R08 original-asset comparison route remains planned. Existing V6/V7 Pages demos exercise the original browser preview rather than `RELENT.EXE`.
 
 ## Engineering and review rules
 
@@ -120,4 +125,4 @@ Their current live availability has not been confirmed during this plan revision
 - Preserve the damaged Windows NVMe. The reconstruction uses clean data sources.
 - Seek visual approval before promoting an artistic variant to the final portfolio.
 
-**Immediate next work:** R04 inventory, rights and patch compatibility. Start R05 after R04 passes. Keep the existing V6/V7 QA links available in the README during reconstruction.
+**Immediate next work:** R04 public js-dos import page, tests and Pages URL verification. Start R05 private clean-game reconstruction after the loader passes. Keep the existing V6/V7 QA links available during reconstruction.

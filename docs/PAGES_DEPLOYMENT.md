@@ -2,11 +2,11 @@
 
 **Actual configuration supplied by the maintainer:** Source = GitHub branch `feature/portfolio-studio-j1-j8`, folder `/(root)`. A previous assumption that the Actions-only artifact was live was incorrect.
 
-## DOS reconstruction visual QA staging
+## DOS bootstrap — client-side private bundle import
 
-The [revised R04–R09 plan](DOS_REBUILD_PLAN.md) adds a temporary original-asset QA route to GitHub Pages and a README entry point. This staging surface may show only redistributable original art, measurement reports and approved browser previews.
+The [R04–R09 plan](DOS_REBUILD_PLAN.md) prioritizes a GitHub Pages js-dos loader with a client-side file chooser. The visitor selects their local .jsdos archive; a temporary blob URL supplies the bytes to the browser's js-dos 6.22 ZIP extractor. The archive is never uploaded to GitHub Pages or inserted into the static release.
 
-A privately reconstructed DOS bundle assembled from an owned commercial game installation is used for local verification. Publishing that bundle requires independent redistribution clearance for all embedded components. The final Pages artifact will contain only the finished portfolio. All preview links must be verified against the deployed site before they are described as working.
+The public loader is intentionally empty until a visitor selects their local .jsdos archive. A privately reconstructed DOS bundle assembled from an owned commercial game installation is used for verification. Publishing that bundle requires independent redistribution clearance for all embedded components. The final Pages artifact will contain only the finished portfolio. All preview links must be verified against the deployed site before they are described as working.
 
 ## Current publication route (no settings change)
 
