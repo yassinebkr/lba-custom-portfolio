@@ -41,8 +41,16 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
-const SRC  = path.join(ROOT, 'base_game', 'RELENT.EXE');
-const OUT  = path.join(ROOT, 'output', 'RELENT.EXE');
+const option = (flag, fallback) => {
+    const index = process.argv.indexOf(flag);
+    if (index < 0) return fallback;
+    if (!process.argv[index + 1] || process.argv[index + 1].startsWith('--')) {
+        throw new Error('Missing value for ' + flag);
+    }
+    return path.resolve(process.argv[index + 1]);
+};
+const SRC = option('--input', path.join(ROOT, 'base_game', 'RELENT.EXE'));
+const OUT = option('--output', path.join(ROOT, 'output', 'RELENT.EXE'));
 
 const buf = fs.readFileSync(SRC);
 console.log('Loaded RELENT.EXE size=' + buf.length);
