@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R05 legacy js-dos 6.22 — DOS control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a14;
+            color: #ddd;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            max-width: 900px;
+            padding: 40px 20px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            color: #0ff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin-top: 10px;
+            color: #888;
+            font-size: 0.9rem;
+            max-width: 540px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .locations {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            padding: 30px 20px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .loc-card {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 18px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .loc-card:hover {
+            border-color: #0ff;
+            background: #0a1a1a;
+        }
+
+        .loc-card .title {
+            font-size: 0.8rem;
+            color: #0ff;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .loc-card .place {
+            font-size: 1rem;
+            color: #eee;
+            margin-bottom: 8px;
+        }
+
+        .loc-card .desc {
+            font-size: 0.78rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .launch-section {
+            padding: 10px 20px 40px;
+            text-align: center;
+        }
+
+        #launch-btn {
+            background: #0ff;
+            color: #000;
+            border: none;
+            padding: 14px 40px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+
+        #launch-btn:hover { background: #0cc; }
+        #launch-btn:disabled { opacity: .55; cursor: progress; }
+        #bundle-import { max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #22454a; border-radius: 10px; background: #111b21; }
+        #bundle-import[hidden] { display: none; }
+        #bundle-status { color: #cde6e5; font-size: .82rem; margin-top: 14px; line-height: 1.55; }
+        .privacy-hint { color: #9cafb4; font-size: .78rem; margin-top: 10px; line-height: 1.6; }
+        :focus-visible { outline: 3px solid #00eeee; outline-offset: 4px; }
+
+        .hint {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        /* Game overlay */
+        #game-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 100;
+            flex-direction: column;
+        }
+
+        #game-overlay.active { display: flex; }
+
+        #close-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: none;
+            border: 1px solid #444;
+            color: #aaa;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            cursor: pointer;
+            z-index: 200;
+        }
+
+        #close-btn:hover { border-color: #0ff; color: #0ff; }
+
+        #jsdos-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        #jsdos { image-rendering: pixelated; max-width: 100%; max-height: 100%; background: #000; }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: #0a0a14;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+        }
+
+        #loading-overlay.hidden { display: none; }
+
+        .spinner {
+            width: 36px; height: 36px;
+            border: 3px solid #222;
+            border-top-color: #0ff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #loading-overlay p { color: #555; font-size: 0.8rem; }
+
+        footer {
+            padding: 20px;
+            font-size: 0.7rem;
+            color: #333;
+            text-align: center;
+        }
+
+        footer a { color: #555; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Legacy js-dos 6.22 control</h1>
+    <p>Historical DOSBox 6.22 backend for regression testing only. The maintained browser runtime is js-dos 8.5.4 on <a href="./">the main portfolio page</a>.</p>
+</header>
+
+<div class="locations">
+    <div class="loc-card">
+        <div class="title">Main Hub</div>
+        <div class="place">Citadel Island</div>
+        <div class="desc">Start here. Talk to the residents to get an overview of all projects.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Personal Intro</div>
+        <div class="place">Twinsen's House</div>
+        <div class="desc">Meet Zoé and learn about who built all of this.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Electronics Lab</div>
+        <div class="place">Proxima Island</div>
+        <div class="desc">CinePi — a RAW cinema camera on a Raspberry Pi CM4 with a custom PCB.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">AI Workshop</div>
+        <div class="place">Old Burg</div>
+        <div class="desc">OpenClaw — an autonomous AI agent framework for complex tasks.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Maker Space</div>
+        <div class="place">Rebellion Island</div>
+        <div class="desc">GSAT — a CubeSat guidance system for atmospheric re-entry.</div>
+    </div>
+    <div class="loc-card">
+        <div class="title">Portfolio Showroom</div>
+        <div class="place">Maritime Museum</div>
+        <div class="desc">Full overview of all projects in one place.</div>
+    </div>
+</div>
+
+<section class="launch-section" aria-label="Run a local DOS game bundle">
+    <div id="bundle-import">
+        <button id="launch-btn" type="button">Import local .jsdos bundle</button>
+        <input id="bundle-file" type="file" accept=".jsdos" hidden>
+        <p id="bundle-status" role="status" aria-live="polite">Select your own compatible js-dos bundle to start.</p>
+        <p class="privacy-hint">Your game files stay on this device. The archive is read locally in your browser and is never uploaded to this site.</p>
+    </div>
+    <p class="hint">js-dos 6.22 · Legacy regression only · <a href="./">Back to main js-dos 8.5.4 player</a></p>
+</section>
+
+<footer>
+    Built on <a href="https://github.com/LBALab/lba-classic-builder" target="_blank">Little Big Adventure 1</a> (1994) ·
+    <a href="https://github.com/yassinebkr/lba-custom-portfolio" target="_blank">Source</a>
+</footer>
+
+<!-- Game overlay (hidden until launched) -->
+<div id="game-overlay">
+    <button id="close-btn" type="button">✕ Close</button>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loading-message" role="status" aria-live="polite">Loading game engine…</p>
+    </div>
+    <div id="jsdos-wrap">
+        <canvas id="jsdos" width="640" height="480" tabindex="0" aria-label="DOS game canvas"></canvas>
+    </div>
+</div>
+
+<script src="./vendor/jsdos622/js-dos.js" crossorigin="anonymous"></script>
+<script type="module" src="./local-bundle.mjs"></script>
+</body>
+</html>
