@@ -48,10 +48,10 @@ class PrivateBundleBuildTest(unittest.TestCase):
         self.bundle = self.path / "private.jsdos"
         fixture_game(self.base)
 
-    def run_builder(self):
+    def run_builder(self, *options):
         return subprocess.run(
             [sys.executable, str(BUILDER), "--base", str(self.base),
-             "--mods", str(self.mods), "--out", str(self.bundle)],
+             "--mods", str(self.mods), "--out", str(self.bundle), *options],
             text=True, capture_output=True, check=False,
         )
 
@@ -70,6 +70,8 @@ class PrivateBundleBuildTest(unittest.TestCase):
             self.assertNotIn("VOX.HQR", names)
             self.assertIn(b"machine=svga_s3", archive.read(".jsdos/dosbox.conf"))
             self.assertIn(b"FlagKeepVoice: OFF", archive.read("LBA.CFG"))
+            self.assertIn(b"WaveDriver: NoWave", archive.read("LBA.CFG"))
+            self.assertIn(b"sbtype=sb16", archive.read(".jsdos/dosbox.conf"))
             exe = archive.read("RELENT.EXE")
             self.assertEqual(exe[0x10AF1:0x10AF3], bytes.fromhex("eb 0f"))
             self.assertEqual(exe[0x0F83F:0x0F84C], b"\x90" * 13)
@@ -77,7 +79,7 @@ class PrivateBundleBuildTest(unittest.TestCase):
             self.assertEqual(iso[16 * 2048 + 1:16 * 2048 + 6], b"CD001")
             self.assertEqual(iso[16 * 2048 + 40:16 * 2048 + 72].rstrip(), b"ADELINE")
             self.assertIsNone(archive.testzip())
-        self.assertIn("real-DOS-boot-pending", result.stdout)
+        self.assertIn("audio-and-scene-behavior-pending", result.stdout)
 
     def test_overlay_replaces_only_existing_HQR_entry(self):
         (self.mods / "SCENE.HQR").write_bytes(b"synthetic-replacement-scene")
@@ -134,6 +136,80 @@ class PrivateBundleBuildTest(unittest.TestCase):
         result = self.run_builder()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual((self.base / "RELENT.EXE").read_bytes(), before)
+
+
+    def test_explicit_dos_scene_slots_are_packed_at_root(self):
+        slots = self.path / "slots"
+        slots.mkdir()
+        (slots / "S001.LBA").write_bytes(bytes(range(256)) * 2)
+        result = self.run_builder("--saves-dir", str(slots))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("saves: 1", result.stdout)
+        with zipfile.ZipFile(self.bundle) as archive:
+            self.assertEqual(archive.read("S001.LBA"), bytes(range(256)) * 2)
+
+    def test_invalid_save_name_rejected_without_bundle(self):
+        slots = self.path / "slots"
+        slots.mkdir()
+        (slots / "my_game.lba").write_bytes(b"x" * 512)
+        result = self.run_builder("--saves-dir", str(slots))
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("save slot", result.stderr.lower())
+        self.assertFalse(self.bundle.exists())
+
+    def test_missing_source_sound_configuration_is_rejected(self):
+        result = self.run_builder("--audio", "source-wave")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("LBA.CFG", result.stderr)
+        self.assertFalse(self.bundle.exists())
+
+    def test_missing_wave_driver_file_is_rejected(self):
+        (self.base / "LBA.CFG").write_bytes(
+            b"WaveDriver: WAVESB.DLL\r\n"
+            b"WaveExec: NoExec\r\nWaveBase: 220h\r\n"
+            b"WaveIRQ: 7\r\nWaveDMA: 1\r\nWaveRate: 22050\r\n"
+        )
+        result = self.run_builder("--audio", "source-wave")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("missing", result.stderr.lower())
+        self.assertFalse(self.bundle.exists())
+
+    def test_guarded_source_wave_config_uses_existing_driver_and_crlf(self):
+        (self.base / "LBA.CFG").write_bytes(
+            b"; test fixture only\r\nWaveDriver: WAVESB.DLL\r\n"
+            b"WaveExec: NoExec\r\nWaveBase: 220h\r\n"
+            b"WaveIRQ: 7\r\nWaveDMA: 1\r\nWaveRate: 22050\r\n"
+            b"MixerDriver: NoMixer\r\nMidiDriver: NoMidi\r\n"
+        )
+        (self.base / "WAVESB.DLL").write_bytes(b"synthetic non-working driver")
+        result = self.run_builder("--audio", "source-wave")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("audio: source-wave", result.stdout)
+        with zipfile.ZipFile(self.bundle) as archive:
+            self.assertEqual(archive.read("WAVESB.DLL"), b"synthetic non-working driver")
+            config = archive.read("LBA.CFG")
+            self.assertIn(b"WaveDriver: WAVESB.DLL\r\n", config)
+            self.assertIn(b"WaveBase: 220h\r\n", config)
+            self.assertNotIn(b"\n", config.replace(b"\r\n", b""))
+            self.assertIn(b"MidiDriver: NoMidi\r\n", config)
+
+    def test_source_wave_rejects_unsupported_irq(self):
+        (self.base / "LBA.CFG").write_bytes(
+            b"WaveDriver: WAVESB.DLL\r\nWaveBase: 220h\r\n"
+            b"WaveIRQ: 5\r\nWaveDMA: 1\r\nWaveRate: 22050\r\n"
+        )
+        (self.base / "WAVESB.DLL").write_bytes(b"synthetic non-working driver")
+        result = self.run_builder("--audio", "source-wave")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("waveirq", result.stderr.lower())
+        self.assertFalse(self.bundle.exists())
+
+    def test_dos_input_source_remains_unchanged_in_source_wave_mode(self):
+        (self.base / "LBA.CFG").write_bytes(b"WaveDriver: NoWave\r\n")
+        original = (self.base / "LBA.CFG").read_bytes()
+        result = self.run_builder("--audio", "source-wave")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual((self.base / "LBA.CFG").read_bytes(), original)
 
 
 if __name__ == "__main__":
