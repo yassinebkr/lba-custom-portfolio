@@ -35,7 +35,7 @@ export async function validateLocalBundle(file) {
 export function assertDos622BundleName(filename) {
   if (/^r05-v8-.*\.jsdos$/i.test(filename || '')) {
     throw new Error(
-      'This archive was built for js-dos 8.5.4. Open /v8-local.html and import it there.'
+      'This archive was built for js-dos 8.5.4. Open / and import it in the main player.'
     );
   }
 }
