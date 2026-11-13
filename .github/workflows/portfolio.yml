@@ -76,7 +76,7 @@ jobs:
           path: dist
 
   publish-pages:
-    if: github.ref == 'refs/heads/feature/portfolio-studio-j1-j8' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(github.event.head_commit.message, '[publish-sprite-demo]') || contains(github.event.head_commit.message, '[publish-v6]') || contains(github.event.head_commit.message, '[publish-v7]'))))
+    if: github.ref == 'refs/heads/feature/portfolio-studio-j1-j8' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(github.event.head_commit.message, '[publish-sprite-demo]') || contains(github.event.head_commit.message, '[publish-v6]') || contains(github.event.head_commit.message, '[publish-v7]') || contains(github.event.head_commit.message, '[publish-dos-import]'))))
     needs: verify
     runs-on: ubuntu-24.04
     permissions:
