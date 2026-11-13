@@ -82,3 +82,80 @@ A safe reload from the public launcher is a recovery workaround, **not** a fix t
 - **Later:** cinematic pipeline with actor tracks, dialogue timing and the menu's idle-demo hook after R06 visual quality criteria pass
 
 No proprietary assets, game ISO, patched executable, commercial movie or bundled save with copied content should be committed or hosted on public GitHub Pages.
+
+
+## R05.1 reproducible private probe runner (November 2026)
+
+The branch fix/r05-1-runtime-probes adds scripts/runtime/run-r05-probes.py.
+It reuses the historical seven-slot generator and current guarded Linux builder,
+then writes an isolated silent control bundle and, only when compatible source
+audio configuration is present, a second wave-enabled candidate. Both ZIPs
+remain in ignored output/. No GOG input bytes are modified or committed.
+
+~~~bash
+cd ~/Documents/lba-custom-portfolio
+git fetch origin
+git switch fix/r05-1-runtime-probes
+BASE=/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows
+
+# Read-only inventory first.
+python3 scripts/runtime/audit-dos-install.py --base "$BASE"
+
+# Creates output/r05-probes/r05-silent.jsdos,
+# optionally output/r05-probes/r05-source-wave.jsdos,
+# and output/r05-probes/report.json.
+python3 scripts/runtime/run-r05-probes.py --base "$BASE"
+
+# Synthetic automated regression tests (not proof of sound or gameplay).
+python3 -m unittest discover -s scripts/runtime -p 'test_*.py' -v
+node --test web_deploy/local-bundle.test.mjs web_deploy/r05-diagnostics.test.mjs
+~~~
+
+If source-wave is skipped, read the reported reason. The experimental mode
+must never assume that a DLL exists because DOSBox emulates Sound Blaster.
+Do not invent a WaveDriver name, copy a random Windows DLL, or disable driver
+signature/configuration validation. If the installer lacks a working DOS wave
+driver, determine the actual GOG driver inventory and its compatibility
+before changing the game configuration.
+
+The generated DOS save slots include S002 for House, S003 for Museum, and
+S005 for Proxima. Import each local archive through the existing launcher
+and choose Continue Saved Game to verify real loading, position, collisions,
+walking, and subsequent room transitions. Packaging all seven slots only
+validates file placement, not engine compatibility or spawn-point safety.
+
+### Opt-in browser evidence for black-screen after death
+
+Use the updated launcher from this branch locally (the published Pages page
+is not updated until an explicitly approved deployment). This preserves
+the existing import flow and adds no new visible UI:
+
+~~~bash
+cd ~/Documents/lba-custom-portfolio/web_deploy
+python3 -m http.server 8765
+# Open http://localhost:8765/?r05debug=1
+~~~
+
+Import the silent control bundle. In DevTools, run this before death and
+again after a black screen (press ESC once and capture a third snapshot):
+
+~~~js
+copy(JSON.stringify(window.lbaR05DiagnosticReport(), null, 2));
+~~~
+
+Record separately (1) life loss with an available four-leaf clover and
+(2) terminal game over with no remaining clovers. Capture screenshots,
+time since death, and whether ESC or the main menu responds after at
+least 15 seconds. Then repeat with the wave candidate if it was packaged.
+Use identical saves and the same test scene in both runs.
+
+The browser report includes import/launch milestones, window errors,
+unhandled promise rejections, canvas visibility and focus; it contains no
+game files or keystrokes. **It does not inspect DOS CPU execution, TimerRef,
+framebuffer updates or the guest program counter.** A black frame with no
+browser error therefore cannot establish that the guest engine is alive.
+
+In the community game source, GameOver() uses a 3D model from RESS.HQR,
+sample 37 and TimerRef-dependent loops, followed by a display transition.
+There is no direct FLA playback in this routine. In-game recovery therefore
+requires evidence about this specific path before patching the executable.
