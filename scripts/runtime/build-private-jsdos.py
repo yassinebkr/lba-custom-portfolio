@@ -116,7 +116,7 @@ def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
         if not (8192 <= driver.stat().st_size <= 128 * 1024):
             raise ValueError("Owner-provided W_SB16.DLL has unexpected size")
         configuration = re.sub(
-            r"(?m)^WaveDriver:[^\\r\\n]*", "WaveDriver: W_SB16.DLL", GAME_CONFIG
+            r"(?m)^WaveDriver:[^\r\n]*", "WaveDriver: W_SB16.DLL", GAME_CONFIG
         )
         return configuration.encode("ascii")
     if profile != "source-wave":
