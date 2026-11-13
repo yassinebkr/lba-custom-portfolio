@@ -45,9 +45,9 @@ The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO
 
 ## R05.1 — Stabilizing audio, scene saves and game-over behavior
 
-[**Recover the previous LBA workflows and run the controlled tests**](docs/R05_RUNTIME_RECOVERY.md) · [**R05 6.22 vs 8.5.4 and CDDA acceptance procedure**](docs/R05_EMULATOR_AB_PROCEDURE.md) · [**R05 DOS-first reassessment (js-dos 8.5.4, config bug, CDDA)**](docs/R05_JSDOS_REASSESSMENT.md) · [**R05 audio root-cause analysis and architecture decision**](docs/R05_AUDIO_ARCHITECTURE_RESEARCH.md)
+[**Recover the previous LBA workflows and run the controlled tests**](docs/R05_RUNTIME_RECOVERY.md) · [**R05.5 verified v8 PCM, stereo/voices/CDDA follow-up**](docs/R05_AUDIO_85_RESULTS.md) · [**R05 6.22 vs 8.5.4 and CDDA acceptance procedure**](docs/R05_EMULATOR_AB_PROCEDURE.md) · [**R05 DOS-first reassessment (js-dos 8.5.4, config bug, CDDA)**](docs/R05_JSDOS_REASSESSMENT.md) · [**R05 audio root-cause analysis and architecture decision**](docs/R05_AUDIO_ARCHITECTURE_RESEARCH.md)
 
-The owner has confirmed that generated DOS saves (including Museum S003) load successfully and that a death returns to the last checkpoint. The 8-bit SB16 wave driver produces partially audible but still muffled effects; enabling the original SB16 hardware mixer mutes audio; the Miles SB FM MIDI driver fails hardware detection. The absent Adeline jingle is traced to `MidiDriver: NoMidi`; the data-only ISO also lacks CD audio tracks. See the source-backed audio research before attempting further driver changes. There is no proven automatic scene boot patch yet.
+The owner confirmed that generated DOS saves (including Museum S003) load and a death returns to the checkpoint. **js-dos 8.5.4 produces markedly cleaner, accepted Sound Blaster effects**, but the 8-bit driver reverses left/right spatialization, and neither CD music nor voices has been restored yet. New isolated tests compare the original 16-bit driver and optionally include owner-local English DOS VOX banks, while the existing CDDA test creates owner-local mixed-mode CUE bundles. The Adeline logo jingle is separately suppressed by `MidiDriver: NoMidi`. Do not infer playable music/voices from packaging tests. No automatic scene boot patch is proven yet.
 
 ## DOS browser bootstrap and visual verification
 
