@@ -45,9 +45,9 @@ The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO
 
 ## R05.1 — Stabilizing audio, scene saves and game-over behavior
 
-[**Recover the previous LBA workflows and run the controlled tests**](docs/R05_RUNTIME_RECOVERY.md)
+[**Recover the previous LBA workflows and run the controlled tests**](docs/R05_RUNTIME_RECOVERY.md) · [**R05 audio root-cause analysis and architecture decision**](docs/R05_AUDIO_ARCHITECTURE_RESEARCH.md)
 
-The historical `create-savegame.js` is retained. The Debian bundler now accepts `--saves-dir` for legacy `Snnn.LBA` files and an experimental `--audio source-wave` profile that refuses to start without an actual source DOS WaveDriver DLL. Sound output and loading a scene through the game menu still require owner-local runtime verification. There is no proven automatic scene boot patch yet.
+The owner has confirmed that generated DOS saves (including Museum S003) load successfully and that a death returns to the last checkpoint. The 8-bit SB16 wave driver produces partially audible but still muffled effects; enabling the original SB16 hardware mixer mutes audio; the Miles SB FM MIDI driver fails hardware detection. The absent Adeline jingle is traced to `MidiDriver: NoMidi`; the data-only ISO also lacks CD audio tracks. See the source-backed audio research before attempting further driver changes. There is no proven automatic scene boot patch yet.
 
 ## DOS browser bootstrap and visual verification
 
