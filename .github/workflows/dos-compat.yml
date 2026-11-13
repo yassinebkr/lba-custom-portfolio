@@ -31,3 +31,18 @@ jobs:
         run: |
           node --test tests/runtime-world.test.mjs tests/runtime-files.test.mjs
           node scripts/runtime/validate-world.mjs examples/world-package/telemetry.json --root . > /tmp/r02-world.json
+      - name: Install private DOS compatibility codec dependencies
+        working-directory: adapters/lba-dos
+        run: npm install --no-audit --no-fund
+      - name: Test original image to indexed DOS codec and private archive index safeguards
+        run: node --test adapters/lba-dos/index.test.mjs adapters/lba-dos/overlay.test.mjs adapters/lba-dos/cli.test.mjs
+      - name: Produce real R03 indexed compatibility previews
+        run: |
+          node adapters/lba-dos/cli.mjs examples/world-package/telemetry.json --root . --target 128 --out output/r03-dos-compat
+          test -f output/r03-dos-compat/report.json
+      - name: Archive original compatibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: r03-original-dos-codec-evidence
+          path: output/r03-dos-compat/
+          if-no-files-found: error
