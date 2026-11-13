@@ -52,7 +52,25 @@ export async function extractLocalBundle(fs, file, urlApi = URL) {
   }
 }
 
+/**
+ * js-dos 6.22 does not automatically consume .jsdos/dosbox.conf.
+ * Explicitly pass -conf. Leave old invocation available for strict A/B.
+ */
+export function buildDos622Arguments({legacyConfig=false, cdImage='LBA.ISO'}={}) {
+  if (!['LBA.ISO', 'LBA.CUE'].includes(cdImage)) {
+    throw new Error('Unsupported private CD image');
+  }
+  return [
+    ...(legacyConfig ? [] : ['-conf', '.jsdos/dosbox.conf']),
+    '-c', 'imgmount d ' + cdImage + ' -t iso',
+    '-c', 'RELENT.EXE'
+  ];
+}
+
 function bindImporter(doc, host) {
+  const params = new URLSearchParams(host.location?.search || '');
+  const legacyConfig = params.get('r05config') === 'legacy';
+  const cdImage = params.get('r05cdda') === '1' ? 'LBA.CUE' : 'LBA.ISO';
   const diagnostics = startR05Diagnostics(doc, host);
   const input = doc.getElementById('bundle-file');
   const button = doc.getElementById('launch-btn');
@@ -91,10 +109,16 @@ function bindImporter(doc, host) {
           host.Dos(canvas, {wdosboxUrl: './vendor/jsdos622/wdosbox.js'}).ready((fs, main) => {
             message('Extracting local game files…');
             extractLocalBundle(fs, file).then(() => {
+              if (cdImage === 'LBA.CUE' && !fs.fs.analyzePath('/LBA.CUE').exists) {
+                reject(new Error('CD audio test requested, but bundle has no LBA.CUE'));
+                return;
+              }
               panel.hidden = true;
               message('Starting the DOS game…');
               try {
-                main(['-c', 'imgmount d LBA.ISO -t iso', '-c', 'RELENT.EXE']);
+                const args = buildDos622Arguments({legacyConfig, cdImage});
+                diagnostics.mark('dosbox-launch-args', JSON.stringify(args));
+                main(args);
                 loading.classList.add('hidden');
                 diagnostics.mark('dos-main-dispatched');
                 canvas.focus();
