@@ -41,18 +41,24 @@ For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [p
 
 [**Rebuild your private .jsdos from a clean LBA1 installation**](docs/R05_PRIVATE_DOS_BUILD.md) · [Linux ISO/ZIP test evidence](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088) · [Real js-dos ZIP extraction CI](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43360752067)
 
-The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO9660 volume, required root files and guarded RELENT.EXE patches. Synthetic integration tests pass. Real DOS gameplay remains pending a fresh owner-provided installation and a private browser test.
+The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO9660 volume, required root files and guarded RELENT.EXE patches. Synthetic integration tests pass. The owner has confirmed a successful private GOG-derived DOS game launch through the GitHub Pages importer (2026-11-13). Audio, scene-save loading and the black screen after death remain R05.1 validation gates.
+
+## R05.1 — Stabilizing audio, scene saves and game-over behavior
+
+[**Recover the previous LBA workflows and run the controlled tests**](docs/R05_RUNTIME_RECOVERY.md)
+
+The historical `create-savegame.js` is retained. The Debian bundler now accepts `--saves-dir` for legacy `Snnn.LBA` files and an experimental `--audio source-wave` profile that refuses to start without an actual source DOS WaveDriver DLL. Sound output and loading a scene through the game menu still require owner-local runtime verification. There is no proven automatic scene boot patch yet.
 
 ## DOS browser bootstrap and visual verification
 
 **[Launch the js-dos browser test — import your own local .jsdos](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/)**
 
-This public page hosts only the js-dos 6.22 emulator and the import UI. Choose a locally built private .jsdos ZIP. Import happens inside the browser, and the selected archive is not uploaded. The actual DOS gameplay remains unverified pending the fresh private game bundle; the link's live deployment must be checked after publishing.
+This public page hosts only the js-dos 6.22 emulator and the import UI. Choose a locally built private .jsdos ZIP. Import happens inside the browser, and the selected archive is not uploaded. The local-file import page is live and the owner has played the real GOG-derived game. Original game files remain owner-local, outside this public site.
 
 
 [Open the V6 sprite comparison](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) · [Open the V7 original workshop review](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html)
 
-R04 has a successful GitHub Pages deployment and a verified browser test of the real js-dos ZIP extractor using synthetic test files. A real commercial-game boot remains the R05 validation gate. The R04 milestone puts js-dos on GitHub Pages with a local .jsdos import control and no hosted commercial game data. The launcher is a separate development route until its Pages deployment and real gameplay have been verified. These are the existing **original-art browser previews**. The live URLs need re-verification. They show the sprite production and original test scene. Reconstructed DOS gameplay through js-dos is still pending an owner-local game build.
+R04 has a successful GitHub Pages deployment and a verified browser test of the real js-dos ZIP extractor using synthetic test files. A real commercial-game boot was confirmed by the owner; R05.1 now covers sound, targeted saves and game-over behavior. The R04 milestone puts js-dos on GitHub Pages with a local .jsdos import control and no hosted commercial game data. The launcher is a separate development route until its Pages deployment and real gameplay have been verified. These are the existing **original-art browser previews**. The visual QA routes remain subject to in-browser artistic review. They show the sprite production and original test scene. Loading the real game has been validated by the owner, while direct scene loading and sound have not.
 
 [**Revised R04–R09 DOS reconstruction and GitHub Pages QA plan**](docs/DOS_REBUILD_PLAN.md)
 
