@@ -32,7 +32,7 @@ class MediaProbeTest(unittest.TestCase):
         self.cddatarget = self.root / "r05-cdda-tone.jsdos"
         self.entries = {
             ".jsdos/dosbox.conf": b"[sblaster]\r\nsbtype=sb16\r\ndma=1\r\nhdma=5\r\n",
-            "LBA.CFG": b"WaveDriver: W_SB16_8.DLL\r\nMixerDriver: NoMixer\r\n",
+            "LBA.CFG": b"FlagKeepVoice: OFF\r\nWaveDriver: W_SB16_8.DLL\r\nMixerDriver: NoMixer\r\n",
             "RELENT.EXE": b"synthetic dos stub",
             "LBA.ISO": b"synthetic data-only ISO",
             "S003.LBA": b"synthetic museum save",
