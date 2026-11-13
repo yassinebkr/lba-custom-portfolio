@@ -193,6 +193,32 @@ class PrivateBundleBuildTest(unittest.TestCase):
             self.assertNotIn(b"\n", config.replace(b"\r\n", b""))
             self.assertIn(b"MidiDriver: NoMidi\r\n", config)
 
+    def test_sb16_profile_works_with_originally_disabled_audio_if_local_driver_exists(self):
+        (self.base / "LBA.CFG").write_bytes(b"WaveDriver: NoWave\r\n")
+        (self.base / "W_SB16.DLL").write_bytes(b"synthetic sb16 driver" * 1024)
+        result = self.run_builder("--audio", "sb16")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("audio: sb16", result.stdout)
+        with zipfile.ZipFile(self.bundle) as archive:
+            config = archive.read("LBA.CFG")
+            self.assertIn(b"WaveDriver: W_SB16.DLL\r\n", config)
+            self.assertNotIn(b"WaveDriver: NoWave", config)
+            self.assertIn(b"MidiDriver: NoMidi\r\n", config)
+            self.assertIn("W_SB16.DLL", archive.namelist())
+            self.assertEqual(archive.read("W_SB16.DLL"), b"synthetic sb16 driver" * 1024)
+        self.assertEqual((self.base / "LBA.CFG").read_bytes(), b"WaveDriver: NoWave\r\n")
+
+    def test_sb16_profile_rejects_missing_or_truncated_original_driver(self):
+        result = self.run_builder("--audio", "sb16")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("W_SB16.DLL", result.stderr)
+        self.assertFalse(self.bundle.exists())
+        (self.base / "W_SB16.DLL").write_bytes(b"too small")
+        result = self.run_builder("--audio", "sb16")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unexpected size", result.stderr)
+        self.assertFalse(self.bundle.exists())
+
     def test_source_wave_rejects_unsupported_irq(self):
         (self.base / "LBA.CFG").write_bytes(
             b"WaveDriver: WAVESB.DLL\r\nWaveBase: 220h\r\n"
