@@ -219,6 +219,41 @@ class PrivateBundleBuildTest(unittest.TestCase):
         self.assertIn("unexpected size", result.stderr)
         self.assertFalse(self.bundle.exists())
 
+    def test_audio_variants_keep_driver_format_and_mixer_changes_isolated(self):
+        (self.base / "W_SB16.DLL").write_bytes(b"synthetic 16-bit" * 1024)
+        (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8-bit" * 1024)
+        (self.base / "M_SB16.DLL").write_bytes(b"synthetic mixer" * 80)
+        records = {}
+        for profile in ("sb16", "sb16-8", "sb16-mixer", "sb16-mixer-loud"):
+            result = self.run_builder("--audio", profile)
+            self.assertEqual(result.returncode, 0, profile + ": " + result.stderr)
+            with zipfile.ZipFile(self.bundle) as archive:
+                records[profile] = archive.read("LBA.CFG")
+                self.assertIn(
+                    "W_SB16_8.DLL" if profile == "sb16-8" else "W_SB16.DLL",
+                    archive.namelist(),
+                )
+                if profile in ("sb16-mixer", "sb16-mixer-loud"):
+                    self.assertIn("M_SB16.DLL", archive.namelist())
+        self.assertIn(b"WaveDriver: W_SB16_8.DLL\r\n", records["sb16-8"])
+        self.assertIn(b"WaveDriver: W_SB16.DLL\r\n", records["sb16"])
+        self.assertIn(b"MixerDriver: NoMixer\r\n", records["sb16"])
+        self.assertIn(b"MixerDriver: NoMixer\r\n", records["sb16-8"])
+        self.assertIn(b"MixerDriver: M_SB16.DLL\r\n", records["sb16-mixer"])
+        self.assertEqual(
+            records["sb16-mixer-loud"],
+            records["sb16-mixer"].replace(
+                b"WaveVolume: 163\r\n", b"WaveVolume: 240\r\n"
+            ).replace(b"MasterVolume: 128\r\n", b"MasterVolume: 240\r\n")
+        )
+
+    def test_audio_variant_requires_actual_owner_provided_mixer(self):
+        (self.base / "W_SB16.DLL").write_bytes(b"synthetic 16-bit" * 1024)
+        result = self.run_builder("--audio", "sb16-mixer")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("M_SB16.DLL", result.stderr)
+        self.assertFalse(self.bundle.exists())
+
     def test_source_wave_rejects_unsupported_irq(self):
         (self.base / "LBA.CFG").write_bytes(
             b"WaveDriver: WAVESB.DLL\r\nWaveBase: 220h\r\n"
