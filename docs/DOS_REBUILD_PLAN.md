@@ -1,6 +1,6 @@
 # DOS portfolio reconstruction and visual verification roadmap
 
-Status: **R04 public loader deployed and browser ZIP extraction tested; actual full-game launch pending R05**.
+Status: **R04 public loader verified; R05 Debian private bundle packaging passed synthetic CI; real DOS game boot pending clean source files**.
 Branch: `feature/portfolio-studio-j1-j8`.
 Scope: reconstruction from a clean, lawfully obtained game installation, separate authoring and runtime products, reproducible evidence and reviewed GitHub Pages previews.
 
@@ -47,6 +47,8 @@ flowchart LR
 **Runtime gate:** loading the actual private game and rendering a frame remain open until R05 supplies a compatible bundle. An upload UI passing tests alone is insufficient.
 
 ### R05 — Rebuild the private DOS bundle from a clean game installation
+
+**Packaging evidence:** [R05 Debian ISO/ZIP CI](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088). [Private owner-local build instructions](R05_PRIVATE_DOS_BUILD.md). The full DOS game boot remains unverified.
 
 - Obtain a fresh, lawfully acquired DOS-compatible game installation independently of the damaged NVMe; use official assets locally during early engine validation.
 - Inventory `RELENT.EXE`, original HQR archives and palette, required CD inputs, patch-site bytes and source version. Prefer a compatible open-source engine build where verified.
@@ -128,4 +130,4 @@ Their current live availability has not been confirmed during this plan revision
 - Preserve the damaged Windows NVMe. The reconstruction uses clean data sources.
 - Seek visual approval before promoting an artistic variant to the final portfolio.
 
-**Immediate next work:** R04 public js-dos import page, tests and Pages URL verification. Start R05 private clean-game reconstruction after the loader passes. Keep the existing V6/V7 QA links available during reconstruction.
+**Immediate next work:** obtain a clean, licensed DOS-compatible game installation away from the damaged Windows NVMe. Use the R05 Debian builder and load its private ZIP via the published GitHub Pages js-dos launcher. Capture the first real DOS gameplay frame before advancing to R06. Keep V6/V7 visual QA links available.
