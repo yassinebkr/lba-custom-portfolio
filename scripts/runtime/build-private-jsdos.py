@@ -106,6 +106,19 @@ def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
     """
     if profile == "off":
         return GAME_CONFIG.encode("ascii")
+    if profile == "sb16":
+        # DOS driver from the owner-supplied game, never a Windows system DLL.
+        # This experimental profile is useful even when the source LBA.CFG
+        # disables sound, but it does not guarantee functioning audio.
+        driver = sources.get("W_SB16.DLL")
+        if driver is None:
+            raise ValueError("sb16 needs owner-provided W_SB16.DLL in the DOS game directory")
+        if not (8192 <= driver.stat().st_size <= 128 * 1024):
+            raise ValueError("Owner-provided W_SB16.DLL has unexpected size")
+        configuration = re.sub(
+            r"(?m)^WaveDriver:[^\\r\\n]*", "WaveDriver: W_SB16.DLL", GAME_CONFIG
+        )
+        return configuration.encode("ascii")
     if profile != "source-wave":
         raise ValueError(f"Unknown audio profile: {profile}")
     original = sources.get("LBA.CFG")
@@ -332,8 +345,8 @@ def main(argv: list[str] | None = None) -> int:
                      help="A separate lawful installation, not a damaged disk")
     cli.add_argument("--mods", type=Path, default=ROOT / "output")
     cli.add_argument("--out", type=Path, default=ROOT / "web_deploy/lba1_portfolio.jsdos")
-    cli.add_argument("--audio", choices=("off", "source-wave"), default="off",
-                     help="Enable game SFX only if its source WaveDriver DLL exists")
+    cli.add_argument("--audio", choices=("off", "source-wave", "sb16"), default="off",
+                     help="Experimental SFX: source config DLL or owner-provided W_SB16.DLL")
     cli.add_argument("--saves-dir", type=Path,
                      help="Optional private directory containing DOS Snnn.LBA save files")
     args = cli.parse_args(argv)
