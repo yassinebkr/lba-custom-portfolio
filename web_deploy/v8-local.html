@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>R05 local DOSBox A/B — js-dos 8.5.4</title>
+  <link rel="stylesheet" href="./vendor/jsdos854/js-dos.css">
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #0c1018; color: #e6edf7; }
+    * {box-sizing:border-box}
+    body { margin:0; }
+    main {max-width:1140px; margin:auto; padding:24px 20px 45px;}
+    header {display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px}
+    h1 {font-size:clamp(1.25rem,2.5vw,1.85rem); margin:0}
+    .muted {color:#a6b6ca; line-height:1.55}
+    a {color:#86d7e8}
+    .controls {display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:20px 0 12px}
+    button {padding:10px 16px; font-size:0.95rem; background:#79cfdd; color:#071118; border:0; border-radius:8px; font-weight:700; cursor:pointer}
+    button:disabled {opacity:.5;cursor:default}
+    button.secondary {background:#263549; color:#e4f0f8; border:1px solid #485d73}
+    #status {color:#b5dae3; min-height:48px}
+    #player {width:100%; min-height:590px; border:1px solid #354459; border-radius:12px; overflow:hidden; background:#000}
+    .note {font-size:0.85rem; max-width:750px;}
+    code {background:#1e2b3b;padding:2px 4px;border-radius:4px}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>R05 · js-dos 8.5.4 — isolated browser test</h1>
+    <a href="./?r05debug=1">Return to js-dos 6.22 control</a>
+  </header>
+  <p class="muted note">
+    Use only <code>output/r05-probes/r05-v8-sb16-8.jsdos</code> generated locally
+    from the verified 6.22 archive. This test keeps DOSBox, original RELENT.EXE,
+    seven DOS save slots and the same 8-bit wave driver. It is not an upgrade
+    to the public player. The selected game archive is read locally; it is never uploaded.
+  </p>
+  <div class="controls">
+    <button id="import" type="button">Choose private v8 comparison bundle</button>
+    <input id="bundle" type="file" accept=".jsdos" hidden>
+    <button id="stop" type="button" class="secondary" disabled>Stop emulation</button>
+    <button id="copy-report" type="button" class="secondary">Copy diagnostic report</button>
+  </div>
+  <p id="status" role="status" aria-live="polite">Checking pinned local runtime assets…</p>
+  <div id="player" aria-label="js-dos 8 experimental player"></div>
+  <p class="muted note">
+    Boot, select Museum S003 using the game's save menu, compare the same footsteps
+    to js-dos 6.22, and check a checkpoint respawn. Disable fullscreen/mouse capture
+    to retain desktop control. Keep 6.22 untouched as the reference.
+  </p>
+</main>
+<script defer src="./vendor/jsdos854/js-dos.js"></script>
+<script type="module" src="./v8-local.mjs"></script>
+</body>
+</html>
