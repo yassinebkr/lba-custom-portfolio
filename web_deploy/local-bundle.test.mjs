@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateLocalBundle,extractLocalBundle,buildDos622Arguments} from './local-bundle.mjs';
+import {validateLocalBundle,extractLocalBundle,buildDos622Arguments,assertDos622BundleName} from './local-bundle.mjs';
 
 const bytes=Uint8Array.from([0x50,0x4b,0x03,0x04,1,2,3,4]);
 const file=(name,data=bytes,size=data.length)=>({
@@ -59,4 +59,16 @@ test('6.22 must explicitly load its bundled DOSBox config',()=>{
    '-conf','.jsdos/dosbox.conf','-c','imgmount d LBA.CUE -t iso','-c','RELENT.EXE'
  ]);
  assert.throws(()=>buildDos622Arguments({cdImage:'unsafe;rm -rf /'}),/Unsupported/);
+});
+
+test('6.22 test UI rejects v8-only DOS archive before ZIP extraction',()=>{
+ assert.throws(
+   ()=>assertDos622BundleName('r05-v8-english-voices.jsdos'),
+   /js-dos 8\.5\.4.*v8-local\.html/
+ );
+ assert.throws(
+   ()=>assertDos622BundleName('R05-V8-SB16-16BIT.JSDOS'),
+   /js-dos 8/
+ );
+ assert.doesNotThrow(()=>assertDos622BundleName('r05-sb16-8.jsdos'));
 });
