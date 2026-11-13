@@ -43,7 +43,7 @@ export function assertAudit(report){
     if(!report.groups[classifyPath(path)].includes(path))throw Error('Missing source boundary: '+path);
   }
   const legacy=readFileSync(resolve(root,'scripts/hqr-tools/build-bundle.js'),'utf8');
-  for(const word of ['base_game','RELENT.EXE','LBA.ISO','SPRITES.HQR']){
+  for(const word of ['base_game','RELENT.EXE','LBA.ISO','copyMatch(BASE, TMP']){
     if(!legacy.includes(word))throw Error('Changed DOS packaging contract: '+word);
   }
 }
