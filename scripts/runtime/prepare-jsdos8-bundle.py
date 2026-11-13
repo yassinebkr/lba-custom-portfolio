@@ -43,6 +43,10 @@ def owner_voice_files(voice_dir: Path | None) -> dict[str, Path]:
         # Historical language and bank names from SOURCES/MESSAGE.C.
         if not re.fullmatch(r"(EN|FR|DE|SP|IT)_(SYS|CRE|GAM|[0-9]{3})\.VOX", item.name.upper()):
             raise ValueError("Unexpected legacy voice file: " + item.name)
+        # LBA.CFG currently selects LanguageCD: English. Packaging every
+        # language would waste ~100+ MB and would not enable those voices.
+        if not item.name.upper().startswith("EN_"):
+            continue
         if not 8 <= item.stat().st_size <= 128 * 1024 * 1024:
             raise ValueError("Unexpected legacy voice file size: " + item.name)
         name = "VOX/" + item.name.upper()
@@ -53,7 +57,7 @@ def owner_voice_files(voice_dir: Path | None) -> dict[str, Path]:
         if total > 400 * 1024 * 1024:
             raise ValueError("Owner voice files exceed private import budget")
     if not result:
-        raise ValueError("Owner VOX directory has no supported .VOX files")
+        raise ValueError("Owner VOX directory contains no English EN_*.VOX files")
     return result
 
 
