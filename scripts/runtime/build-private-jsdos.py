@@ -106,18 +106,40 @@ def prepare_audio(sources: dict[str, Path], profile: str) -> bytes:
     """
     if profile == "off":
         return GAME_CONFIG.encode("ascii")
-    if profile == "sb16":
-        # DOS driver from the owner-supplied game, never a Windows system DLL.
-        # This experimental profile is useful even when the source LBA.CFG
-        # disables sound, but it does not guarantee functioning audio.
-        driver = sources.get("W_SB16.DLL")
+    if profile in ("sb16", "sb16-8", "sb16-mixer", "sb16-mixer-loud"):
+        # The historical build uses 16-bit stereo for W_SB16.DLL and 8-bit
+        # stereo for W_SB16_8.DLL. Keep all variants isolated and opt-in.
+        driver_name = "W_SB16_8.DLL" if profile == "sb16-8" else "W_SB16.DLL"
+        driver = sources.get(driver_name)
         if driver is None:
-            raise ValueError("sb16 needs owner-provided W_SB16.DLL in the DOS game directory")
+            raise ValueError(f"{profile} needs owner-provided {driver_name}")
         if not (8192 <= driver.stat().st_size <= 128 * 1024):
-            raise ValueError("Owner-provided W_SB16.DLL has unexpected size")
-        configuration = re.sub(
-            r"(?m)^WaveDriver:[^\r\n]*", "WaveDriver: W_SB16.DLL", GAME_CONFIG
+            raise ValueError(f"Owner-provided {driver_name} has unexpected size")
+        configuration = GAME_CONFIG
+        if configuration.count("WaveDriver: NoWave\r\n") != 1:
+            raise ValueError("Internal WaveDriver template is ambiguous")
+        configuration = configuration.replace(
+            "WaveDriver: NoWave\r\n", f"WaveDriver: {driver_name}\r\n"
         )
+        if profile in ("sb16-mixer", "sb16-mixer-loud"):
+            mixer = sources.get("M_SB16.DLL")
+            if mixer is None:
+                raise ValueError(f"{profile} needs owner-provided M_SB16.DLL")
+            if not (512 <= mixer.stat().st_size <= 8192):
+                raise ValueError("Owner-provided M_SB16.DLL has unexpected size")
+            # The original engine only writes the game's WaveVolume and
+            # MasterVolume to SB16 hardware when MixerDriver is enabled.
+            configuration = configuration.replace(
+                "MixerDriver: NoMixer\r\n", "MixerDriver: M_SB16.DLL\r\n"
+            )
+            if profile == "sb16-mixer-loud":
+                # Volume-only delta from sb16-mixer (both drivers unchanged).
+                # Experimental high volume; reduce host volume when testing.
+                configuration = configuration.replace(
+                    "WaveVolume: 163\r\n", "WaveVolume: 240\r\n"
+                ).replace(
+                    "MasterVolume: 128\r\n", "MasterVolume: 240\r\n"
+                )
         return configuration.encode("ascii")
     if profile != "source-wave":
         raise ValueError(f"Unknown audio profile: {profile}")
@@ -345,7 +367,7 @@ def main(argv: list[str] | None = None) -> int:
                      help="A separate lawful installation, not a damaged disk")
     cli.add_argument("--mods", type=Path, default=ROOT / "output")
     cli.add_argument("--out", type=Path, default=ROOT / "web_deploy/lba1_portfolio.jsdos")
-    cli.add_argument("--audio", choices=("off", "source-wave", "sb16"), default="off",
+    cli.add_argument("--audio", choices=("off", "source-wave", "sb16", "sb16-8", "sb16-mixer", "sb16-mixer-loud"), default="off",
                      help="Experimental SFX: source config DLL or owner-provided W_SB16.DLL")
     cli.add_argument("--saves-dir", type=Path,
                      help="Optional private directory containing DOS Snnn.LBA save files")
