@@ -1,0 +1,48 @@
+# R05 — Rebuild the private DOS bundle on Debian
+
+**Status:** Linux packaging passed synthetic CI checks. A real game launch still requires a fresh, lawful DOS-compatible LBA1 installation and a private browser test.
+
+## Requirements
+
+- Debian with Python 3.10+, Node.js and xorriso
+- A clean owner-provided installation, separate from the damaged Windows NVMe
+- A RELENT.EXE version accepted by the guarded four-site patcher
+
+~~~bash
+sudo apt install python3 nodejs xorriso
+~~~
+
+The source directory needs `RELENT.EXE`, `RESS.HQR`, `SPRITES.HQR`, `SCENE.HQR`, `LBA_BRK.HQR`, `LBA_BLL.HQR`, `LBA_GRI.HQR` and `SAMPLES.HQR`. Keep these assets outside Git.
+
+## Build and verify
+
+~~~bash
+python3 scripts/runtime/build-private-jsdos.py \
+  --base "/path/to/clean/lba1-dos" \
+  --mods "./output" \
+  --out "./web_deploy/lba1_portfolio.jsdos"
+~~~
+
+Or place the original files in the ignored `base_game/` directory and use:
+
+~~~bash
+bash scripts/build-web-bundle.sh
+~~~
+
+The builder patches a temporary executable after verifying the original byte signatures. It overlays selected private HQR files from `output/`, uses xorriso to produce `LBA.ISO` with ISO9660 label `ADELINE`, verifies the CD directory, and packs the canonical js-dos 6.22 ZIP with an explicit `.jsdos/` directory entry first. The owner-supplied game directory remains unchanged. `VOX.HQR` is excluded to reduce emulator memory demands.
+
+Open the [GitHub Pages local-bundle importer](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/), select the private ZIP, and verify the real DOS menu, graphics, keyboard controls and scene entry. The archive stays in the browser and is never uploaded to GitHub Pages.
+
+The [GPL community engine source](https://github.com/LBALab/lba1-classic-community) supports OpenWatcom 2 DOS compilation to `LBAD.EXE` or `LBADC.EXE`. Those executables need a separate launch compatibility assessment; the current importer and builder target the historically patched `RELENT.EXE`. Original LBA1 visual resources remain proprietary.
+
+## Tests and limitations
+
+~~~bash
+python3 -m unittest discover -s scripts/runtime -p 'test_private_jsdos.py' -v
+~~~
+
+[CI proof — synthetic ISO and ZIP build](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088).
+
+CI uses synthetic HQR placeholders and a fabricated patch-site executable. This proves packaging structure and failure handling. **It does not prove game boot or in-engine visual fidelity.** The ISO and bundled ZIP may include build timestamps, so byte-identical SHA-256 values are not guaranteed between builds.
+
+Never use the damaged Windows NVMe for this procedure. Do not commit any generated executable, HQR, ISO or .jsdos file. If the patcher reports incompatible bytes, identify the game release instead of bypassing its safety checks.
