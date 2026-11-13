@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One original GOG MP3 -> bounded raw CD-DA preview inside a private tone CUE.
 
-Use only after the raw synthetic CD tone gate; the selected js-dos 8 DOSBox
+The original main menu requests CD track 10; default to that track.\nUse only after the raw synthetic CD tone gate; the selected js-dos 8 DOSBox
 backend is built without SDL_sound, so directly embedded MP3 tracks are not
 a supported test. Preserve ALL game bytes and the other eight synthetic tracks.
 """
@@ -22,7 +22,7 @@ OUTPUT = (ROOT / "output").resolve()
 CD_SECTOR = 2352
 
 
-def make(source: Path, dest: Path, *, gog_root: Path, track: int = 2,
+def make(source: Path, dest: Path, *, gog_root: Path, track: int = 10,
          seconds: int = 30) -> dict:
     source, dest = source.resolve(strict=True), dest.resolve()
     if not source.is_relative_to(OUTPUT) or not dest.is_relative_to(OUTPUT):
@@ -94,7 +94,7 @@ def main() -> int:
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--gog-root", type=Path, required=True)
-    parser.add_argument("--track", type=int, choices=range(2, 11), default=2)
+    parser.add_argument("--track", type=int, choices=range(2, 11), default=10)
     parser.add_argument("--seconds", type=int, default=30)
     args = parser.parse_args()
     try:
