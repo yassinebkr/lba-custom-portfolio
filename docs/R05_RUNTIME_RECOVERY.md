@@ -313,3 +313,43 @@ Owner's test order:
 
 Do not publish any GOG audio tracks, MIDI assets, proprietary DLLs,
 or generated game bundles. No new patches to game executable.
+
+
+## R05.4 - Miles Sound Blaster FM hardware detection failure
+
+Owner's screenshot of r05-sb16-8-fm.jsdos shows the DOS game exits
+during MIDI initialization and returns to the C:\ prompt:
+
+    AIL/32 midi driver for:
+    Creative Labs Sound Blaster(TM) FM Sound
+    Media Vision Thunderboard(TM) FM Sound
+    Error MidiDriver: Sound Hardware not found.
+
+This locates the immediate failure at the original InitMidi() ->
+AIL_detect_device() check in LIB386/PLATFORM/DOS/LIB_MIDI/MIDI.C.
+The original A32SBFM.DLL loaded and was recognized, but its
+hardware probe failed. The exact cause (driver default port,
+emulated hardware response, or timing) is not established.
+LIB386/LIB_SYS/ADELINE.C calls exit(1) on InitMidi() failure.
+
+The mono browser log shows emulator illegal-memory access warnings,
+but does not establish whether mono sounds better or worse.
+The line 'MIDI: Opened device:none' describes the configured DOSBox
+MIDI output; it is not direct evidence that OPL/FM is unavailable.
+The current DOSBox SB16 configuration has oplmode=auto.
+
+A single focused browser FM detection comparison is available:
+r05-sb16-8-adlib.jsdos preserves the partially audible W_SB16_8.DLL
+effects and NoMixer, replaces A32SBFM.DLL by the original
+owner-provided A32ALGFM.DLL, and selects MidiBase: 388h, the fixed
+AdLib/OPL port. MidiIRQ/MidiDMA=-1 retain the Miles driver defaults.
+The original MIDI_SB.HQR bank remains with MidiType: Fm.
+
+Successful driver initialization does NOT automatically restore
+ordinary scene music: the minimal data-only ISO contains no CDDA.
+If AdLib also fails its hardware probe, stop guessing MIDI settings.
+Compare the same private patched game bundle in native DOSBox and
+js-dos 6.22. A native-vs-browser footstep comparison can distinguish
+host/browser emulation from the legacy sound drivers/configuration.
+No GOG executable, resource archive, DLL, or generated bundle should
+be committed or published.
