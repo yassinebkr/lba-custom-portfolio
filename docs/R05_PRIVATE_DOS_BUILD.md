@@ -44,7 +44,7 @@ BASE=/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows
 python3 scripts/runtime/audit-dos-install.py --base "$BASE"
 ~~~
 
-If a valid wave DLL is available and `LBA.CFG` references it, build a private **separate** audio experiment with `--audio source-wave`. Otherwise continue with `--audio off`. The audio mode checks the source driver, port, IRQ, DMA and rate before changing `LBA.CFG`; music and speech are deliberately not enabled by this experiment. Passing the build does not prove audible sound.
+If a valid wave DLL is available and `LBA.CFG` references it, `--audio source-wave` can build a private experiment. Separately, `--audio sb16` uses the real owner-provided DOS driver `W_SB16.DLL` when it exists, even if the GOG configuration has audio disabled; this mode enforces a conservative size check and known SB16 220h/IRQ7/DMA1 settings. Both are experimental. Keep `--audio off` as the known silent baseline. No driver is downloaded or fabricated; music and speech remain disabled. Passing the build does not prove audible sound.
 
 Historic source code also provides seven pre-positioned DOS scene saves:
 
@@ -73,3 +73,48 @@ python3 -m unittest discover -s scripts/runtime -p 'test_private_jsdos.py' -v
 CI uses synthetic HQR placeholders and a fabricated patch-site executable. This proves packaging structure and failure handling. **It does not prove in-game audio, scene-save compatibility or reliable game-over handling.** Real gameplay startup has been separately owner-confirmed. The ISO and bundled ZIP may include build timestamps, so byte-identical SHA-256 values are not guaranteed between builds.
 
 Never use the damaged Windows NVMe for this procedure. Do not commit any generated executable, HQR, ISO or .jsdos file. If the patcher reports incompatible bytes, identify the game release instead of bypassing its safety checks.
+
+
+### Single-command private test matrix (R05.1)
+
+From the experimental fix/r05-1-runtime-probes branch, run:
+
+~~~bash
+cd ~/Documents/lba-custom-portfolio
+git fetch origin
+git switch fix/r05-1-runtime-probes
+BASE=/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows
+
+python3 scripts/runtime/audit-dos-install.py --base "$BASE"
+python3 scripts/runtime/inspect_gameover_resources.py --base "$BASE"
+python3 scripts/runtime/run-r05-probes.py --base "$BASE"
+cat output/r05-probes/report.json
+~~~
+
+This creates a known silent control named output/r05-probes/r05-silent.jsdos
+and, conditionally, r05-source-wave.jsdos and/or r05-sb16.jsdos. All are
+ignored private assets, and no game input files are modified. The report
+shows which audio profiles were skipped, the seven DOS save slots and
+the presence/absence of the game-over model and sound index entries.
+
+Open the local launcher on this branch at http://localhost:8765/?r05debug=1
+after running python3 -m http.server 8765 from web_deploy/. Import one bundle
+at a time. In the game's Continue Saved Game menu, try Museum S003, House
+S002 and Proxima S005. For audio, compare an identical action and scene
+between r05-silent.jsdos and r05-sb16.jsdos. For death, test loss of a
+clover life and a terminal GameOver separately.
+
+For diagnostic snapshots, run this in the browser console before and after
+the black screen:
+
+~~~js
+copy(JSON.stringify(window.lbaR05DiagnosticReport(), null, 2));
+~~~
+
+The snapshot includes web-side errors and canvas visibility/focus, but not
+the DOS program counter, video pixels or the emulated CPU state. Screen
+captures and the behavior of ESC/menu after fifteen seconds are necessary.
+Do not confuse a successful synthetic CI run with in-game behavior.
+
+Only if these manual gates pass should sound be enabled by default or
+direct-boot patching begin. Preserve all original LBA1 assets outside Git.
