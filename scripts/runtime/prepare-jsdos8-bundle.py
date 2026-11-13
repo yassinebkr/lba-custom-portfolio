@@ -89,7 +89,7 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
                 raise ValueError("Missing comparison input: " + needed)
         if cd_image == "LBA.CUE":
             cue = z.read("LBA.CUE")
-            if re.search(rb'(?im)^\\s*FILE\\s+"[^"]+\\.(?:mp3|ogg)"\\s', cue):
+            if re.search(rb'(?im)^\s*FILE\s+"[^"]+\.(?:mp3|ogg)"\s', cue):
                 raise ValueError(
                     "Pinned js-dos 8 DOSBox backend has C_SDL_SOUND disabled: "
                     "compressed MP3/OGG CUE audio cannot be decoded. "
