@@ -14,12 +14,12 @@ const server=createServer(async(req,res)=>{
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const requested=url.pathname.slice(base.length)||'index.html';
   const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested==='web_deploy/'?'web_deploy/index.html':requested;
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|web_deploy\/(?:index\.html|local-bundle\.mjs|vendor\/jsdos622\/(?:js-dos|wdosbox|wdosbox\.wasm)\.js)|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|web_deploy\/(?:index\.html|local-bundle\.mjs|vendor\/jsdos622\/(?:js-dos|wdosbox|wdosbox\.wasm)\.js)|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){if(name.includes('web_deploy'))console.error('DOS ROUTE REJECTED',req.url,name);res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
     res.end(file);
-  }catch{res.writeHead(404);res.end();}
+  }catch(error){if(name.includes('web_deploy'))console.error('DOS FILE MISSING',req.url,name,error.message);res.writeHead(404);res.end();}
 });
 await new Promise(resolve=>server.listen(PORT,'127.0.0.1',resolve));
 let browser;
@@ -131,6 +131,8 @@ try{
     return {dosType:typeof window.Dos,status:response.status,contentType:response.headers.get('content-type'),bytes:(await response.text()).length};
   });
   console.log('DOS runtime script diagnostic:',dosDebug,'browser errors:',errors);
+  console.log('DOS browser location:',await page.evaluate(()=>({href:location.href,base:document.baseURI,script:new URL('./vendor/jsdos622/js-dos.js',location.href).href})));
+  console.log('DOS vendor built file size:',(await readFile(new URL('web_deploy/vendor/jsdos622/js-dos.js',ROOT))).length);
   await page.waitForFunction(()=>typeof window.Dos==='function',{timeout:2500});
   await page.evaluate(()=>{
     window.__dosSmoke={mainCalls:0,extractions:0,blobUrl:''};
