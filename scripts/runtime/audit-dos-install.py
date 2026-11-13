@@ -60,6 +60,13 @@ def check_install(base: Path) -> dict[str, object]:
         result["audio_gate"] = f"driver {candidate} missing from DOS directory"
     else:
         result["audio_gate"] = f"local driver {candidate} found; in-browser playback still unverified"
+    sb16 = contents.get("W_SB16.DLL")
+    if sb16 is None:
+        result["sb16_gate"] = "not available: original W_SB16.DLL absent"
+    elif 8192 <= sb16.stat().st_size <= 128 * 1024:
+        result["sb16_gate"] = "owner-provided W_SB16.DLL present; packaging can be attempted"
+    else:
+        result["sb16_gate"] = "W_SB16.DLL size outside accepted DOS driver range"
     return result
 
 
@@ -76,6 +83,7 @@ def main() -> None:
     print("DOS DLL files:", ", ".join(report["dll_files"]) or "(none)")
     print("Setup files:", ", ".join(report["setup_files"]) or "(none)")
     print("Wave driver gate:", report["audio_gate"])
+    print("SB16 profile gate:", report["sb16_gate"])
     print("Read-only inspection complete.")
 
 
