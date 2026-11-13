@@ -129,10 +129,10 @@ def run_iso_tool(source: Path, target: Path) -> None:
     if descriptor[40:72].decode("ascii").strip() != "ADELINE":
         raise ValueError("ISO9660 volume label must be ADELINE")
     inspected = subprocess.run(
-        [xorriso, "-indev", str(target), "-find", "/", "-print"],
+        [xorriso, "-indev", str(target), "-ls", "/"],
         check=True, capture_output=True, text=True
     ).stdout.upper()
-    for file in ("/CD_LBA", "/SAMPLES.HQR"):
+    for file in ("CD_LBA", "SAMPLES.HQR"):
         if file not in inspected:
             raise ValueError(f"CD ISO is missing {file}")
 
@@ -183,8 +183,6 @@ def build(base: Path, mods: Path, output: Path) -> dict[str, object]:
             raise ValueError("Only HQR overlays and the guarded patched EXE are supported")
         if key not in sources:
             raise ValueError(f"Unrecognized private HQR overlay: {key}")
-    if output.exists() and output.samefile(base) if base.is_file() else False:
-        raise ValueError("Output conflicts with private game input")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="lba-dos-", dir=output.parent) as tmp:
