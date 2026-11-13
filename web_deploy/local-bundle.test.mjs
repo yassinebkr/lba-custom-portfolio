@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateLocalBundle,extractLocalBundle} from './local-bundle.mjs';
+import {validateLocalBundle,extractLocalBundle,buildDos622Arguments} from './local-bundle.mjs';
 
 const bytes=Uint8Array.from([0x50,0x4b,0x03,0x04,1,2,3,4]);
 const file=(name,data=bytes,size=data.length)=>({
@@ -46,4 +46,17 @@ test('rejects extractor failures and always revokes the blob URL',async()=>{
   createObjectURL:()=> 'blob:bad',revokeObjectURL:()=>{revoked++;}
  }),/Cannot read ZIP/);
  assert.equal(revoked,1);
+});
+
+test('6.22 must explicitly load its bundled DOSBox config',()=>{
+ assert.deepEqual(buildDos622Arguments(),[
+   '-conf','.jsdos/dosbox.conf','-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE'
+ ]);
+ assert.deepEqual(buildDos622Arguments({legacyConfig:true}),[
+   '-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE'
+ ]);
+ assert.deepEqual(buildDos622Arguments({cdImage:'LBA.CUE'}),[
+   '-conf','.jsdos/dosbox.conf','-c','imgmount d LBA.CUE -t iso','-c','RELENT.EXE'
+ ]);
+ assert.throws(()=>buildDos622Arguments({cdImage:'unsafe;rm -rf /'}),/Unsupported/);
 });
