@@ -4,6 +4,10 @@
 
 The initial roadmap emphasized a large GUI before proving visual production. The maintainer revised the priorities to **asset-first** on 2026-11-01. This file supersedes the old ordering; historical code and commits are preserved.
 
+## Current DOS runtime plan
+
+The reconstructed js-dos adaptation is the selected portfolio runtime subject to licensing and actual quality gates. [R04–R09 reconstruction, browser smoke testing and Pages visual QA](DOS_REBUILD_PLAN.md) govern this work. R01 and R02 are complete. R03 has a verified codec experiment and pending private in-game validation. The J-series below records the earlier original Canvas prototype and authoring pipeline history.
+
 ## Delivery sequence
 
 ~~~mermaid

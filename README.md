@@ -37,6 +37,16 @@ The test batch includes a four-direction character, an electronics bench, chair,
 
 For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [pipeline guide](pipeline/README.md) and [asset-first contract](pipeline/ASSET_FIRST.md).
 
+## Visual verification and DOS reconstruction
+
+[Open the V6 sprite comparison](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) · [Open the V7 original workshop review](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html)
+
+These are the existing **original-art browser previews**. The live URLs need re-verification. They show the sprite production and original test scene. Reconstructed DOS gameplay through js-dos is still pending an owner-local game build.
+
+[**Revised R04–R09 DOS reconstruction and GitHub Pages QA plan**](docs/DOS_REBUILD_PLAN.md)
+
+The planned R08 Pages QA page will compare real 128/160/192px original-asset exports through a stable README link. Publishing a .jsdos archive requires a separately verified right to redistribute every included executable and resource.
+
 ## GitHub Pages
 
 The six-room playable prototype lives in [apps/portfolio](apps/portfolio/README.md).
