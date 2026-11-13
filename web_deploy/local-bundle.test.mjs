@@ -64,7 +64,7 @@ test('6.22 must explicitly load its bundled DOSBox config',()=>{
 test('6.22 test UI rejects v8-only DOS archive before ZIP extraction',()=>{
  assert.throws(
    ()=>assertDos622BundleName('r05-v8-english-voices.jsdos'),
-   /js-dos 8\.5\.4.*v8-local\.html/
+   /js-dos 8\.5\.4.*main player/
  );
  assert.throws(
    ()=>assertDos622BundleName('R05-V8-SB16-16BIT.JSDOS'),
