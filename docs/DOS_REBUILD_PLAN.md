@@ -1,6 +1,6 @@
 # DOS portfolio reconstruction and visual verification roadmap
 
-Status: **R04 public loader deployed; R05 Linux packaging and real js-dos 6.22 archive extraction passed synthetic CI; real DOS game boot remains pending clean owner-provided resources**.
+Status: **R05 real LBA1 boot owner-confirmed (2026-11-13); R05.1 audio, scene-save behavior and death recovery remain under validation**.
 Branch: `feature/portfolio-studio-j1-j8`.
 Scope: reconstruction from a clean, lawfully obtained game installation, separate authoring and runtime products, reproducible evidence and reviewed GitHub Pages previews.
 
@@ -60,6 +60,19 @@ flowchart LR
 **Acceptance:** a fresh private .jsdos bundle boots through the publicly hosted loader after a local file selection, with evidence from the real DOS runtime.
 
 **Stop condition:** no compatible licensed game files are available, or the engine cannot boot. Do not move to the rendering pipeline or DOS gameplay integration until the failure has been diagnosed.
+
+### R05.1 — Stabilize the real DOS gameplay baseline
+
+**Evidence:** [synthetic CI with DOS save import](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43368679235); [historical recovery audit and private reproduction steps](R05_RUNTIME_RECOVERY.md). Owner reports that the actual GOG-derived private game booted and played on GitHub Pages. This owner report is real-play evidence but it does not establish that sound, direct scene entry and game over work.
+
+- Inventory the GOG DOS source directory and audio config without changing its files.
+- Keep `--audio off` as the known playable baseline. Trial `--audio source-wave` is gated on a real source WaveDriver DLL, verified port/IRQ/DMA and a private manual test. MIDI and voice remain off.
+- Reuse the historical `create-savegame.js` to generate DOS `Snnn.LBA` slots for named known scenes. Include them with `--saves-dir` and test *Continue Saved Game* in the real DOS menu.
+- Verify the scene coordinates, collision and transitions. Do not claim an automatic direct scene launch based on ZIP inclusion alone.
+- Characterize the after-death black screen in a controlled scene and identify whether it is the final `GameOver()` transition, failed model/palette rendering or a timer/input deadlock. Make no binary changes without reproduction.
+- Do not begin cinematic authoring before art quality validation in R06. The launch page's visual redesign is a separate UI gate; preserve its local-file privacy behavior during any redesign.
+
+**Acceptance:** audible SFX from a real validated DOS driver, a scene-specific save load with controllable Twinsen, and a reproducible game-over outcome without permanent black screen. Mark each sub-gate independently; no synthetic test counts as audible playback or navigable gameplay.
 
 ### R06 — Compare source art and the real DOS rendering path
 
@@ -130,4 +143,4 @@ Their current live availability has not been confirmed during this plan revision
 - Preserve the damaged Windows NVMe. The reconstruction uses clean data sources.
 - Seek visual approval before promoting an artistic variant to the final portfolio.
 
-**Immediate next work:** obtain a clean, licensed DOS-compatible game installation away from the damaged Windows NVMe. Use the R05 Debian builder and load its private ZIP via the published GitHub Pages js-dos launcher. Capture the first real DOS gameplay frame before advancing to R06. Keep V6/V7 visual QA links available.
+**Immediate next work:** use the new read-only DOS installation audit, test a historical Museum save via the `--saves-dir` private bundle option, then diagnose the sound driver dependency and the game-over black screen using the known-good silent build. [Procedure](R05_RUNTIME_RECOVERY.md). No change to R06/R07 artistic implementation until these baseline results are recorded.
