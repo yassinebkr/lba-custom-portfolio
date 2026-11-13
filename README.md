@@ -41,7 +41,7 @@ For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [p
 
 [**Rebuild your private .jsdos from a clean LBA1 installation**](docs/R05_PRIVATE_DOS_BUILD.md) · [Linux ISO/ZIP test evidence](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088) · [Real js-dos ZIP extraction CI](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43360752067)
 
-The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO9660 volume, required root files and guarded RELENT.EXE patches. Synthetic integration tests pass. The owner has confirmed a successful private GOG-derived DOS game launch through the GitHub Pages importer (2026-11-13). Audio, scene-save loading and the black screen after death remain R05.1 validation gates.
+The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO9660 volume, required root files and guarded RELENT.EXE patches. Synthetic integration tests pass. The owner has confirmed a successful private GOG-derived DOS game launch through the GitHub Pages importer (2026-11-13). Original audio remains an open R05 gate, but the Museum save and checkpoint respawn have been confirmed by the owner; terminal Game Over remains separately unverified.
 
 ## R05.1 — Stabilizing audio, scene saves and game-over behavior
 
