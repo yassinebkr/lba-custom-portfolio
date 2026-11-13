@@ -37,6 +37,12 @@ The test batch includes a four-direction character, an electronics bench, chair,
 
 For your own sources, provide PNG/JPEG/WebP images and a JSON recipe. See the [pipeline guide](pipeline/README.md) and [asset-first contract](pipeline/ASSET_FIRST.md).
 
+## R05 — Private DOS bundle reconstruction on Debian
+
+[**Rebuild your private .jsdos from a clean LBA1 installation**](docs/R05_PRIVATE_DOS_BUILD.md) · [Linux ISO/ZIP test evidence](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43359708088)
+
+The Linux builder now produces the canonical js-dos 6.22 ZIP with a verified ISO9660 volume, required root files and guarded RELENT.EXE patches. Synthetic integration tests pass. Real DOS gameplay remains pending a fresh owner-provided installation and a private browser test.
+
 ## DOS browser bootstrap and visual verification
 
 **[Launch the js-dos browser test — import your own local .jsdos](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/)**
