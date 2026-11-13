@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yassine Benkhira — Portfolio</title>
+    <title>Yassine Benkhira — js-dos 8.5.4 portfolio</title>
+    <link rel="stylesheet" href="./vendor/jsdos854/js-dos.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -147,7 +148,13 @@
         #close-btn:hover { border-color: #0ff; color: #0ff; }
 
         #jsdos-wrap { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-        #jsdos { image-rendering: pixelated; max-width: 100%; max-height: 100%; background: #000; }
+        #player { width: 100%; min-height: min(600px, 75vh); height: 100%; background: #000; overflow: hidden; }
+        #player canvas { image-rendering: pixelated; max-width: 100%; max-height: 100%; }
+        #runtime-controls { position: absolute; left: 14px; top: 10px; display: flex; gap: 8px; z-index: 210; }
+        #runtime-controls button { padding: 5px 9px; border: 1px solid #475665; background: #111a25; color: #e2faff; border-radius: 4px; cursor: pointer; }
+        #runtime-controls button:disabled { opacity: .45; cursor: default; }
+        #player-status { position: absolute; bottom: 6px; left: 14px; right: 14px; color: #9fd1db; font-size: .75rem; z-index: 210; pointer-events: none; }
+        #bundle-import a, .hint a { color: #5affed; }
 
         #loading-overlay {
             position: absolute;
@@ -227,12 +234,12 @@
 
 <section class="launch-section" aria-label="Run a local DOS game bundle">
     <div id="bundle-import">
-        <button id="launch-btn" type="button">Import local .jsdos bundle</button>
+        <button id="launch-btn" type="button">Import local js-dos 8.5.4 bundle</button>
         <input id="bundle-file" type="file" accept=".jsdos" hidden>
-        <p id="bundle-status" role="status" aria-live="polite">Select your own compatible js-dos bundle to start.</p>
+        <p id="bundle-status" role="status" aria-live="polite">Select your private r05-v8-*.jsdos archive to launch the original DOS executable.</p>
         <p class="privacy-hint">Your game files stay on this device. The archive is read locally in your browser and is never uploaded to this site.</p>
     </div>
-    <p class="hint">js-dos 6.22 · DOSBox in your browser · Keyboard controls · Private test build</p>
+    <p class="hint">js-dos 8.5.4 · DOSBox Worker · Original DOS game · <a href="./v6-local.html">6.22 regression reader</a></p>
 </section>
 
 <footer>
@@ -243,16 +250,17 @@
 <!-- Game overlay (hidden until launched) -->
 <div id="game-overlay">
     <button id="close-btn" type="button">✕ Close</button>
-    <div id="loading-overlay">
-        <div class="spinner"></div>
-        <p id="loading-message" role="status" aria-live="polite">Loading game engine…</p>
+    <div id="runtime-controls">
+        <button id="stop" type="button" disabled>Stop emulator</button>
+        <button id="copy-report" type="button">Copy diagnostics</button>
     </div>
     <div id="jsdos-wrap">
-        <canvas id="jsdos" width="640" height="480" tabindex="0" aria-label="DOS game canvas"></canvas>
+        <div id="player" aria-label="js-dos 8.5.4 DOS game player"></div>
     </div>
+    <p id="player-status" role="status" aria-live="polite"></p>
 </div>
 
-<script src="./vendor/jsdos622/js-dos.js" crossorigin="anonymous"></script>
-<script type="module" src="./local-bundle.mjs"></script>
+<script defer src="./vendor/jsdos854/js-dos.js"></script>
+<script type="module" src="./v8-local.mjs"></script>
 </body>
 </html>
