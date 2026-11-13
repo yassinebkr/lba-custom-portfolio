@@ -252,3 +252,64 @@ against js-dos 6.22 rather than accumulating more config guesses.
 
 State: save menu and checkpoint respawn owner-confirmed; terminal
 Game Over and acceptable sound fidelity are still open.
+
+
+## R05.3 - Audible owner tests and two new targeted probes
+
+Owner reported after the R05.2 experiment:
+- r05-sb16-8.jsdos: audible footsteps and clearer feedback while moving
+  the music-volume slider, but the audio is still muffled in Museum and
+  music is barely present.
+- r05-sb16-mixer.jsdos and r05-sb16-mixer-loud.jsdos: **completely silent**.
+  Stop using the mixer variants; higher in-game volume did not help.
+- The browser console in the non-mixer version still prints illegal-memory
+  access warnings; no trace yet isolates those warnings as audio-related.
+- Game save-loading, including Museum, and checkpoint respawn remain usable.
+
+Source-level diagnosis:
+- The generated GAME_CONFIG uses MidiDriver: NoMidi. Original
+  SOURCES/AMBIANCE.C::PlayMidiFile returns immediately when
+  Midi_Driver_Enable is false; MIDI_SB.HQR is present but unused.
+- Original SOURCES/PERSO.C selects MIDI_SB.HQR when MidiType: FM.
+  The original DOS Miles driver A32SBFM.DLL can synthesize via the
+  emulated OPL in a separate, opt-in comparison.
+- The original SOURCES/AMBIANCE.C::PlayMusic sends most scene music to
+  CD-DA when CDEnable is true; the guarded RELENT.EXE patch forces the
+  DOS CD-drive check to succeed. However the locally generated LBA.ISO
+  only contains a CD_LBA marker and SAMPLES.HQR, not Red Book audio.
+  This is a separate structural reason for the lack of soundtrack.
+  Enabling FM can validate the original MIDI pathway but **will not**
+  automatically restore the audio tracks missing from this data-only ISO.
+- The community build's W_SB16_M.DLL is 16-bit mono. Comparing it to
+  the previously tested W_SB16.DLL 16-bit stereo isolates output
+  channel layout without a new PCM mixer.
+
+New isolated private tests under output/r05-probes/:
+
+| Profile | Wave driver | MIDI | Mixer | Diagnostic question |
+| --- | --- | --- | --- | --- |
+| sb16-8 | W_SB16_8.DLL | NoMidi | NoMixer | Known partially audible baseline |
+| sb16-mono | W_SB16_M.DLL | NoMidi | NoMixer | 16-bit mono vs 16-bit stereo |
+| sb16-8-fm | W_SB16_8.DLL | A32SBFM.DLL (FM/OPL) | NoMixer | Can the old Miles FM pathway initialize/play? |
+
+The FM profile uses the owner's original A32SBFM.DLL + MIDI_SB.HQR,
+and sets MidiBase/IRQ/DMA to -1 to preserve Miles driver defaults.
+In the original DOS MIDI.C code, -1 means 'do not override driver
+hardware defaults'. Both probes must still be validated in the
+owner's running browser; synthetic CI is packaging coverage only.
+
+Owner's test order:
+1. Keep sb16-8 as unchanged audible reference.
+2. Import sb16-mono and repeat exactly the same footstep and menu
+   sample comparisons. If mono removes distortion, focus on emulated
+   stereo channel handling; if not, isolate old 16-bit DMA next.
+3. Import sb16-8-fm and check for MIDI music/tones during title/menu
+   transitions and any MIDI-only scripted events, **without** treating
+   missing CD soundtrack during ordinary scenes as an FM failure.
+   Test starts, responsiveness and browser log for new MIDI errors.
+4. If FM fails, return to sb16-8; do not enable original MIDI by
+   default. A proper CD music path requires a separate licensed
+   owner-local audio-track source and architecture decision.
+
+Do not publish any GOG audio tracks, MIDI assets, proprietary DLLs,
+or generated game bundles. No new patches to game executable.
