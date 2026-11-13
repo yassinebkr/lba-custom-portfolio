@@ -156,13 +156,13 @@ that explicitly enables a compressed-audio decoder; do **not** feed
 that ZIP into the pinned v8 builder.
 
 **Recommended next gate after audible synthetic tones:** decode only
-30 seconds of one original owner MP3 into raw 2352-byte-sector CDDA
+30 seconds of one original owner MP3 (Track_10, selected by the main menu) into raw 2352-byte-sector CDDA
 PCM using local FFmpeg, leaving the other 8 generated tones unchanged:
 
     python3 scripts/runtime/make-cdda-pcm-preview.py \
       --input output/r05-probes/r05-cdda-tone.jsdos \
       --gog-root /mnt/fast-ssd/Games/Heroic/tlba-classic \
-      --track 2 --seconds 30 \
+      --track 10 --seconds 30 \
       --out output/r05-probes/r05-cdda-pcm-preview.jsdos
 
     python3 scripts/runtime/prepare-jsdos8-bundle.py \
