@@ -125,6 +125,8 @@ def execute(base: Path, output: Path) -> dict[str, object]:
     audit = load_python_file("audit-dos-install.py", "r05_audio_audit")
     builder = load_python_file("build-private-jsdos.py", "r05_private_builder")
     inventory = audit.check_install(base)
+    gameover_inspector = load_python_file("inspect_gameover_resources.py", "r05_gameover_audit")
+    gameover_resources = gameover_inspector.inspect_gameover_files(base)
     if inventory["missing"]:
         raise ValueError("Required DOS files missing: " + ", ".join(inventory["missing"]))
 
@@ -153,6 +155,7 @@ def execute(base: Path, output: Path) -> dict[str, object]:
     report = {
         "installation": str(base),
         "audioGate": inventory["audio_gate"],
+        "gameOverResources": gameover_resources,
         "wave": wave,
         "saves": slots,
         "bundles": bundles,
@@ -161,6 +164,7 @@ def execute(base: Path, output: Path) -> dict[str, object]:
             "Load S003 Museum, S002 House and S005 Proxima; confirm position, collision and movement",
             "Test death with a remaining clover, separately from final game over",
             "For black screen, record elapsed time, ESC behavior, screenshot and browser console",
+            "Inspect RESS.HQR entry 21 and SAMPLES.HQR entry 37; a valid header does not prove decoded content",
         ],
         "status": "Packaged probes only; real DOS gameplay tests must be completed by owner",
     }
