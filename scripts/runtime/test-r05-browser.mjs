@@ -17,7 +17,7 @@ const zipBytes=await readFile(zipPath);
 assert.equal(zipBytes.subarray(0,4).toString('hex'),'504b0304');
 const base='/lba-custom-portfolio/web_deploy/';
 const files=new Set([
-  'index.html','local-bundle.mjs','r05-diagnostics.mjs',
+  'v6-local.html','local-bundle.mjs','r05-diagnostics.mjs',
   'vendor/jsdos622/js-dos.js',
   'vendor/jsdos622/wdosbox.js',
   'vendor/jsdos622/wdosbox.wasm.js',
@@ -46,7 +46,7 @@ try {
   page.on('pageerror',error=>errors.push(error.message));
   const emulatorLogs=[];
   page.on('console',message=>emulatorLogs.push(message.text()));
-  const response=await page.goto('http://127.0.0.1:'+port+base);
+  const response=await page.goto('http://127.0.0.1:'+port+base+'v6-local.html');
   assert.equal(response.status(),200,'public Pages-like route must serve importer');
   await page.waitForFunction(()=>typeof window.Dos==='function',null,{timeout:15000});
   await page.evaluate(()=>{
