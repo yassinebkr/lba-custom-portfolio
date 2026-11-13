@@ -44,12 +44,15 @@ try {
   const page=await browser.newPage({viewport:{width:1280,height:760}});
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  const emulatorLogs=[];
+  page.on('console',message=>emulatorLogs.push(message.text()));
   const response=await page.goto('http://127.0.0.1:'+port+base);
   assert.equal(response.status(),200,'public Pages-like route must serve importer');
   await page.waitForFunction(()=>typeof window.Dos==='function',null,{timeout:15000});
   await page.evaluate(()=>{
     const realDos=window.Dos;
     window.__bundleFixture=null;
+    window.__realDosForConfigProbe=realDos;
     window.Dos=(canvas,options)=>{
       const instance=realDos(canvas,options);
       return {
@@ -108,6 +111,43 @@ try {
   assert.match(result.state.config,/machine=svga_s3/);
   assert.deepEqual(result.state.commands,['-conf','.jsdos/dosbox.conf','-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE']);
   assert.deepEqual(errors,[],'no uncaught errors');
+  // This second test starts the real 6.22 emulator with a synthetic ZIP,
+  // not the synthetic invalid EXE. It checks the DOSBox config-open log,
+  // rather than merely asserting that our wrapper supplied -conf.
+  await page.evaluate(async (encoded)=>{
+    const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+    const blob=URL.createObjectURL(new Blob([bytes],{type:'application/zip'}));
+    const canvas=document.createElement('canvas');
+    canvas.setAttribute('width','640');
+    canvas.setAttribute('height','480');
+    document.body.append(canvas);
+    window.__r05Console=[];
+    const realLog=console.log.bind(console);
+    console.log=(...items)=>{
+      window.__r05Console.push(items.map(String).join(' '));
+      realLog(...items);
+    };
+    window.__r05ConfigProbe='preparing';
+    window.__realDosForConfigProbe(canvas,{
+      wdosboxUrl:'./vendor/jsdos622/wdosbox.js'
+    }).ready((fs,main)=>{
+      fs.extract(blob).then(()=>{
+        URL.revokeObjectURL(blob);
+        window.__r05ConfigProbe='started';
+        // End without running the synthetic EXE; emulate just enough DOS
+        // for config-file startup and an immediate built-in exit.
+        main(['-conf','.jsdos/dosbox.conf','-c','exit']);
+      },error=>{window.__r05ConfigProbe='error:'+String(error);});
+    });
+  },zipBytes.toString('base64'));
+  await page.waitForFunction(()=>window.__r05ConfigProbe!=='preparing',null,{timeout:30000});
+  assert.equal(await page.evaluate(()=>window.__r05ConfigProbe),'started');
+  await page.waitForFunction(
+    ()=>Array.from(window.__r05Console||[]).some(x=>/CONFIG:.*\.jsdos\/dosbox\.conf/i.test(x)),
+    null,{timeout:25000}
+  ).catch(async ()=>{
+    throw new Error('DOSBox did not confirm reading .jsdos/dosbox.conf; logs: '+emulatorLogs.slice(-50).join(' | '));
+  });
   console.log('R05: actual js-dos 6.22 ZIP extraction accepted the output of the Debian builder');
   console.log('R05: ISO descriptor, volume label, patched EXE, HQR entries and DOS main arguments validated');
   console.log('R05: synthetic executable not run; actual LBA1 boot remains unverified');
