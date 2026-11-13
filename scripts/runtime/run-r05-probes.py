@@ -96,8 +96,10 @@ def verify_bundle(path: Path, saves: Path, audio: str) -> dict[str, object]:
         cfg = archive.read("LBA.CFG")
         if audio == "off" and b"WaveDriver: NoWave" not in cfg:
             raise ValueError("Silent control unexpectedly enables wave audio")
-        if audio == "source-wave" and b"WaveDriver: NoWave" in cfg:
-            raise ValueError("Wave experiment unexpectedly disables wave audio")
+        if audio != "off" and b"WaveDriver: NoWave" in cfg:
+            raise ValueError("Experimental audio bundle unexpectedly disables wave audio")
+        if audio == "sb16" and (b"WaveDriver: W_SB16.DLL" not in cfg or "W_SB16.DLL" not in names):
+            raise ValueError("SB16 bundle missing its configured original DOS driver")
     return {"file": str(path), "bytes": path.stat().st_size,
             "audio": audio, "slotsVerified": len(SLOTS),
             "state": "ZIP verified; in-game audio/scene/death behavior not verified"}
