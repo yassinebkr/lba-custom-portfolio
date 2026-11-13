@@ -247,6 +247,50 @@ class PrivateBundleBuildTest(unittest.TestCase):
             ).replace(b"MasterVolume: 128\r\n", b"MasterVolume: 240\r\n")
         )
 
+    def test_sb16_mono_and_original_fm_profiles_are_isolated(self):
+        (self.base / "W_SB16_M.DLL").write_bytes(b"synthetic 16bit mono driver" * 1024)
+        (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8bit driver" * 1024)
+        (self.base / "A32SBFM.DLL").write_bytes(b"synthetic Miles FM driver" * 1024)
+        (self.base / "MIDI_SB.HQR").write_bytes(b"synthetic FM bank" * 1024)
+
+        result = self.run_builder("--audio", "sb16-mono")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with zipfile.ZipFile(self.bundle) as archive:
+            cfg = archive.read("LBA.CFG")
+            self.assertIn(b"WaveDriver: W_SB16_M.DLL\\r\\n", cfg)
+            self.assertIn(b"MidiDriver: NoMidi\\r\\n", cfg)
+            self.assertIn(b"MixerDriver: NoMixer\\r\\n", cfg)
+
+        result = self.run_builder("--audio", "sb16-8-fm")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with zipfile.ZipFile(self.bundle) as archive:
+            cfg = archive.read("LBA.CFG")
+            self.assertIn(b"WaveDriver: W_SB16_8.DLL\\r\\n", cfg)
+            self.assertIn(b"MidiDriver: A32SBFM.DLL\\r\\n", cfg)
+            self.assertIn(b"MidiBase: -1\\r\\n", cfg)
+            self.assertIn(b"MidiIRQ: -1\\r\\n", cfg)
+            self.assertIn(b"MidiDMA: -1\\r\\n", cfg)
+            self.assertIn(b"MidiType: Fm\\r\\n", cfg)
+            self.assertIn(b"MixerDriver: NoMixer\\r\\n", cfg)
+            self.assertEqual(
+                archive.read("A32SBFM.DLL"),
+                (self.base / "A32SBFM.DLL").read_bytes()
+            )
+            self.assertEqual(
+                archive.read("MIDI_SB.HQR"),
+                (self.base / "MIDI_SB.HQR").read_bytes()
+            )
+
+    def test_fm_mode_refuses_missing_owner_midi_resources(self):
+        (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8bit driver" * 1024)
+        result = self.run_builder("--audio", "sb16-8-fm")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("A32SBFM.DLL", result.stderr)
+        (self.base / "A32SBFM.DLL").write_bytes(b"synthetic Miles FM driver" * 1024)
+        result = self.run_builder("--audio", "sb16-8-fm")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("MIDI_SB.HQR", result.stderr)
+
     def test_audio_variant_requires_actual_owner_provided_mixer(self):
         (self.base / "W_SB16.DLL").write_bytes(b"synthetic 16-bit" * 1024)
         result = self.run_builder("--audio", "sb16-mixer")
