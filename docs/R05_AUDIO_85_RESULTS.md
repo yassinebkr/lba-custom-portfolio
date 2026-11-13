@@ -141,11 +141,42 @@ compressed-track version:
       --cd-image LBA.CUE \
       --out output/r05-probes/r05-v8-cdda-owner.jsdos
 
-MP3 decoding in the actual WebAssembly DOSBox binary remains an open
-gate. A successful synthetic tone does not establish MP3 decoder
-support. The reference DOSBox fork gates SDL_sound/CD audio compressed
-decoding on `C_SDL_SOUND`. Do not assume it is compiled in:
+**New source-verified build limitation:** The pinned js-dos 8 DOSBox
+backend has `C_SDL_SOUND` explicitly undefined in
+[caiiiycuk/emulators native/config/config.h](https://github.com/caiiiycuk/emulators/blob/8.xx/native/config/config.h).
+The DOSBox CD image code guards compressed CUE audio via that macro:
 https://github.com/js-dos/dosbox/blob/main/src/dos/cdrom_image.cpp
+
+Thus this particular published DOSBox worker **cannot decode MP3/OGG CUE
+tracks**, even with a correctly mounted CUE. The v8 bundle converter
+now deliberately rejects compressed CUE input instead of producing a
+misleading silent archive. The commands above for generating the
+`owner-mp3` control remain usable only for a different DOSBox build
+that explicitly enables a compressed-audio decoder; do **not** feed
+that ZIP into the pinned v8 builder.
+
+**Recommended next gate after audible synthetic tones:** decode only
+30 seconds of one original owner MP3 into raw 2352-byte-sector CDDA
+PCM using local FFmpeg, leaving the other 8 generated tones unchanged:
+
+    python3 scripts/runtime/make-cdda-pcm-preview.py \
+      --input output/r05-probes/r05-cdda-tone.jsdos \
+      --gog-root /mnt/fast-ssd/Games/Heroic/tlba-classic \
+      --track 2 --seconds 30 \
+      --out output/r05-probes/r05-cdda-pcm-preview.jsdos
+
+    python3 scripts/runtime/prepare-jsdos8-bundle.py \
+      --input output/r05-probes/r05-cdda-pcm-preview.jsdos \
+      --cd-image LBA.CUE \
+      --out output/r05-probes/r05-v8-cdda-pcm-preview.jsdos
+
+This tests whether the *original* music can play through the guest
+CDDA hardware in this browser backend, without assuming MP3 support
+and without an initial hundreds-of-MiB all-tracks conversion.
+Audio fidelity, scene trigger and CD mixing remain unverified until
+an owner-local game test. If a 30-second preview works, benchmark
+the size and loading memory cost of the complete nine-track PCM set
+before shipping even a local full CDDA bundle.
 
 Audio CD volume is initialized to 0 in our LBA.CFG; original
 SOURCES/PERSO.C and SOURCES/GAMEMENU.C read and update this value for
