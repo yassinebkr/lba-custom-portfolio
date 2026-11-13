@@ -9,6 +9,8 @@ base_game/
 output/
 web_deploy/*.jsdos
 web_deploy/bundle/
+# Pinned npm v8 emulator artifacts, installed locally for comparisons only
+web_deploy/vendor/jsdos854/
 
 # Extracted assets (large, regeneratable)
 modded_assets/
