@@ -25,14 +25,14 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Run pure game rule tests
-        run: node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs packages/scene-core/scene.test.mjs packages/asset-core/index.test.mjs packages/public-manifest/index.test.mjs
+        run: node --test web_deploy/local-bundle.test.mjs apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs packages/scene-core/scene.test.mjs packages/asset-core/index.test.mjs packages/public-manifest/index.test.mjs
       - name: Prevent proprietary game files in public bundle
         run: |
           if find apps/portfolio -type f \( -iname '*.hqr' -o -iname '*.exe' -o -iname '*.jsdos' -o -iname '*.iso' -o -iname '*.vox' -o -iname '*.fla' \) | grep . ; then
@@ -65,6 +65,7 @@ jobs:
             sprite-compare-mobile.png
             sprite-scene-v7-desktop.png
             sprite-scene-v7-mobile.png
+            dos-import-desktop.png
           if-no-files-found: ignore
       - name: Audit public-only Pages artifact and root fallback
         run: |
@@ -77,7 +78,7 @@ jobs:
   publish-pages:
     if: github.ref == 'refs/heads/feature/portfolio-studio-j1-j8' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (contains(github.event.head_commit.message, '[publish-sprite-demo]') || contains(github.event.head_commit.message, '[publish-v6]') || contains(github.event.head_commit.message, '[publish-v7]'))))
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       pages: write

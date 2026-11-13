@@ -26,7 +26,8 @@ async function walk(path,relative=''){
  }
 }
 await walk(dist);
-const disallowed=files.filter(path=>!/\.(?:mjs|html|json|png|css)$/.test(path));
+const vendoredEmulator=/^web_deploy\/vendor\/jsdos622\/(?:js-dos|wdosbox|wdosbox\.wasm)\.js$/;
+const disallowed=files.filter(path=>!(/\.(?:mjs|html|json|png|css)$/.test(path)||vendoredEmulator.test(path)));
 check(!disallowed.length,'Non-allowlisted public file type: '+disallowed.join(', '));
 check(!files.some(x=>/builder|pipeline|legacy|original-source|\.hqr|\.jsdos|\.exe/i.test(x)),
  'Builder or proprietary file in public distribution');
