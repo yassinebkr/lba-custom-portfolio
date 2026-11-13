@@ -17,7 +17,7 @@ const zipBytes=await readFile(zipPath);
 assert.equal(zipBytes.subarray(0,4).toString('hex'),'504b0304');
 const base='/lba-custom-portfolio/web_deploy/';
 const files=new Set([
-  'index.html','local-bundle.mjs',
+  'index.html','local-bundle.mjs','r05-diagnostics.mjs',
   'vendor/jsdos622/js-dos.js',
   'vendor/jsdos622/wdosbox.js',
   'vendor/jsdos622/wdosbox.wasm.js',
