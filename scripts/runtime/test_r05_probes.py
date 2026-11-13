@@ -48,6 +48,7 @@ class ProbeTest(unittest.TestCase):
         self.assertEqual(report["bundles"][0]["audio"], "off")
         self.assertEqual(report["bundles"][0]["slotsVerified"], 7)
         self.assertEqual(report["wave"]["state"], "not built")
+        self.assertEqual(report["sb16"]["state"], "not built")
         self.assertEqual(len(report["saves"]), 7)
         self.assertIn("gameOverResources", report)
         self.assertEqual(report["gameOverResources"]["game_over_model"]["state"], "invalid")
@@ -73,6 +74,19 @@ class ProbeTest(unittest.TestCase):
             self.assertIn(b"WaveDriver: WAVESB.DLL\r\n", z.read("LBA.CFG"))
         with zipfile.ZipFile(self.out / "r05-silent.jsdos") as z:
             self.assertIn(b"WaveDriver: NoWave", z.read("LBA.CFG"))
+
+    def test_sb16_probe_is_generated_when_real_dos_driver_is_available_even_if_config_says_nowave(self):
+        (self.base / "LBA.CFG").write_bytes(b"WaveDriver: NoWave\r\n")
+        (self.base / "W_SB16.DLL").write_bytes(b"synthetic SB16 driver bytes" * 1024)
+        report = probe.execute(self.base, self.out)
+        self.assertEqual([p["audio"] for p in report["bundles"]], ["off", "sb16"])
+        self.assertEqual(report["wave"]["state"], "not built")
+        self.assertEqual(report["sb16"]["state"], "packaged; audible SFX not verified")
+        with zipfile.ZipFile(self.out / "r05-sb16.jsdos") as archive:
+            self.assertIn(b"WaveDriver: W_SB16.DLL\r\n", archive.read("LBA.CFG"))
+            self.assertEqual(archive.read("W_SB16.DLL"), b"synthetic SB16 driver bytes" * 1024)
+        with zipfile.ZipFile(self.out / "r05-silent.jsdos") as archive:
+            self.assertIn(b"WaveDriver: NoWave\r\n", archive.read("LBA.CFG"))
 
     def test_refuses_public_output_path(self):
         with self.assertRaisesRegex(ValueError, "ignored output"):
