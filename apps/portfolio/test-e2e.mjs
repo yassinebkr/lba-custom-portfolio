@@ -13,8 +13,8 @@ const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost:'+PORT);
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const requested=url.pathname.slice(base.length)||'index.html';
-  const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested;
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
+  const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested==='web_deploy/'?'web_deploy/index.html':requested;
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|web_deploy\/(?:index\.html|local-bundle\.mjs|vendor\/jsdos622\/(?:js-dos|wdosbox|wdosbox\.wasm)\.js)|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
@@ -114,6 +114,52 @@ try{
   assert.equal(await page.locator('#view').inputValue(),'ne');
   await page.screenshot({path:'sprite-scene-v7-desktop.png',fullPage:true});
   assert.deepEqual(errors,[],'V7 must not cause uncaught browser errors');
+
+
+  // R04 public Pages route: local ZIP selection, failure recovery and import UI.
+  const dosPreview=await page.goto('http://127.0.0.1:'+PORT+base+'web_deploy/');
+  assert.equal(dosPreview.status(),200,'DOS import route served under Pages project subpath');
+  assert.equal(await page.locator('#bundle-import').isVisible(),true);
+  await page.screenshot({path:'dos-import-desktop.png',fullPage:true});
+  await page.locator('#bundle-file').setInputFiles({
+    name:'bad.jsdos',mimeType:'application/octet-stream',buffer:Buffer.from('not a ZIP')
+  });
+  await page.waitForFunction(()=>document.querySelector('#bundle-status').textContent.includes('Import failed'));
+  assert.equal(await page.locator('#bundle-import').isVisible(),true,'invalid files keep importer visible');
+  await page.waitForFunction(()=>typeof window.Dos==='function');
+  await page.evaluate(()=>{
+    window.__dosSmoke={mainCalls:0,extractions:0,blobUrl:''};
+    window.Dos=(_canvas,_options)=>({
+      ready(callback){
+        callback({
+          extract:async url=>{
+            window.__dosSmoke.blobUrl=url;
+            const response=await fetch(url);
+            const bytes=new Uint8Array(await response.arrayBuffer());
+            if(bytes[0]!==80||bytes[1]!==75)throw Error('ZIP signature missing');
+            window.__dosSmoke.extractions++;
+          },
+          fs:{analyzePath:()=>({exists:true})}
+        },commands=>{
+          window.__dosSmoke.commands=commands;
+          window.__dosSmoke.mainCalls++;
+        });
+      }
+    });
+  });
+  await page.locator('#bundle-file').setInputFiles({
+    name:'local-test.jsdos',
+    mimeType:'application/octet-stream',
+    buffer:Buffer.from([0x50,0x4b,0x03,0x04,0,0,0,0])
+  });
+  await page.waitForFunction(()=>window.__dosSmoke.mainCalls===1);
+  assert.equal(await page.locator('#bundle-import').isVisible(),false,'hide import only after success');
+  assert.equal(await page.locator('#game-overlay').isVisible(),true);
+  assert.deepEqual(await page.evaluate(()=>window.__dosSmoke.commands),[
+    '-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE'
+  ]);
+  assert.match(await page.evaluate(()=>window.__dosSmoke.blobUrl),/^blob:/);
+  assert.deepEqual(errors,[],'DOS import route reports no uncaught browser exceptions');
 
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base);
