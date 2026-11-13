@@ -126,7 +126,12 @@ try{
   });
   await page.waitForFunction(()=>document.querySelector('#bundle-status').textContent.includes('Import failed'));
   assert.equal(await page.locator('#bundle-import').isVisible(),true,'invalid files keep importer visible');
-  await page.waitForFunction(()=>typeof window.Dos==='function');
+  const dosDebug=await page.evaluate(async()=>{
+    const response=await fetch('./vendor/jsdos622/js-dos.js');
+    return {dosType:typeof window.Dos,status:response.status,contentType:response.headers.get('content-type'),bytes:(await response.text()).length};
+  });
+  console.log('DOS runtime script diagnostic:',dosDebug,'browser errors:',errors);
+  await page.waitForFunction(()=>typeof window.Dos==='function',{timeout:2500});
   await page.evaluate(()=>{
     window.__dosSmoke={mainCalls:0,extractions:0,blobUrl:''};
     window.Dos=(_canvas,_options)=>({
