@@ -73,14 +73,12 @@ jobs:
           sys.path.insert(0, 'scripts/runtime')
           from test_private_jsdos import fixture_game
           fixture_game(Path('output/r05-browser-fixture/base'))
-          save_dir = Path('output/r05-browser-fixture/saves')
-          save_dir.mkdir(parents=True)
-          (save_dir / 'S001.LBA').write_bytes(b'synthetic-slot' * 32)
           PY
+          node scripts/hqr-tools/create-savegame.js museum --dos --no-deploy
           python3 scripts/runtime/build-private-jsdos.py \
             --base output/r05-browser-fixture/base \
             --mods output/r05-browser-fixture/mods \
-            --saves-dir output/r05-browser-fixture/saves \
+            --saves-dir output/saves/dos \
             --out output/r05-browser-fixture/synthetic.jsdos
       - name: Install browser smoke dependencies
         run: |

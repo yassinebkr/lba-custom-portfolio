@@ -65,7 +65,12 @@ try {
                 config:decoded.decode(read('.jsdos/dosbox.conf')),
                 samples:fs.fs.analyzePath('/SAMPLES.HQR').exists,
                 scene:fs.fs.analyzePath('/SCENE.HQR').exists,
-                save:fs.fs.analyzePath('/S001.LBA').exists,
+                save:fs.fs.analyzePath('/S003.LBA').exists,
+                saveArea:(()=>{
+                  const save=read('S003.LBA');
+                  const titleEnd=save.indexOf(0,1)+1;
+                  return save[titleEnd+0x100];
+                })(),
                 patch2:Array.from(exe.slice(0x10af1,0x10af3)),
                 descriptor:decoded.decode(iso.slice(16*2048+1,16*2048+6)),
                 volume:decoded.decode(iso.slice(16*2048+40,16*2048+72)).trim()
@@ -95,7 +100,8 @@ try {
   assert.equal(result.overlay,true);
   assert.equal(result.state.samples,true);
   assert.equal(result.state.scene,true);
-  assert.equal(result.state.save,true,'Legacy DOS save slot must exist at ZIP root');
+  assert.equal(result.state.save,true,'Legacy Museum DOS save slot must exist at ZIP root');
+  assert.equal(result.state.saveArea,0x2B,'Legacy Museum save points to scene index 43');
   assert.equal(result.state.descriptor,'CD001');
   assert.equal(result.state.volume,'ADELINE');
   assert.deepEqual(result.state.patch2,[235,15]);
