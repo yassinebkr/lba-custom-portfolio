@@ -4,7 +4,8 @@
  * Owner-controlled archives remain in ignored output directories.
  * All replacements are limited to explicitly selected sprite entry indices.
  */
-import {HQR,HQREntry,CompressionType} from '@lbalab/hqr';
+import hqrPackage from '@lbalab/hqr';
+const {HQR,HQREntry,CompressionType}=hqrPackage;
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {dirname,resolve} from 'node:path';
 import {decodeSprite} from '../../packages/asset-core/index.mjs';
