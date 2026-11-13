@@ -28,6 +28,19 @@ export async function validateLocalBundle(file) {
 }
 
 /**
+ * The two R05 test pages use different bundle startup contracts.
+ * v8 archives carry [autoexec] and must not be imported into the 6.22 player.
+ * Keep this check outside validateLocalBundle, which is also reused by v8.
+ */
+export function assertDos622BundleName(filename) {
+  if (/^r05-v8-.*\.jsdos$/i.test(filename || '')) {
+    throw new Error(
+      'This archive was built for js-dos 8.5.4. Open /v8-local.html and import it there.'
+    );
+  }
+}
+
+/**
  * fs.extract() in the bundled js-dos 6.22 accepts a URL.
  * A blob URL makes the visitor-selected File available to its XHR ZIP loader.
  */
@@ -97,6 +110,7 @@ function bindImporter(doc, host) {
     button.disabled = true;
     message('Validating local bundle…');
     try {
+      assertDos622BundleName(file.name);
       await validateLocalBundle(file);
       if (typeof host.Dos !== 'function') {
         throw new Error('The js-dos runtime could not be loaded.');
