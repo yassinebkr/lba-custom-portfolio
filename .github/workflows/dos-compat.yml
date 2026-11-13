@@ -6,6 +6,8 @@ on:
     paths:
       - 'scripts/runtime/**'
       - 'web_deploy/r05-diagnostics*'
+      - 'web_deploy/index.html'
+      - 'web_deploy/v6-local.html'
       - 'web_deploy/local-bundle.mjs'
       - 'web_deploy/local-bundle.test.mjs'
       - 'web_deploy/v8-local*'
@@ -91,7 +93,7 @@ jobs:
         run: |
           npm install --no-save --no-audit --no-fund playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Validate real js-dos 6.22 extraction of Debian bundle
+      - name: Validate legacy js-dos 6.22 extraction on /v6-local.html
         run: node scripts/runtime/test-r05-browser.mjs output/r05-browser-fixture/synthetic.jsdos
       - name: Install pinned js-dos 8.5.4 and emulators 8.5.3 in ignored vendor folder
         run: python3 scripts/runtime/install-jsdos8.py
@@ -107,5 +109,5 @@ jobs:
                   b'[dosbox]\r\nmemsize=16\r\n[autoexec]\r\nmount c .\r\nc:\r\ndir\r\n')
               z.writestr('TEST.TXT',b'R05 synthetic browser smoke only')
           PY
-      - name: Validate real js-dos 8 DOSBox Worker on independent local page
+      - name: Validate main portfolio / starts real js-dos 8 DOSBox Worker
         run: node scripts/runtime/test-r05-v8-browser.mjs output/r05-browser-fixture/v8-synthetic.jsdos
