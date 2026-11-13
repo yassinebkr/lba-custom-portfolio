@@ -253,6 +253,8 @@ class PrivateBundleBuildTest(unittest.TestCase):
         (self.base / "A32SBFM.DLL").write_bytes(b"synthetic Miles FM driver" * 1024)
         (self.base / "MIDI_SB.HQR").write_bytes(b"synthetic FM bank" * 1024)
 
+        (self.base / "A32ALGFM.DLL").write_bytes(b"synthetic AdLib FM driver" * 1024)
+
         result = self.run_builder("--audio", "sb16-mono")
         self.assertEqual(result.returncode, 0, result.stderr)
         with zipfile.ZipFile(self.bundle) as archive:
@@ -280,6 +282,30 @@ class PrivateBundleBuildTest(unittest.TestCase):
                 archive.read("MIDI_SB.HQR"),
                 (self.base / "MIDI_SB.HQR").read_bytes()
             )
+
+    def test_adlib_388h_isolated_from_original_sb_fm_probe(self):
+        (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8bit driver" * 1024)
+        (self.base / "A32ALGFM.DLL").write_bytes(b"synthetic AdLib FM driver" * 1024)
+        (self.base / "MIDI_SB.HQR").write_bytes(b"synthetic MIDI bank" * 1024)
+        result = self.run_builder("--audio", "sb16-8-adlib")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with zipfile.ZipFile(self.bundle) as archive:
+            cfg = archive.read("LBA.CFG")
+            self.assertIn(b"WaveDriver: W_SB16_8.DLL\r\n", cfg)
+            self.assertIn(b"MidiDriver: A32ALGFM.DLL\r\n", cfg)
+            self.assertIn(b"MidiBase: 388h\r\n", cfg)
+            self.assertIn(b"MidiIRQ: -1\r\n", cfg)
+            self.assertIn(b"MidiDMA: -1\r\n", cfg)
+            self.assertIn(b"MixerDriver: NoMixer\r\n", cfg)
+            self.assertEqual(archive.read("A32ALGFM.DLL"),
+                             (self.base / "A32ALGFM.DLL").read_bytes())
+
+    def test_adlib_probe_rejects_missing_original_driver(self):
+        (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8bit driver" * 1024)
+        (self.base / "MIDI_SB.HQR").write_bytes(b"synthetic MIDI bank" * 1024)
+        result = self.run_builder("--audio", "sb16-8-adlib")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("A32ALGFM.DLL", result.stderr)
 
     def test_fm_mode_refuses_missing_owner_midi_resources(self):
         (self.base / "W_SB16_8.DLL").write_bytes(b"synthetic 8bit driver" * 1024)
