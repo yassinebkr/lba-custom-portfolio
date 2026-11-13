@@ -1,6 +1,6 @@
 # Project Atlas
 
-An original isometric portfolio for GitHub Pages, with a **local asset-first pipeline** for characters, furniture, electronics, architectural elements and animations. **No ROM, game purchase, backend or account is required.**
+An original isometric portfolio project for GitHub Pages, with a **local asset-first pipeline** for characters, furniture, electronics, architectural elements and animations. The current js-dos development page accepts a user-selected, privately held game bundle. The intended final portfolio will be directly playable without a separate game installation.
 
 **Development branch:** [feature/portfolio-studio-j1-j8](https://github.com/yassinebkr/lba-custom-portfolio/tree/feature/portfolio-studio-j1-j8). No merge into main.
 
@@ -46,7 +46,7 @@ This public page hosts only the js-dos 6.22 emulator and the import UI. Choose a
 
 [Open the V6 sprite comparison](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/compare.html) · [Open the V7 original workshop review](https://yassinebkr.github.io/lba-custom-portfolio/sprite-demo/scene-lab.html)
 
-The R04 milestone puts js-dos on GitHub Pages with a local .jsdos import control and no hosted commercial game data. The launcher is a separate development route until its Pages deployment and real gameplay have been verified. These are the existing **original-art browser previews**. The live URLs need re-verification. They show the sprite production and original test scene. Reconstructed DOS gameplay through js-dos is still pending an owner-local game build.
+R04 has a successful GitHub Pages deployment and a verified browser test of the real js-dos ZIP extractor using synthetic test files. A real commercial-game boot remains the R05 validation gate. The R04 milestone puts js-dos on GitHub Pages with a local .jsdos import control and no hosted commercial game data. The launcher is a separate development route until its Pages deployment and real gameplay have been verified. These are the existing **original-art browser previews**. The live URLs need re-verification. They show the sprite production and original test scene. Reconstructed DOS gameplay through js-dos is still pending an owner-local game build.
 
 [**Revised R04–R09 DOS reconstruction and GitHub Pages QA plan**](docs/DOS_REBUILD_PLAN.md)
 

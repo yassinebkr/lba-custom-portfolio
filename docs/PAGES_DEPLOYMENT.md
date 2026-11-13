@@ -1,6 +1,6 @@
 # Deployment decision — GitHub Pages
 
-**Actual configuration supplied by the maintainer:** Source = GitHub branch `feature/portfolio-studio-j1-j8`, folder `/(root)`. A previous assumption that the Actions-only artifact was live was incorrect.
+**Deployment history:** the original configuration supplied by the maintainer was branch `feature/portfolio-studio-j1-j8`, folder `/(root)`. GitHub Actions Pages publishing subsequently reported a successful deployment of commit `c681b395` via [run 43357784746](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43357784746). Direct external HTTP verification of the live page remains outstanding.
 
 ## DOS bootstrap — client-side private bundle import
 
@@ -12,7 +12,7 @@ The public loader is intentionally empty until a visitor selects their local .js
 
 The public development endpoint is [js-dos local bundle import](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/), linked from the repository README.
 
-GitHub Actions validates the allowlisted js-dos 6.22 browser files and checks a local test ZIP using a mock of the DOS execution callback. The browser acceptance run does not establish that a full commercial-game bundle has launched. The first real private .jsdos boot remains R05.
+GitHub Actions validates the allowlisted js-dos 6.22 browser files, exercises the import controls, and verifies that the **actual js-dos 6.22 ZIP extractor** can unpack a synthetic user-selected archive from a blob URL in Chromium. The DOS execution callback is intercepted to avoid attempting to run placeholder executable bytes. The test does not establish that a full commercial-game bundle has launched. See [integration run 43358129663](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43358129663). The first real private .jsdos boot remains R05.
 
 The static release ships the importer and js-dos vendor JavaScript only. Imported archives are selected in the visitor's browser and read through a temporary blob URL. Commercial HQR/EXE/ISO files must never be committed to the feature branch or included in the deployed artifact.
 

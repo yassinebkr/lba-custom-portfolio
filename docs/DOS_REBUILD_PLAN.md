@@ -1,6 +1,6 @@
 # DOS portfolio reconstruction and visual verification roadmap
 
-Status: **revised plan, awaiting execution**.
+Status: **R04 public loader deployed and browser ZIP extraction tested; actual full-game launch pending R05**.
 Branch: `feature/portfolio-studio-j1-j8`.
 Scope: reconstruction from a clean, lawfully obtained game installation, separate authoring and runtime products, reproducible evidence and reviewed GitHub Pages previews.
 
@@ -30,6 +30,9 @@ flowchart LR
 ~~~
 
 ### R04 — Public GitHub Pages runtime bootstrap
+
+**Evidence:** [Pages deployment 43357784746](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43357784746), [real js-dos ZIP extraction CI 43358129663](https://github.com/yassinebkr/lba-custom-portfolio/actions/runs/43358129663). The external site URL has not been independently fetched in an outside browser.
+
 
 - Serve the existing js-dos 6.22 browser runtime and a local-file import interface on GitHub Pages.
 - Provide a clearly labeled **Import local .jsdos** control. The browser reads the file selected by its visitor through a temporary blob URL and passes it to the legacy `fs.extract` ZIP loader.
