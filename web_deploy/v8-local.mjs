@@ -1,6 +1,6 @@
 /**
- * R05 isolated js-dos 8.5.4 comparison. No game assets are uploaded or hosted.
- * This page is intentionally independent of the 6.22 launcher.
+ * Maintained js-dos 8.5.4 browser player for / and the v8-local.html regression route.
+ * No owner game assets are uploaded or hosted; legacy 6.22 lives at /v6-local.html.
  */
 import {validateLocalBundle} from './local-bundle.mjs';
 
@@ -26,12 +26,15 @@ export function comparisonOptions(url, onEvent) {
 }
 
 export function setupV8Test(doc, host) {
-  const choose = doc.getElementById('import');
-  const input = doc.getElementById('bundle');
+  const choose = doc.getElementById('import') || doc.getElementById('launch-btn');
+  const input = doc.getElementById('bundle') || doc.getElementById('bundle-file');
   const stop = doc.getElementById('stop');
   const copy = doc.getElementById('copy-report');
-  const status = doc.getElementById('status');
+  const status = doc.getElementById('status') || doc.getElementById('bundle-status');
   const player = doc.getElementById('player');
+  const overlay = doc.getElementById('game-overlay');
+  const close = doc.getElementById('close-btn');
+  const playerStatus = doc.getElementById('player-status');
   if (![choose, input, stop, copy, status, player].every(Boolean)) return;
   const report = {runtime: 'js-dos@8.5.4', backend: 'dosbox', events: [], errors: [], warnings: [], comparison: 'manual'};
   let props = null;
@@ -41,7 +44,11 @@ export function setupV8Test(doc, host) {
     report.events.push({type, value});
     if (report.events.length > 100) report.events.shift();
   };
-  const say = (value) => { status.textContent = value; mark('status', value); };
+  const say = (value) => {
+    status.textContent = value;
+    if (playerStatus) playerStatus.textContent = value;
+    mark('status', value);
+  };
   host.r05V8DiagnosticReport = () => JSON.parse(JSON.stringify(report));
   host.addEventListener('error', (event) => {
     report.errors.push(String(event.message || 'Unknown script error'));
@@ -68,11 +75,18 @@ export function setupV8Test(doc, host) {
     if (url) host.URL.revokeObjectURL(url);
     url = null;
     player.replaceChildren();
+    overlay?.classList.remove('active');
     stop.disabled = true;
     choose.disabled = false;
   }
 
   choose.addEventListener('click', () => input.click());
+  close?.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    void dispose().then(() => say('Emulator closed. Import another private bundle to resume.'))
+      .finally(() => { busy = false; });
+  });
   stop.addEventListener('click', async () => {
     if (busy) return;
     busy = true;
@@ -98,8 +112,8 @@ export function setupV8Test(doc, host) {
     choose.disabled = true;
     try {
       await validateLocalBundle(file);
-      if (!/r05-v8-/i.test(file.name)) {
-        throw new Error('Choose the converted r05-v8-*.jsdos comparison bundle, not the 6.22 archive');
+      if (!/^r05-v8-.*\.jsdos$/i.test(file.name)) {
+        throw new Error('Choose a converted r05-v8-*.jsdos bundle; 6.22 archives are incompatible with v8 startup');
       }
       if (typeof host.Dos !== 'function') {
         throw new Error('Pinned js-dos 8.5.4 frontend missing: run install-jsdos8.py');
@@ -107,6 +121,7 @@ export function setupV8Test(doc, host) {
       if (props) await dispose();
       report.bundle = {name: file.name, bytes: file.size};
       url = host.URL.createObjectURL(file);
+      overlay?.classList.add('active');
       say('Loading js-dos 8.5.4 DOSBox worker. Game data stays local…');
       const onEvent = async (event, ci) => {
         mark('emulator-event', event);
