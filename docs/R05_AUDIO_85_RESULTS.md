@@ -1,5 +1,7 @@
 # R05.5 — js-dos 8.5.4 validated PCM, reversed stereo, missing CD music and voice banks
 
+**Owner update (2026-11-13):** The 16-bit original `W_SB16.DLL` probe on js-dos 8.5.4 fixed reversed stereo while preserving sound quality. This is now the *preferred audio effects profile*. The English VOX test stalled on a file-extraction step; neither the cause nor actual voice playback is validated. On this branch, the main local portfolio route `http://127.0.0.1:8765/` now runs the v8 worker and the legacy 6.22 player is at `/v6-local.html`. Earlier below entries are historical A/B experimental records, not the new acceptance status.
+
 Research and owner test status: 2026-11-13.
 
 **User-tested evidence**
@@ -49,7 +51,7 @@ present in the owner bundle. No new external DLL, no executable patch.
       --wave-driver W_SB16.DLL \
       --out output/r05-probes/r05-v8-sb16-16bit.jsdos
 
-Open http://127.0.0.1:8765/v8-local.html. Import the newly converted
+Open http://127.0.0.1:8765/. Import the newly converted
 archive; listen to identical left/right and front-center effects in
 Museum. Expected **hypothesis**, not observed result: cleaner panning
 because the 16-bit driver does not use the broken 8-bit classifier.
@@ -199,3 +201,19 @@ changing SB16 effects at the same time.
 Keep all original private game/voice/audio data in ignored `output/`.
 No original assets or bundled binaries in `web_deploy/` or GitHub.
 No merge until owner has performed the runtime tests.
+
+## Root importer migration
+
+The v8 backend is now the default at the original portfolio home route
+`/` without removing the project/location landing page. Only the main
+client-side importer was replaced. js-dos 6.22 is retained at
+`/v6-local.html`, and `/v8-local.html` remains an optional
+secondary diagnostic page. The local v8 runtime assets are installed
+via `install-jsdos8.py` into gitignored files and are not yet part
+of a verified public deployment artifact.
+
+The user-reported VOX loading stall remains open. Before changing the
+archive pipeline further, inspect ZIP compressed and uncompressed sizes,
+voice file counts, and actual browser loading diagnostics. The label
+'Extracting local game files...' is insufficient evidence to assert
+that the wrong backend was running.
