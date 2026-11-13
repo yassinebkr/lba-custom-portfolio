@@ -49,6 +49,8 @@ class ProbeTest(unittest.TestCase):
         self.assertEqual(report["bundles"][0]["slotsVerified"], 7)
         self.assertEqual(report["wave"]["state"], "not built")
         self.assertEqual(len(report["saves"]), 7)
+        self.assertIn("gameOverResources", report)
+        self.assertEqual(report["gameOverResources"]["game_over_model"]["state"], "invalid")
         self.assertEqual((self.base / "RELENT.EXE").read_bytes(), original)
         self.assertTrue((self.out / "report.json").is_file())
         with zipfile.ZipFile(self.out / "r05-silent.jsdos") as z:
