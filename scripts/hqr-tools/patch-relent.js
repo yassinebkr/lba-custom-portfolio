@@ -57,7 +57,7 @@ console.log('Loaded RELENT.EXE size=' + buf.length);
 
 function assertBytes(fileOff, expected, label) {
     const actual = Array.from(buf.slice(fileOff, fileOff + expected.length));
-    const match = actual.every((b, i) => b === expected[i]);
+    const match = actual.length === expected.length && actual.every((b, i) => b === expected[i]);
     if (!match) {
         const e = expected.map(b => b.toString(16).padStart(2, '0')).join(' ');
         const a = actual.map(b => b.toString(16).padStart(2, '0')).join(' ');
