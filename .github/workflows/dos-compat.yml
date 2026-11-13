@@ -9,6 +9,8 @@ on:
       - 'adapters/lba-dos/**'
       - 'examples/world-package/**'
       - 'tests/runtime-*.test.mjs'
+      - 'scripts/hqr-tools/patch-relent.js'
+      - 'scripts/build-web-bundle.sh'
       - '.github/workflows/dos-compat.yml'
   workflow_dispatch:
 
@@ -17,12 +19,16 @@ permissions:
 
 jobs:
   runtime-contract:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install Linux ISO9660 writer
+        run: sudo apt-get update -qq && sudo apt-get install -y xorriso
+      - name: Verify private DOS Linux packaging with synthetic inputs
+        run: python3 -m unittest discover -s scripts/runtime -p 'test_private_jsdos.py' -v
       - name: Audit legacy resource boundaries
         run: |
           node scripts/runtime/audit.mjs > /tmp/r01-audit.json
