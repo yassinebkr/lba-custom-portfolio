@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 import sys
 import zipfile
+import copy
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = (ROOT / "output").resolve()
@@ -69,7 +70,7 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO") -> dict:
             with zipfile.ZipFile(pending, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as out:
                 for info in z.infolist():
                     data = override if info.filename == ".jsdos/dosbox.conf" else z.read(info.filename)
-                    out.writestr(info, data)
+                    out.writestr(copy.copy(info), data)
             with zipfile.ZipFile(pending) as result:
                 if result.testzip() is not None:
                     raise ValueError("Converted ZIP CRC mismatch")
