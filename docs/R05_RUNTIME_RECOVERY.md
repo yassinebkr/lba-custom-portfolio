@@ -194,3 +194,61 @@ A result marked present means the entry is within HQR bounds with a supported
 compression method, not that its decoded payload is semantically valid.
 A missing or invalid entry is a concrete lead; a present entry leaves palette,
 timer, model decoding and the game transition to investigate.
+
+
+## R05.2 - Owner runtime results and controlled audio comparisons
+
+Owner-observed on 2026-11-13:
+- Loading the Museum DOS save (S003) works in real gameplay; not all seven
+  locations have yet been validated for walking/collisions.
+- A non-final death now returns to the last checkpoint. Terminal Game Over
+  remains unverified.
+- The original 16-bit SB16 bundle starts and plays, but audio effects remain
+  extremely faint and muffled, matching the earlier observed audio defect.
+- Browser reports DOSBox illegal-memory reads and writes. These messages
+  alone do not localize the fault to the sound hardware; compare with the
+  silent reference. Missing source maps and favicon are not audio errors.
+
+Source verification from lba1-classic-community:
+- The original WAVE_DLL.MAK builds W_SB16.DLL as SB16 stereo 16-bit and
+  W_SB16_8.DLL as SB16 stereo 8-bit. Thus bit-depth is a controlled variable.
+- For the SB16-specific driver, WAVE_A.ASM asks for WaveBase and WaveRate,
+  not WaveIRQ/WaveDMA. Earlier suspicion about WaveDMA=1 misconfiguring
+  the 16-bit driver was not justified. DOSBox emulates low DMA 1 and high
+  DMA 5 separately.
+- When MixerDriver is disabled, MIXER_I.ASM bypasses mixer calls. When
+  M_SB16.DLL is loaded, MIXER_A.ASM writes PCM and master hardware levels.
+  SOURCES/PERSO.C reads the WaveVolume and MasterVolume config values.
+- Blank WaveIRQ/WaveDMA in the owner GOG config are therefore consistent
+  with the driver's SB16-specific configuration requirements.
+
+Controlled audio bundles, all private in output/r05-probes/:
+
+| File | Driver | Mixer | PCM/master | Isolated variable |
+| --- | --- | --- | --- | --- |
+| r05-sb16.jsdos | W_SB16.DLL | NoMixer | 163 / 128 | Original audio reference |
+| r05-sb16-8.jsdos | W_SB16_8.DLL | NoMixer | 163 / 128 | Output 8-bit vs 16-bit |
+| r05-sb16-mixer.jsdos | W_SB16.DLL | M_SB16.DLL | 163 / 128 | Mixer enabled only |
+| r05-sb16-mixer-loud.jsdos | W_SB16.DLL | M_SB16.DLL | 240 / 240 | Volume relative to mixer bundle |
+
+The silent control bundle is unchanged. These extra profiles only use
+owner-provided original DOS DLLs. Successful archive construction does
+not imply audio quality; no original game files are committed or hosted.
+
+After updating this development branch, regenerate probes:
+
+    git fetch origin +refs/heads/fix/r05-1-runtime-probes:refs/remotes/origin/fix/r05-1-runtime-probes
+    git switch fix/r05-1-runtime-probes
+    git merge --ff-only origin/fix/r05-1-runtime-probes
+    BASE=/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows
+    python3 scripts/runtime/run-r05-probes.py --base "$BASE"
+
+Test in order, reloading the browser page and reproducing the same sound
+effect: 1) sb16-8, 2) sb16-mixer, 3) sb16-mixer-loud only if needed.
+Turn the host volume down before the last high-volume experiment.
+Louder sound alone is not a fix for missing bandwidth or distortion.
+If none sounds correct, compare the same private game in native DOSBox
+against js-dos 6.22 rather than accumulating more config guesses.
+
+State: save menu and checkpoint respawn owner-confirmed; terminal
+Game Over and acceptable sound fidelity are still open.
