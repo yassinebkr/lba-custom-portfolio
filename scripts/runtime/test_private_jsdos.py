@@ -257,21 +257,21 @@ class PrivateBundleBuildTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         with zipfile.ZipFile(self.bundle) as archive:
             cfg = archive.read("LBA.CFG")
-            self.assertIn(b"WaveDriver: W_SB16_M.DLL\\r\\n", cfg)
-            self.assertIn(b"MidiDriver: NoMidi\\r\\n", cfg)
-            self.assertIn(b"MixerDriver: NoMixer\\r\\n", cfg)
+            self.assertIn(b"WaveDriver: W_SB16_M.DLL\r\n", cfg)
+            self.assertIn(b"MidiDriver: NoMidi\r\n", cfg)
+            self.assertIn(b"MixerDriver: NoMixer\r\n", cfg)
 
         result = self.run_builder("--audio", "sb16-8-fm")
         self.assertEqual(result.returncode, 0, result.stderr)
         with zipfile.ZipFile(self.bundle) as archive:
             cfg = archive.read("LBA.CFG")
-            self.assertIn(b"WaveDriver: W_SB16_8.DLL\\r\\n", cfg)
-            self.assertIn(b"MidiDriver: A32SBFM.DLL\\r\\n", cfg)
-            self.assertIn(b"MidiBase: -1\\r\\n", cfg)
-            self.assertIn(b"MidiIRQ: -1\\r\\n", cfg)
-            self.assertIn(b"MidiDMA: -1\\r\\n", cfg)
-            self.assertIn(b"MidiType: Fm\\r\\n", cfg)
-            self.assertIn(b"MixerDriver: NoMixer\\r\\n", cfg)
+            self.assertIn(b"WaveDriver: W_SB16_8.DLL\r\n", cfg)
+            self.assertIn(b"MidiDriver: A32SBFM.DLL\r\n", cfg)
+            self.assertIn(b"MidiBase: -1\r\n", cfg)
+            self.assertIn(b"MidiIRQ: -1\r\n", cfg)
+            self.assertIn(b"MidiDMA: -1\r\n", cfg)
+            self.assertIn(b"MidiType: Fm\r\n", cfg)
+            self.assertIn(b"MixerDriver: NoMixer\r\n", cfg)
             self.assertEqual(
                 archive.read("A32SBFM.DLL"),
                 (self.base / "A32SBFM.DLL").read_bytes()
