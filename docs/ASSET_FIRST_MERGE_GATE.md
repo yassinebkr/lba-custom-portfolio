@@ -7,6 +7,43 @@ original commercial LBA1 installation.
 
 ## Decision
 
+## Product definition: reusable open-source portfolio creator
+
+The primary deliverable is an **open-source authoring tool** that lets
+other people create and publish their own playful isometric portfolios,
+with their own objects, environments, interactions, projects, and
+identity. The project is not a commercial remake of LBA1, and the
+author does not intend to monetize it.
+
+Success means a new user can:
+1. Install/run the local creator without owning Little Big Adventure.
+2. Import their own original or appropriately licensed photos/models/
+   sprites, choose directional views and animation frames, and inspect
+   faithful previews.
+3. Arrange a reusable original room, independently place objects, set
+   project links/dialogue/interaction and export the scene.
+4. Publish the result as a static website on GitHub Pages without
+   shipping any retail executable, copyrighted game content or server.
+5. Retain editable recipes, scene JSON and art masters for later updates.
+
+The author's personal portfolio is the **reference example and quality
+benchmark**, not the only consumer of the pipeline. The historic
+js-dos LBA work is an **optional owner-local compatibility/research
+adapter**, never a mandatory dependency for other creators.
+
+No monetization does not automatically license third-party commercial
+game content for redistribution. However, the broad isometric adventure
+interaction pattern can be implemented independently with original
+assets, layouts and code. Do not let exhaustive DOS compatibility
+debugging block authoring-tool value.
+
+**Licensing TODO:** a public GitHub repository alone does not grant
+open-source reuse rights. The current branch has no root `LICENSE`
+file. Before branding the published project as open source, choose
+and verify a compatible software license and identify third-party
+exceptions/vendor license notices. Do not automatically apply a
+permissive license to GPL-derived code or assets that are not owned.
+
 Prioritize **original characters, rooms, props, animation and sound**.
 Stop treating reproduction of the commercial game's soundtrack,
 introductory cinematics or every death transition as a dependency of
