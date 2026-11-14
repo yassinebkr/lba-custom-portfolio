@@ -76,6 +76,19 @@ try {
   assert.equal(await page.locator('#volume-value').textContent(),'12%');
   assert.equal((await page.evaluate(()=>window.r05V8DiagnosticReport())).outputVolume,0.12,
     'runtime audio slider must affect active player without a restart');
+  await page.locator('#inspect-frame').click();
+  await page.waitForFunction(()=>{
+    const report=window.r05V8DiagnosticReport();
+    return report?.frameCheck || report?.events?.some(e=>e.type==='frame-check-error');
+  },null,{timeout:15000});
+  const screenReport=await page.evaluate(()=>window.r05V8DiagnosticReport());
+  assert.ok(screenReport.frameCheck,
+    'Real v8 screenshot/guest-state diagnostic failed: '+JSON.stringify(screenReport.warnings));
+  assert.ok(screenReport.frameCheck.changedFraction>=0 && screenReport.frameCheck.changedFraction<=1);
+  assert.ok(screenReport.frameCheck.darkFraction>=0 && screenReport.frameCheck.darkFraction<=1);
+  assert.ok(screenReport.frameCheck.runningProgram!==undefined);
+  assert.equal(await page.locator('#inspect-frame').isEnabled(),true);
+
   assert.match(await page.locator('#player-status').textContent(),/DOSBox backend initialized/i);
   assert.ok(result.version,'Expected pinned v8 version');
   assert.deepEqual(result.errors,[],'unexpected startup diagnostic errors');
