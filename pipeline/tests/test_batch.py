@@ -82,6 +82,57 @@ class TestBatchPipeline(unittest.TestCase):
                 colors={pixel[:3] for pixel in img.getdata() if pixel[3]}
                 self.assertLessEqual(len(colors),64,"shared quantized palette")
 
+
+    def test_truecolor_fixed_crop_keeps_fractional_alpha_and_stable_pivot(self):
+        doc = self.recipe()
+        # Use a tiny original-like source with controlled fractional alpha and
+        # two opposite views, not the protected game's palette or assets.
+        folder = self.recipe_path.parent
+        left = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
+        right = Image.new("RGBA", (96, 96), (0, 0, 0, 0))
+        left.putpixel((38, 48), (240, 45, 25, 113))
+        right.putpixel((58, 48), (30, 190, 245, 113))
+        left.save(folder / "true-ne.png")
+        right.save(folder / "true-sw.png")
+        doc["style"] = {
+            "width": 96, "height": 96,
+            "colors": "truecolor", "padding": 0,
+            "fixedCropPx": [0, 0, 96, 96],
+        }
+        doc["assets"] = [{
+            "id": "camera-test", "kind": "prop",
+            "source": {"origin": "original-art", "creator": "test",
+                       "license": "original", "reviewStatus": "pending",
+                       "allowedForPublicBuild": False},
+            "frames": [
+                {"path": "true-ne.png", "action": "idle", "direction": "NE", "durationMs": 200},
+                {"path": "true-sw.png", "action": "idle", "direction": "SW", "durationMs": 200},
+            ]
+        }]
+        self.write(doc)
+        result = self.build()
+        self.assertEqual(result["style"]["colors"], "truecolor")
+        self.assertEqual(result["style"]["fixedCropPx"], [0, 0, 96, 96])
+        with Image.open(self.output / result["assets"][0]["atlasRef"]) as image:
+            frame = image.convert("RGBA")
+            self.assertEqual(frame.size, (192, 96))
+            self.assertEqual(frame.getpixel((38, 48)), (240, 45, 25, 113))
+            self.assertEqual(frame.getpixel((96 + 58, 48)), (30, 190, 245, 113))
+        self.assertEqual(result["assets"][0]["pivot"], {"x":48, "y":96})
+        self.assertFalse(result["assets"][0]["source"]["allowedForPublicBuild"])
+
+    def test_fixed_crop_refuses_out_of_bounds_and_malformed_values(self):
+        doc = self.recipe()
+        doc["style"]["fixedCropPx"] = [0, 0, 4096, 4096]
+        self.write(doc)
+        with self.assertRaisesRegex(pipeline.RecipeError, "exceeds"):
+            self.build()
+        doc["style"]["fixedCropPx"] = [30, 0, 5, 42]
+        self.write(doc)
+        with self.assertRaisesRegex(pipeline.RecipeError, "fixedCropPx"):
+            self.build()
+        self.assertFalse(self.output.exists())
+
     def test_deterministic_outputs_across_two_builds(self):
         one=self.build()
         second=self.base/"output2"
