@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {decodeArchive,validateSpriteEntryIndices,replaceSpriteEntries} from './overlay.mjs';
+import {decodeArchive,validateSpriteEntryIndices,replaceSpriteEntries,replaceSingleSpriteEntry} from './overlay.mjs';
 import {encodeSprite} from '../../packages/asset-core/index.mjs';
 
 const mockSprites=()=>{
@@ -27,4 +27,32 @@ test('R03 patches only selected entries and preserves remaining references',()=>
 test('R03 refuses missing directional sprite entries',()=>{
   const sprites=mockSprites();delete sprites.sw;
   assert.throws(()=>replaceSpriteEntries({entries:new Array(8)},sprites,[0,1,2,3]));
+});
+
+test('R06 one DOS museum entry patch preserves its original geometry and other HQR entries',()=>{
+  const source=encodeSprite({
+    width:28,height:36,offsetX:-11,offsetY:-32,
+    pixels:new Uint8Array(28*36).fill(12)
+  });
+  const replacement=encodeSprite({
+    width:28,height:36,offsetX:-11,offsetY:-32,
+    pixels:new Uint8Array(28*36).fill(6)
+  });
+  const archive={entries:Array.from({length:65},(_,i)=>({
+    content: i===58?source:new Uint8Array([i+1])
+  }))};
+  const other=archive.entries[57];
+  const info=replaceSingleSpriteEntry(archive,58,replacement);
+  assert.deepEqual(info,{index:58,width:28,height:36,offsetX:-11,offsetY:-32});
+  assert.equal(archive.entries[57],other);
+  assert.deepEqual(new Uint8Array(archive.entries[58].content),replacement);
+  assert.throws(()=>replaceSingleSpriteEntry(archive,999,replacement),/existing private/);
+  assert.throws(()=>replaceSingleSpriteEntry(archive,58,encodeSprite({
+    width:29,height:36,offsetX:-11,offsetY:-32,
+    pixels:new Uint8Array(29*36)
+  })),/native sprite dimensions/);
+  assert.throws(()=>replaceSingleSpriteEntry(archive,58,encodeSprite({
+    width:28,height:36,offsetX:0,offsetY:-32,
+    pixels:new Uint8Array(28*36)
+  })),/draw offsets/);
 });
