@@ -40,8 +40,15 @@ export function setupV8Test(doc, host) {
   let props = null;
   let url = null;
   let busy = false;
+  let pendingWatchdog = null;
+  let importStartedAt = null;
+  const now = () => host.performance?.now?.() ?? Date.now();
+  const clearWatchdog = () => {
+    if (pendingWatchdog !== null) host.clearTimeout?.(pendingWatchdog);
+    pendingWatchdog = null;
+  };
   const mark = (type, value=null) => {
-    report.events.push({type, value});
+    report.events.push({type, value, elapsedMs: importStartedAt === null ? null : Math.round(now() - importStartedAt)});
     if (report.events.length > 100) report.events.shift();
   };
   const say = (value) => {
@@ -67,6 +74,7 @@ export function setupV8Test(doc, host) {
   });
 
   async function dispose() {
+    clearWatchdog();
     if (props?.stop) {
       try { await props.stop(); }
       catch (err) { report.errors.push('Stop: ' + String(err)); }
@@ -91,6 +99,7 @@ export function setupV8Test(doc, host) {
     if (busy) return;
     busy = true;
     await dispose();
+    report.phase = 'emulator stopped';
     say('Emulator stopped. The private archive remains only on your computer.');
     busy = false;
   });
@@ -109,6 +118,8 @@ export function setupV8Test(doc, host) {
     input.value = '';
     if (!file || busy) return;
     busy = true;
+    importStartedAt = now();
+    report.phase = 'validating local bundle';
     choose.disabled = true;
     try {
       await validateLocalBundle(file);
@@ -120,19 +131,32 @@ export function setupV8Test(doc, host) {
       }
       if (props) await dispose();
       report.bundle = {name: file.name, bytes: file.size};
+      report.phase = 'loading archive and starting backend';
       url = host.URL.createObjectURL(file);
       overlay?.classList.add('active');
       say('Loading js-dos 8.5.4 DOSBox worker. Game data stays local…');
-      const onEvent = async (event, ci) => {
+      pendingWatchdog = host.setTimeout?.(() => {
+        if (report.phase !== 'backend ready' && report.phase !== 'emulator stopped') {
+          report.warnings.push('Backend not ready after 30 seconds; extraction or initialization may be stalled');
+          report.phase = 'slow or stalled archive startup';
+          say('DOSBox still loading. Check browser memory/F12 and copy diagnostics; do not reimport repeatedly.');
+        }
+        pendingWatchdog = null;
+      }, 30000) ?? null;
+      const onEvent = (event, ci) => {
         mark('emulator-event', event);
         if (event === 'ci-ready') {
+          clearWatchdog();
+          report.phase = 'backend ready';
+          say('DOSBox backend initialized. Choose Museum S003 and test footsteps.');
           try {
             report.soundFrequency = ci?.soundFrequency?.();
-            report.runningProgram = await ci?.getRunningProgram?.();
+            Promise.resolve(ci?.getRunningProgram?.())
+              .then(program => { report.runningProgram = program ?? null; })
+              .catch(err => { report.warnings.push('Runtime program probe: ' + String(err)); });
           } catch (err) {
-            report.errors.push('Runtime probe: ' + String(err));
+            report.warnings.push('Runtime probe: ' + String(err));
           }
-          say('DOSBox backend initialized. Choose Museum S003 and test footsteps.');
         } else if (event === 'emu-ready') {
           say('Emulation runtime ready; starting private DOS bundle…');
         }
@@ -147,6 +171,7 @@ export function setupV8Test(doc, host) {
       stop.disabled = false;
       mark('player-created', version);
     } catch (err) {
+      report.phase = 'failed';
       report.errors.push(String(err?.message || err));
       await dispose();
       say('v8 startup failed: ' + String(err?.message || err));
