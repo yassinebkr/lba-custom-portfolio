@@ -50,9 +50,9 @@ test('R06 one DOS museum entry patch preserves its original geometry and other H
   assert.throws(()=>replaceSingleSpriteEntry(archive,58,encodeSprite({
     width:29,height:36,offsetX:-11,offsetY:-32,
     pixels:new Uint8Array(29*36)
-  })),/native sprite dimensions/);
+  })),/native width/);
   assert.throws(()=>replaceSingleSpriteEntry(archive,58,encodeSprite({
     width:28,height:36,offsetX:0,offsetY:-32,
     pixels:new Uint8Array(28*36)
-  })),/draw offsets/);
+  })),/native offsetX/);
 });
