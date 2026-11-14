@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "project": "field-receiver-review",
+  "style": {
+    "width": 256,
+    "height": 256,
+    "colors": "truecolor",
+    "padding": 4,
+    "fixedCropPx": [
+      103,
+      35,
+      665,
+      597
+    ]
+  },
+  "assets": [
+    {
+      "id": "field-receiver",
+      "kind": "prop",
+      "source": {
+        "origin": "original-model",
+        "creator": "project-owner",
+        "license": "original",
+        "sourceUrl": null,
+        "attribution": null,
+        "reviewStatus": "pending",
+        "allowedForPublicBuild": false
+      },
+      "frames": [
+        {
+          "path": "source-ne.png",
+          "action": "idle",
+          "direction": "NE",
+          "durationMs": 200
+        },
+        {
+          "path": "source-nw.png",
+          "action": "idle",
+          "direction": "NW",
+          "durationMs": 200
+        },
+        {
+          "path": "source-sw.png",
+          "action": "idle",
+          "direction": "SW",
+          "durationMs": 200
+        },
+        {
+          "path": "source-se.png",
+          "action": "idle",
+          "direction": "SE",
+          "durationMs": 200
+        }
+      ]
+    }
+  ]
+}
