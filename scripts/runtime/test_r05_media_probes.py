@@ -94,6 +94,37 @@ class MediaProbeTest(unittest.TestCase):
             self.assertEqual(z.read("RELENT.EXE"), self.entries["RELENT.EXE"])
         self.assertEqual((voices / "EN_SYS.VOX").read_bytes(), original)
 
+    def test_v8_single_voice_profiles_separate_bank_size_from_count(self):
+        voices = self.root / "owned-voices-selection"
+        voices.mkdir()
+        (voices / "EN_SYS.VOX").write_bytes(b"minimum bank")
+        (voices / "EN_GAM.VOX").write_bytes(b"medium size voice" * 1024)
+        (voices / "EN_043.VOX").write_bytes(b"large voice" * 4096)
+        expected = {
+            "smallest": ("VOX/EN_SYS.VOX", len(b"minimum bank")),
+            "largest": ("VOX/EN_043.VOX", len(b"large voice" * 4096)),
+            "full": (None, None),
+        }
+        for profile, (filename, size) in expected.items():
+            data = v8.prepare(self.source, self.v8target, voice_dir=voices,
+                              voice_profile=profile, wave_driver="W_SB16.DLL")
+            self.assertEqual(data["voiceProfile"], profile)
+            self.assertEqual(data["waveDriver"], "W_SB16.DLL")
+            self.assertEqual(data["voiceFiles"], 3 if profile == "full" else 1)
+            if filename:
+                self.assertEqual(data["voiceFileNames"], [filename])
+                self.assertEqual(data["voiceBytes"], size)
+            with zipfile.ZipFile(self.v8target) as z:
+                included = [x for x in z.namelist() if x.startswith("VOX/")]
+                self.assertEqual(len(included), data["voiceFiles"])
+                self.assertIn(b"WaveDriver: W_SB16.DLL", z.read("LBA.CFG"))
+                self.assertIn(b"FlagKeepVoice: ON", z.read("LBA.CFG"))
+                self.assertEqual(z.read("RELENT.EXE"), self.entries["RELENT.EXE"])
+
+    def test_voice_profile_requires_owner_folder(self):
+        with self.assertRaisesRegex(ValueError, "requires --voices-dir"):
+            v8.prepare(self.source, self.v8target, voice_profile="largest")
+
     def test_v8_voice_inputs_are_validated_without_corrupting_reference(self):
         voices = self.root / "invalid-voices"
         voices.mkdir()
