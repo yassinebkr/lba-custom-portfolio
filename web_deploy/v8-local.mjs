@@ -4,6 +4,40 @@
  */
 import {validateLocalBundle} from './local-bundle.mjs';
 
+export const DEFAULT_VOLUME_PERCENT = 30;
+
+export function volumeToGain(percent) {
+  const value = Number(percent);
+  if (!Number.isFinite(value)) return DEFAULT_VOLUME_PERCENT / 100;
+  return Math.min(100, Math.max(0, value)) / 100;
+}
+
+export function sampleFrameBrightness(image) {
+  if (!image || !Number.isInteger(image.width) || !Number.isInteger(image.height) ||
+      !image.data || image.data.length < image.width * image.height * 4) {
+    throw new Error('Unsupported DOSBox frame capture');
+  }
+  const total = image.width * image.height;
+  const stride = Math.max(1, Math.floor(total / 4096));
+  let samples = 0;
+  let dark = 0;
+  let bright = 0;
+  for (let i = 0; i < total; i += stride) {
+    const j = i * 4;
+    const maximum = Math.max(image.data[j], image.data[j + 1], image.data[j + 2]);
+    if (maximum <= 20) dark++;
+    if (maximum >= 80) bright++;
+    samples++;
+  }
+  return {
+    width: image.width,
+    height: image.height,
+    sampledPixels: samples,
+    darkFraction: Math.round((dark / samples) * 1000) / 1000,
+    brightFraction: Math.round((bright / samples) * 1000) / 1000,
+  };
+}
+
 export function comparisonOptions(url, onEvent) {
   if (typeof url !== 'string' || !url.startsWith('blob:')) {
     throw new Error('v8 comparison requires an owner-selected blob URL');
@@ -20,6 +54,7 @@ export function comparisonOptions(url, onEvent) {
     countDownStart: 1,
     autoSave: false,
     fsChanges: {local: false},
+    volume: DEFAULT_VOLUME_PERCENT / 100,
     pathPrefix: './vendor/jsdos854/emulators/',
     onEvent
   };
@@ -35,9 +70,13 @@ export function setupV8Test(doc, host) {
   const overlay = doc.getElementById('game-overlay');
   const close = doc.getElementById('close-btn');
   const playerStatus = doc.getElementById('player-status');
+  const volume = doc.getElementById('volume-slider');
+  const volumeValue = doc.getElementById('volume-value');
+  const inspectFrame = doc.getElementById('inspect-frame');
   if (![choose, input, stop, copy, status, player].every(Boolean)) return;
   const report = {runtime: 'js-dos@8.5.4', backend: 'dosbox', events: [], errors: [], warnings: [], comparison: 'manual'};
   let props = null;
+  let ci = null;
   let url = null;
   let busy = false;
   let pendingWatchdog = null;
@@ -80,6 +119,8 @@ export function setupV8Test(doc, host) {
       catch (err) { report.errors.push('Stop: ' + String(err)); }
     }
     props = null;
+    ci = null;
+    if (inspectFrame) inspectFrame.disabled = true;
     if (url) host.URL.revokeObjectURL(url);
     url = null;
     player.replaceChildren();
@@ -87,6 +128,43 @@ export function setupV8Test(doc, host) {
     stop.disabled = true;
     choose.disabled = false;
   }
+
+  if (volume) {
+    volume.value = String(DEFAULT_VOLUME_PERCENT);
+    if (volumeValue) volumeValue.textContent = DEFAULT_VOLUME_PERCENT + '%';
+    volume.addEventListener('input', () => {
+      const gain = volumeToGain(volume.value);
+      report.outputVolume = gain;
+      if (volumeValue) volumeValue.textContent = Math.round(gain * 100) + '%';
+      props?.setVolume?.(gain);
+    });
+  }
+
+  inspectFrame?.addEventListener('click', async () => {
+    if (!ci) return;
+    inspectFrame.disabled = true;
+    try {
+      const [frame, program] = await Promise.all([
+        ci.screenshot(),
+        ci.getRunningProgram(),
+      ]);
+      const sampled = sampleFrameBrightness(frame);
+      report.frameCheck = {
+        ...sampled,
+        runningProgram: program,
+        elapsedMs: importStartedAt === null ? null : Math.round(now() - importStartedAt),
+      };
+      mark('frame-check', report.frameCheck);
+      say('Frame sampled: ' + Math.round(sampled.darkFraction * 100) +
+          '% very dark; guest: ' + (program || 'unknown') +
+          '. Copy diagnostics to compare death vs normal play.');
+    } catch (err) {
+      report.warnings.push('Frame capture failed: ' + String(err));
+      say('Frame capture failed; copy diagnostics for details.');
+    } finally {
+      inspectFrame.disabled = !ci;
+    }
+  });
 
   choose.addEventListener('click', () => input.click());
   close?.addEventListener('click', () => {
@@ -143,15 +221,17 @@ export function setupV8Test(doc, host) {
         }
         pendingWatchdog = null;
       }, 30000) ?? null;
-      const onEvent = (event, ci) => {
+      const onEvent = (event, ciReady) => {
         mark('emulator-event', event);
         if (event === 'ci-ready') {
           clearWatchdog();
           report.phase = 'backend ready';
+          ci = ciReady;
+          if (inspectFrame) inspectFrame.disabled = false;
           say('DOSBox backend initialized. Choose Museum S003 and test footsteps.');
           try {
-            report.soundFrequency = ci?.soundFrequency?.();
-            Promise.resolve(ci?.getRunningProgram?.())
+            report.soundFrequency = ciReady?.soundFrequency?.();
+            Promise.resolve(ciReady?.getRunningProgram?.())
               .then(program => { report.runningProgram = program ?? null; })
               .catch(err => { report.warnings.push('Runtime program probe: ' + String(err)); });
           } catch (err) {
@@ -168,6 +248,9 @@ export function setupV8Test(doc, host) {
         throw new Error('Unexpected js-dos frontend version; expected 8.5.4, got ' + JSON.stringify(version));
       }
       props?.setNoCloud?.(true);
+      const gain = volume ? volumeToGain(volume.value) : DEFAULT_VOLUME_PERCENT / 100;
+      props?.setVolume?.(gain);
+      report.outputVolume = gain;
       stop.disabled = false;
       mark('player-created', version);
     } catch (err) {
