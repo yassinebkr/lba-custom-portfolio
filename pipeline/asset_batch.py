@@ -264,6 +264,9 @@ def build(recipe_path: Path, destination: Path) -> dict:
             loaded.append(load_rgba(path, key_rgb, tolerance))
             meta.append({"action":action, "direction":direction, "durationMs":duration,
                          "input": frame["path"], "sourceSha256": hashlib.sha256(path.read_bytes()).hexdigest()})
+        if crop is not None and any(image.width < crop[2] or image.height < crop[3]
+                                    for image in loaded):
+            raise RecipeError("style.fixedCropPx exceeds at least one source frame")
         prepared.append(({"id":name, "kind":raw["kind"], "source":rights}, meta, loaded))
     destination = destination.resolve()
     destination.mkdir(parents=True, exist_ok=True)
