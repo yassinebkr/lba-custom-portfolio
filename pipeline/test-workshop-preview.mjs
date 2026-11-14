@@ -80,11 +80,11 @@ try{
  assert.equal(await page.locator('#info h2').textContent(),'CinePi');
  assert.match(await page.locator('#info .project-link').getAttribute('href'),/cinematepi5/);
 
+ await page.screenshot({path:'workshop-preview-desktop.png',fullPage:true});
  // Change room: the preview art must NOT leak into unrelated rooms.
  await page.locator('.room-button[data-room="origin"]').click();
  await page.waitForFunction(()=>document.querySelector('.stage .bar')?.textContent.includes('ORIGIN'));
  assert.deepEqual(errors,[]);
- await page.screenshot({path:'workshop-preview-desktop.png',fullPage:true});
  console.log('Workshop local preview passed: original sprite atlases, animated player, interaction link, and room isolation.');
 } finally {
  await browser?.close();
