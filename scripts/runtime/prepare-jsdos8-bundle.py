@@ -31,7 +31,12 @@ def read_config(archive: zipfile.ZipFile) -> bytes:
     return config
 
 
-def owner_voice_files(voice_dir: Path | None) -> dict[str, Path]:
+def owner_voice_files(voice_dir: Path | None, profile: str = "full") -> dict[str, Path]:
+    """Select original English DOS banks for an isolated extraction experiment."""
+    if profile not in ("full", "smallest", "largest"):
+        raise ValueError("Unsupported voice selection profile")
+    if profile != "full" and voice_dir is None:
+        raise ValueError("Smallest/largest VOX profile requires --voices-dir")
     """Select authentic DOS VOX files without transcoding or touching owner data."""
     if voice_dir is None:
         return {}
@@ -60,11 +65,19 @@ def owner_voice_files(voice_dir: Path | None) -> dict[str, Path]:
             raise ValueError("Owner voice files exceed private import budget")
     if not result:
         raise ValueError("Owner VOX directory contains no English EN_*.VOX files")
+    if profile != "full":
+        filename, item = (
+            min(result.items(), key=lambda entry: (entry[1].stat().st_size, entry[0]))
+            if profile == "smallest"
+            else max(result.items(), key=lambda entry: (entry[1].stat().st_size, entry[0]))
+        )
+        return {filename: item}
     return result
 
 
 def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
-            wave_driver: str = "W_SB16_8.DLL", voice_dir: Path | None = None) -> dict:
+            wave_driver: str = "W_SB16_8.DLL", voice_dir: Path | None = None,
+            voice_profile: str = "full") -> dict:
     source, destination = source.resolve(strict=True), destination.resolve()
     if not destination.is_relative_to(OUTPUT) or not source.is_relative_to(OUTPUT):
         raise ValueError("All private js-dos archives must stay under ignored output/")
@@ -74,7 +87,7 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
         raise ValueError("Unsupported CD image")
     if wave_driver not in ("W_SB16_8.DLL", "W_SB16.DLL"):
         raise ValueError("Unsupported original DOS wave driver")
-    voices = owner_voice_files(voice_dir)
+    voices = owner_voice_files(voice_dir, voice_profile)
     if destination.exists() and destination.is_symlink():
         raise ValueError("Refusing symlinked destination")
     with zipfile.ZipFile(source) as z:
@@ -163,6 +176,9 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
         "unchangedEntries": len(names) - 1 - int(new_cfg != cfg),
         "waveDriver": wave_driver,
         "voiceFiles": len(voices),
+        "voiceProfile": voice_profile,
+        "voiceFileNames": sorted(voices),
+        "voiceBytes": sum(p.stat().st_size for p in voices.values()),
         "state": "Archive and binary resource equivalence verified; guest audio/voices not tested",
     }
 
@@ -176,11 +192,15 @@ def main() -> int:
                    default="W_SB16_8.DLL")
     p.add_argument("--voices-dir", type=Path,
                    help="Optional owner DOS VOX directory; only English EN_*.VOX files are included privately")
+    p.add_argument("--voice-profile", choices=("full", "smallest", "largest"),
+                   default="full",
+                   help="Select a single original bank by uncompressed size to isolate browser extraction limits")
     args = p.parse_args()
     try:
         print(json.dumps(prepare(args.input, args.out, args.cd_image,
                                  wave_driver=args.wave_driver,
-                                 voice_dir=args.voices_dir), indent=2))
+                                 voice_dir=args.voices_dir,
+                                 voice_profile=args.voice_profile), indent=2))
     except (OSError, ValueError, zipfile.BadZipFile) as err:
         print("R05 v8 conversion failed: " + str(err), file=sys.stderr)
         return 1
