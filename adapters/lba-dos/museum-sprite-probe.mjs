@@ -106,6 +106,7 @@ export async function createProbe({privateBase,outputDir,direction='se'}){
  ]);
  const oldArchive=decodeArchive(original);
  if(oldArchive.entries.length<=ENTRY_INDEX)throw Error('Private archive missing sprite 58');
+ const originalEntries=oldArchive.entries.map(entry=>Buffer.from(entry?.content||[]));
  const previousPayload=new Uint8Array(oldArchive.entries[ENTRY_INDEX].content);
  const replacement=makeReplacement({atlasBytes,palette,previousPayload,direction});
  const changed=replaceSingleSpriteEntry(oldArchive,ENTRY_INDEX,replacement.payload);
@@ -116,7 +117,7 @@ export async function createProbe({privateBase,outputDir,direction='se'}){
  let unchanged=0;
  for(let i=0;i<rebuilt.entries.length;i++){
   const output=Buffer.from(rebuilt.entries[i]?.content||[]);
-  const prior=Buffer.from(decodeArchive(original).entries[i]?.content||[]);
+  const prior=originalEntries[i];
   if(i===ENTRY_INDEX){
    if(!output.equals(Buffer.from(replacement.payload)))
     throw Error('Sprite replacement failed HQR repack verification');
