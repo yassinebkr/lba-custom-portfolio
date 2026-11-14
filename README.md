@@ -2,6 +2,17 @@
 
 An original isometric portfolio project for GitHub Pages, with a **local asset-first pipeline** for characters, furniture, electronics, architectural elements and animations. The current js-dos development page accepts a user-selected, privately held game bundle. The intended final portfolio will be directly playable without a separate game installation.
 
+**Architecture decision (2026-11-14):** The user-approved experimental
+runtime is the **original DOS engine emulated by js-dos 8.5.4**.
+The JavaScript/Canvas workshop recreation has been withdrawn; the
+existing Canvas prototype remains historical visual QA, not the
+implementation target. Sprite, brick and scene assets should flow
+through the existing DOS-compatible HQR adapters. Before testing any
+new scene, apply the [cinematic-entry preflight](docs/R05_SCENE_ENTRY_CINEMATICS.md):
+the historical INTROD/DRAGON3 NOPs are essential but do not disable
+LM_PLAY_FLA/TM_PLAY_FLA in per-scene life/track scripts. Keep all
+commercial DOS game files owner-local.
+
 **Current integration branch:** [fix/r05-1-runtime-probes](https://github.com/yassinebkr/lba-custom-portfolio/tree/fix/r05-1-runtime-probes). Changes are not yet merged into main; historical J-series milestones remain documented.
 
 **Visual status:** the six current game rooms are functional **placeholders**, not finished art. J2/J3 test the asset pipeline on original synthetic illustrations. A polished original room is the next artistic milestone (J4).
@@ -45,8 +56,9 @@ python3 pipeline/asset_batch.py \
 ~~~
 
 **The recipe is marked pending; it does not approve its images for public
-release.** The next artistic deliverable is one finished original workshop
-scene using separately placeable props, a character and an animation.
+release.** The next technical-artistic deliverable must be validated **inside
+the original DOS scene renderer** using the HQR injection path; a stand-alone
+Canvas copy of the game does not count as in-engine fidelity.
 
 [**Asset-first merge and licensing gates**](docs/ASSET_FIRST_MERGE_GATE.md)
 
