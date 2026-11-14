@@ -49,6 +49,8 @@ try {
   await page.waitForFunction(()=>typeof window.Dos==='function',null,{timeout:20000});
   assert.match(await page.locator('h1').textContent(),/Yassine Benkhira/);
   assert.equal(await page.locator('.loc-card').count(),6,'Portfolio landing must be preserved');
+  assert.equal(await page.locator('#volume-slider').inputValue(),'30','default volume should protect ears');
+  assert.equal(await page.locator('#volume-value').textContent(),'30%');
   assert.equal(await page.locator('a[href="./v6-local.html"]').count(),1,'Legacy route must remain linked');
   await page.locator('#bundle-file').setInputFiles({
     name:'r05-v8-synthetic.jsdos',mimeType:'application/octet-stream',buffer:bytes
@@ -63,8 +65,17 @@ try {
   assert.ok(result.events.some(x=>x.type==='emulator-event'&&x.value==='ci-ready'),
     'Real v8 DOSBox backend not ready: '+JSON.stringify({result,errors}));
   assert.equal(result.backend,'dosbox');
+  assert.equal(result.outputVolume,0.3,'real v8 player starts with reduced output volume');
   assert.equal(await page.locator('#game-overlay.active').count(),1,'Main portfolio must present the v8 player');
   assert.equal(await page.locator('#stop').isEnabled(),true);
+  assert.equal(await page.locator('#inspect-frame').isEnabled(),true);
+  await page.locator('#volume-slider').evaluate(el=>{
+    el.value='12';
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  assert.equal(await page.locator('#volume-value').textContent(),'12%');
+  assert.equal((await page.evaluate(()=>window.r05V8DiagnosticReport())).outputVolume,0.12,
+    'runtime audio slider must affect active player without a restart');
   assert.match(await page.locator('#player-status').textContent(),/DOSBox backend initialized/i);
   assert.ok(result.version,'Expected pinned v8 version');
   assert.deepEqual(result.errors,[],'unexpected startup diagnostic errors');
