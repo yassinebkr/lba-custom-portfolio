@@ -101,8 +101,9 @@ export async function createProbe({privateBase,outputDir,direction='se'}){
  await ensureNoSymlink(join(dest,'sprite-58-preview.png'));
  const metadata=JSON.parse(await readFile(join(root,'metadata-ui/public/scene-sprites.json'),'utf8'));
  const scene=verifyMuseumEntry(metadata);
- const [original,atlasBytes,palette]=await Promise.all([
-  readFile(join(base,'SPRITES.HQR')),readFile(atlasPath),loadPrivateGamePalette(base)
+ const [original,atlasBytes,palette,paletteArchive]=await Promise.all([
+  readFile(join(base,'SPRITES.HQR')),readFile(atlasPath),
+  loadPrivateGamePalette(base),readFile(join(base,'RESS.HQR'))
  ]);
  const oldArchive=decodeArchive(original);
  if(oldArchive.entries.length<=ENTRY_INDEX)throw Error('Private archive missing sprite 58');
@@ -137,6 +138,7 @@ export async function createProbe({privateBase,outputDir,direction='se'}){
   ...replacement.measurements,
   retainedDecodedHqrEntries:unchanged,
   originalArchiveSHA256:hash(original),
+  paletteArchiveSHA256:hash(paletteArchive),
   privateOverlaySHA256:hash(packed),
   sourceAtlasSHA256:hash(atlasBytes),
   caveat:'Shared across scenes; image quality at original small sprite scale is unverified.'
