@@ -2,7 +2,7 @@
 
 An original isometric portfolio project for GitHub Pages, with a **local asset-first pipeline** for characters, furniture, electronics, architectural elements and animations. The current js-dos development page accepts a user-selected, privately held game bundle. The intended final portfolio will be directly playable without a separate game installation.
 
-**Development branch:** [feature/portfolio-studio-j1-j8](https://github.com/yassinebkr/lba-custom-portfolio/tree/feature/portfolio-studio-j1-j8). No merge into main.
+**Current integration branch:** [fix/r05-1-runtime-probes](https://github.com/yassinebkr/lba-custom-portfolio/tree/fix/r05-1-runtime-probes). Changes are not yet merged into main; historical J-series milestones remain documented.
 
 **Visual status:** the six current game rooms are functional **placeholders**, not finished art. J2/J3 test the asset pipeline on original synthetic illustrations. A polished original room is the next artistic milestone (J4).
 
@@ -22,6 +22,33 @@ flowchart LR
 ~~~
 
 The asset pipeline precedes the editor. Blender is optional for missing camera angles or complex geometry. The existing React Studio is a prototype for later simplification, not a requirement for creating assets.
+
+## Current priority: ship original artwork, keep commercial DOS private
+
+R05 successfully established a private DOS emulation reference; restoring the
+commercial game's music, intro videos and all death paths is **no longer a
+prerequisite** for the original portfolio. The publicly buildable `dist/`
+artifact now contains only the independent original-art frontend and
+explicitly cleared image data. The js-dos emulator remains available locally
+under `web_deploy/`, and every private game bundle remains ignored under
+`output/`.
+
+The four-direction original Blender field-receiver reference can now be
+prepared in truecolor (fractional alpha retained) using a fixed shared camera
+crop, without extracting or modifying any LBA file:
+
+~~~bash
+python3 pipeline/asset_batch.py \
+  apps/portfolio/sprite-demo/compare/field-receiver.recipe.json \
+  --out output/field-receiver-review
+# Open output/field-receiver-review/index.html for contact-sheet review
+~~~
+
+**The recipe is marked pending; it does not approve its images for public
+release.** The next artistic deliverable is one finished original workshop
+scene using separately placeable props, a character and an animation.
+
+[**Asset-first merge and licensing gates**](docs/ASSET_FIRST_MERGE_GATE.md)
 
 ## Run the new pipeline
 
@@ -51,7 +78,7 @@ The owner confirmed Museum save S003 loading and previously confirmed a checkpoi
 
 ## DOS browser bootstrap and visual verification
 
-**[Launch the js-dos browser test — import your own local .jsdos](https://yassinebkr.github.io/lba-custom-portfolio/web_deploy/)**
+**Private development:** run `python3 -m http.server 8765 --directory web_deploy` and use `http://127.0.0.1:8765/` to test owned DOS bundles. The older public DOS import URL may still be reachable from historical deployments; it is excluded from newly built original-art `dist/`.
 
 On this experimental branch, `web_deploy/` now uses **js-dos 8.5.4 as the primary importer at `/`** while `/v6-local.html` retains the earlier 6.22 control. Local runtime artifacts are installed into gitignored `web_deploy/vendor/jsdos854/` via `scripts/runtime/install-jsdos8.py`; therefore the new v8 homepage is **validated locally but must not be described as deployed publicly** until the release packaging supplies the freely redistributable js-dos runtime files. The original GOG-derived game and private `.jsdos` files are never uploaded to the page.
 
@@ -62,7 +89,7 @@ R04 has a successful GitHub Pages deployment and a verified browser test of the 
 
 [**Revised R04–R09 DOS reconstruction and GitHub Pages QA plan**](docs/DOS_REBUILD_PLAN.md)
 
-R04 publishes the local-file DOS launcher first. The planned R08 extended QA page will compare real 128/160/192px original-asset exports through a stable README link. Publishing a .jsdos archive requires a separately verified right to redistribute every included executable and resource.
+R04 recorded the original DOS importer experiments. Current priority is the original asset pipeline and R06 visual/runtime fidelity. The separate commercial DOS environment stays private; future use of a GPL-built source engine would require verification of licenses, build dependencies and independently licensed game data.
 
 ## GitHub Pages
 
@@ -73,7 +100,7 @@ node scripts/build-portfolio.mjs
 node --test apps/portfolio/rules.test.mjs apps/portfolio/rooms.test.mjs
 ~~~
 
-Only allowlisted public files enter dist/. The GitHub Actions publishing job uses exactly that same builder. To deploy, select **Settings → Pages → Source → GitHub Actions** and manually dispatch the Portfolio CI and optional Pages deployment workflow. The source-branch root redirect is a legacy fallback, not the intended Actions publication. A green CI result does not establish that the new live Pages URL has been verified.
+Only allowlisted independently authored public files enter dist/; the owner-local DOS emulator and its bundles are excluded. The GitHub Actions publishing job uses exactly that same builder. To deploy, select **Settings → Pages → Source → GitHub Actions** and manually dispatch the Portfolio CI and optional Pages deployment workflow. The source-branch root redirect is a legacy fallback, not the intended Actions publication. A green CI result does not establish that the new live Pages URL has been verified.
 
 ## Documentation
 
