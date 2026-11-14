@@ -89,7 +89,8 @@ try {
   assert.ok(screenReport.frameCheck.runningProgram!==undefined);
   assert.equal(await page.locator('#inspect-frame').isEnabled(),true);
 
-  assert.match(await page.locator('#player-status').textContent(),/DOSBox backend initialized/i);
+  assert.match(await page.locator('#player-status').textContent(),/Screen:.*pixels changed/i,
+    'After clicking Inspect screen, status must reflect the frame comparison');
   assert.ok(result.version,'Expected pinned v8 version');
   assert.deepEqual(result.errors,[],'unexpected startup diagnostic errors');
   assert.ok(!errors.some(x=>/404|wasm|Uncaught|ReferenceError/i.test(x)),
