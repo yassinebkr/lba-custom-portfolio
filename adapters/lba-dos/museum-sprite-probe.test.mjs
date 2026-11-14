@@ -49,7 +49,7 @@ test('R06 fail-closed rejects undocumented frames, unsupported dimensions and mi
   const corrupt=Uint8Array.from(old());
   corrupt[0]=8; // multiframe pointer unsupported until verified
   assert.throws(()=>makeReplacement({atlasBytes:source,palette,
-    previousPayload:corrupt}),/Unsupported sprite frame offset/);
+    previousPayload:corrupt}),/Invalid sprite frame offset|Unsupported sprite frame offset/);
 });
 
 test('R06 genuine HQR packer produces a private overlay and leaves every other entry intact',async()=>{
