@@ -33,10 +33,13 @@ class MediaProbeTest(unittest.TestCase):
         self.source = self.root / "r05-sb16-8.jsdos"
         self.v8target = self.root / "r05-v8-sb16-8.jsdos"
         self.cddatarget = self.root / "r05-cdda-tone.jsdos"
+        patched = bytearray(0x12000)
+        for off, signature in v8.BOOT_PATCHES.items():
+            patched[off:off + len(signature)] = signature
         self.entries = {
             ".jsdos/dosbox.conf": b"[sblaster]\r\nsbtype=sb16\r\ndma=1\r\nhdma=5\r\n",
             "LBA.CFG": b"FlagKeepVoice: OFF\r\nWaveDriver: W_SB16_8.DLL\r\nMixerDriver: NoMixer\r\n",
-            "RELENT.EXE": b"synthetic dos stub",
+            "RELENT.EXE": bytes(patched),
             "LBA.ISO": b"synthetic data-only ISO",
             "S003.LBA": b"synthetic museum save",
             "W_SB16_8.DLL": b"synthetic driver bytes",
@@ -46,9 +49,32 @@ class MediaProbeTest(unittest.TestCase):
             for name, value in self.entries.items():
                 z.writestr(name, value)
 
+    def test_cinematic_guard_accepts_all_historical_patches(self):
+        proof = v8.verify_boot_cinematics(self.entries["RELENT.EXE"])
+        self.assertEqual(proof, {
+            "guardedPatchSites": 4, "startupFlaCallsDisabled": 2,
+        })
+
+    def test_v8_conversion_fails_closed_if_intro_movies_would_be_played(self):
+        for offset, label in ((0x0F83F, "INTROD"), (0x10E71, "DRAGON3"),
+                              (0x10A5F, "CD")):
+            with self.subTest(label=label):
+                damaged = bytearray(self.entries["RELENT.EXE"])
+                damaged[offset] ^= 0xFF
+                with zipfile.ZipFile(self.source, "w", zipfile.ZIP_DEFLATED) as z:
+                    for name, data in self.entries.items():
+                        z.writestr(name, bytes(damaged) if name == "RELENT.EXE" else data)
+                with self.assertRaisesRegex(ValueError, "historical CD/INTROD/DRAGON3"):
+                    v8.prepare(self.source, self.v8target)
+                self.assertFalse(self.v8target.exists())
+        with zipfile.ZipFile(self.source, "w", zipfile.ZIP_DEFLATED) as z:
+            for name, data in self.entries.items():
+                z.writestr(name, data)
+
     def test_v8_preserves_all_game_bytes_and_adds_autoexec(self):
         result = v8.prepare(self.source, self.v8target)
         self.assertEqual(result["unchangedEntries"], len(self.entries) - 1)
+        self.assertEqual(result["cinematics"]["startupFlaCallsDisabled"], 2)
         with zipfile.ZipFile(self.v8target) as z:
             self.assertIn(b"[autoexec]\r\n", z.read(".jsdos/dosbox.conf"))
             self.assertIn(b"mount c .\r\n", z.read(".jsdos/dosbox.conf"))
