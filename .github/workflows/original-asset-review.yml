@@ -1,0 +1,61 @@
+name: Original asset review — R05 branch
+
+on:
+  push:
+    branches:
+      - fix/r05-1-runtime-probes
+    paths:
+      - 'pipeline/asset_batch.py'
+      - 'pipeline/tests/**'
+      - 'pipeline/compile-approved*'
+      - 'apps/portfolio/sprite-demo/compare/field-receiver.recipe.json'
+      - '.github/workflows/original-asset-review.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-asset-quality:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install only image authoring dependency
+        run: python -m pip install Pillow==11.3.0
+      - name: Validate deterministic image recipes and rights gates
+        run: python -m unittest discover -s pipeline/tests -v
+      - name: Validate reviewed-art compiler rejects pending inputs
+        run: node --test pipeline/compile-approved.test.mjs
+      - name: Rebuild four-view original Blender reference in truecolor
+        run: |
+          python pipeline/asset_batch.py \
+            apps/portfolio/sprite-demo/compare/field-receiver.recipe.json \
+            --out /tmp/field-receiver-review
+      - name: Inspect source-geometry and publication status of real output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root = Path('/tmp/field-receiver-review')
+          data = json.loads((root / 'assets.json').read_text())
+          assert data['style']['colors'] == 'truecolor'
+          assert data['style']['fixedCropPx'] == [103,35,665,597]
+          assert len(data['assets']) == 1
+          asset = data['assets'][0]
+          assert asset['id'] == 'field-receiver'
+          assert asset['source']['reviewStatus'] == 'pending'
+          assert asset['source']['allowedForPublicBuild'] is False
+          assert [x['direction'] for x in asset['frames']] == ['NE','NW','SW','SE']
+          assert len({tuple(f['rect']) for f in asset['frames']}) == 4
+          with Image.open(root / asset['atlasRef']) as im:
+              assert im.size == (4*256,256)
+              assert im.mode == 'RGBA'
+          print('Original four-view truecolor preview built; public approval remains false.')
+          PY
