@@ -21,6 +21,29 @@ import re
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = (ROOT / "output").resolve()
 
+# These four guarded RELENT.EXE sites are documented in
+# scripts/hqr-tools/patch-relent.js and in LEGACY_LBA_README.md.
+# The last two suppress missing boot FLA playback (INTROD/DRAGON3).
+# This does NOT remove every scene-scripted animation or dialogue.
+BOOT_PATCHES = {
+    0x10A5F: bytes.fromhex("c6 05 32 2c 00 00 03 b8 01 00 00 00 90"),
+    0x10AF1: bytes.fromhex("eb 0f"),
+    0x0F83F: bytes([0x90] * 13),  # INTROD.FLA call
+    0x10E71: bytes([0x90] * 13),  # DRAGON3.FLA call
+}
+
+
+def verify_boot_cinematics(executable: bytes) -> dict:
+    """Reject unpatched/incompatible commercial DOS executables, without modifying them."""
+    for offset, expected in BOOT_PATCHES.items():
+        if executable[offset:offset + len(expected)] != expected:
+            raise ValueError(
+                f"Unverified RELENT.EXE at 0x{offset:05x}: "
+                "missing historical CD/INTROD/DRAGON3 guard. "
+                "Rebuild privately using the signature-checked patch-relent.js."
+            )
+    return {"guardedPatchSites": len(BOOT_PATCHES), "startupFlaCallsDisabled": 2}
+
 
 def read_config(archive: zipfile.ZipFile) -> bytes:
     config = archive.read(".jsdos/dosbox.conf")
@@ -108,6 +131,7 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
                     "compressed MP3/OGG CUE audio cannot be decoded. "
                     "Use synthetic/raw PCM tracks first."
                 )
+        cinematic = verify_boot_cinematics(z.read("RELENT.EXE"))
         cfg = z.read("LBA.CFG")
         if b"WaveDriver: W_SB16_8.DLL" not in cfg or b"MixerDriver: NoMixer" not in cfg:
             raise ValueError("Expected the tested 8-bit, no-mixer audio profile")
@@ -179,6 +203,7 @@ def prepare(source: Path, destination: Path, cd_image: str = "LBA.ISO", *,
         "voiceProfile": voice_profile,
         "voiceFileNames": sorted(voices),
         "voiceBytes": sum(p.stat().st_size for p in voices.values()),
+        "cinematics": cinematic,
         "state": "Archive and binary resource equivalence verified; guest audio/voices not tested",
     }
 
