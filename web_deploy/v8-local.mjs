@@ -38,6 +38,30 @@ export function sampleFrameBrightness(image) {
   };
 }
 
+export function sampleFrameDifference(first, second) {
+  if (!first || !second || first.width !== second.width ||
+      first.height !== second.height ||
+      first.data?.length < first.width * first.height * 4 ||
+      second.data?.length < second.width * second.height * 4) {
+    throw new Error('Cannot compare frames with incompatible dimensions');
+  }
+  const pixels = first.width * first.height;
+  const stride = Math.max(1, Math.floor(pixels / 4096));
+  let tested = 0;
+  let changed = 0;
+  for (let i = 0; i < pixels; i += stride) {
+    const j = i * 4;
+    const difference = Math.max(
+      Math.abs(first.data[j] - second.data[j]),
+      Math.abs(first.data[j + 1] - second.data[j + 1]),
+      Math.abs(first.data[j + 2] - second.data[j + 2]),
+    );
+    if (difference >= 12) changed++;
+    tested++;
+  }
+  return Math.round(1000 * changed / tested) / 1000;
+}
+
 export function comparisonOptions(url, onEvent) {
   if (typeof url !== 'string' || !url.startsWith('blob:')) {
     throw new Error('v8 comparison requires an owner-selected blob URL');
@@ -140,29 +164,49 @@ export function setupV8Test(doc, host) {
     });
   }
 
+  function limited(operation, name, deadlineMs = 5000) {
+    return new Promise((resolve, reject) => {
+      const timeoutId = host.setTimeout(
+        () => reject(new Error(name + ' timed out after ' + deadlineMs + ' ms')),
+        deadlineMs,
+      );
+      Promise.resolve().then(operation).then(
+        value => { host.clearTimeout(timeoutId); resolve(value); },
+        error => { host.clearTimeout(timeoutId); reject(error); },
+      );
+    });
+  }
   inspectFrame?.addEventListener('click', async () => {
     if (!ci) return;
+    const instance = ci;
     inspectFrame.disabled = true;
     try {
-      const [frame, program] = await Promise.all([
-        ci.screenshot(),
-        ci.getRunningProgram(),
-      ]);
-      const sampled = sampleFrameBrightness(frame);
+      const frame1 = await limited(() => instance.screenshot(), 'First screenshot');
+      const initial = sampleFrameBrightness(frame1);
+      const program = await limited(() => instance.getRunningProgram(), 'Guest status');
+      await new Promise(resolve => host.setTimeout(resolve, 750));
+      const frame2 = await limited(() => instance.screenshot(), 'Second screenshot');
+      const final = sampleFrameBrightness(frame2);
+      const changedFraction = sampleFrameDifference(frame1, frame2);
       report.frameCheck = {
-        ...sampled,
+        ...final,
+        beforeDarkFraction: initial.darkFraction,
+        changedFraction,
+        sampleGapMs: 750,
         runningProgram: program,
         elapsedMs: importStartedAt === null ? null : Math.round(now() - importStartedAt),
       };
       mark('frame-check', report.frameCheck);
-      say('Frame sampled: ' + Math.round(sampled.darkFraction * 100) +
-          '% very dark; guest: ' + (program || 'unknown') +
-          '. Copy diagnostics to compare death vs normal play.');
+      say('Screen: ' + Math.round(final.darkFraction * 100) +
+          '% black-like, ' + Math.round(changedFraction * 100) +
+          '% pixels changed; guest: ' + (program || 'unknown') +
+          '. Copy diagnostics to compare.');
     } catch (err) {
       report.warnings.push('Frame capture failed: ' + String(err));
-      say('Frame capture failed; copy diagnostics for details.');
+      mark('frame-check-error', String(err));
+      say('Frame capture or guest status failed; copy diagnostics for details.');
     } finally {
-      inspectFrame.disabled = !ci;
+      inspectFrame.disabled = ci !== instance || !ci;
     }
   });
 
@@ -228,6 +272,20 @@ export function setupV8Test(doc, host) {
           report.phase = 'backend ready';
           ci = ciReady;
           if (inspectFrame) inspectFrame.disabled = false;
+          try {
+            ciReady.events()?.onExit?.(() => {
+              report.guestExitAtMs = importStartedAt === null ? null : Math.round(now() - importStartedAt);
+              mark('guest-exit');
+            });
+            ciReady.events()?.onMessage?.((type, ...messages) => {
+              if (type !== 'error' && type !== 'warn') return;
+              const message = messages.map(String).join(' ').slice(0, 350);
+              report.warnings.push('DOSBox ' + type + ': ' + message);
+              if (report.warnings.length > 40) report.warnings.shift();
+            });
+          } catch (err) {
+            report.warnings.push('Guest event listener unavailable: ' + String(err));
+          }
           say('DOSBox backend initialized. Choose Museum S003 and test footsteps.');
           try {
             report.soundFrequency = ciReady?.soundFrequency?.();
