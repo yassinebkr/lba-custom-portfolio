@@ -52,6 +52,31 @@ export function replaceSpriteEntries(archive,sprites,indices){
   }
   return archive;
 }
+/**
+ * Replace a single existing sprite entry, preserving every other decoded HQR
+ * payload. This is a private DOS compatibility probe (not a new renderer).
+ * A one-frame DOS sprite is required to avoid losing unknown animations.
+ */
+export function replaceSingleSpriteEntry(archive,index,payload){
+  if(!archive||!Array.isArray(archive.entries)||
+     !Number.isInteger(index)||index<0||index>=archive.entries.length){
+    throw Error('An existing private HQR sprite index is required');
+  }
+  const old=archive.entries[index];
+  if(!old||!old.content||old.content.byteLength<9)throw Error('Target sprite entry is empty');
+  const oldFrame=decodeSprite(new Uint8Array(old.content));
+  if(!(payload instanceof Uint8Array))throw Error('Expected DOS sprite bytes');
+  const newFrame=decodeSprite(payload);
+  if(oldFrame.width!==newFrame.width||oldFrame.height!==newFrame.height||
+     oldFrame.offsetX!==newFrame.offsetX||oldFrame.offsetY!==newFrame.offsetY){
+    throw Error('Replacement must preserve native sprite dimensions and draw offsets');
+  }
+  const data=payload.buffer.slice(payload.byteOffset,payload.byteOffset+payload.byteLength);
+  archive.entries[index]=new HQREntry(data,CompressionType.NONE);
+  return {index,width:oldFrame.width,height:oldFrame.height,
+    offsetX:oldFrame.offsetX,offsetY:oldFrame.offsetY};
+}
+
 export async function writePrivateSpriteArchive({privateDir,outputPath,sprites,indices}){
   const bytes=await readFile(resolve(privateDir,'SPRITES.HQR'));
   const archive=replaceSpriteEntries(decodeArchive(bytes),sprites,indices);
