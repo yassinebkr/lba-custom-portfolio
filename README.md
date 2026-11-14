@@ -50,6 +50,29 @@ scene using separately placeable props, a character and an animation.
 
 [**Asset-first merge and licensing gates**](docs/ASSET_FIRST_MERGE_GATE.md)
 
+### First complete original scene — local interactive preview
+
+The first vertical slice now uses our real Pillow atlas converter, original
+2D fixture art, four actual Blender-rendered telemetry views, a 10×10
+independent instance scene and the existing Canvas scene-core renderer. It
+contains **8 independently placed objects, 4 playable project hotspots,
+4-direction/4-frame walking, two animated indicators, project details and
+GitHub links**. It is a *source-rights and art review preview*, not an
+approved final portfolio scene or a usable general authoring GUI.
+
+~~~bash
+python3 -m pip install Pillow==11.3.0
+node pipeline/build-workshop-preview.mjs
+python3 -m http.server 8766 --directory output/workshop-preview
+# Open http://127.0.0.1:8766/
+~~~
+
+The private DOS emulator remains on port 8765 if you run it separately.
+This scene has no original LBA files. The source code and public-approved
+asset catalog are left intact, and the pending preview never enters
+`dist/`. See [first original workshop guide](docs/FIRST_ORIGINAL_WORKSHOP.md).
+
+
 ## Run the new pipeline
 
 ~~~bash
