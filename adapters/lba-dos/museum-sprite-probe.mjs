@@ -1,7 +1,7 @@
 /**
  * R06 first DOS-native original-art replacement (strictly owner-local).
  *
- * Replaces an existing, scene-43-referenced single-frame SPRITES.HQR entry
+ * Replaces one frame of an existing, scene-43-referenced SPRITES.HQR entry
  * using the versioned Blender telemetry receiver atlas. Never edits base_game,
  * source PNGs, RELENT.EXE, scene scripts, or public dist/.
  *
@@ -15,7 +15,8 @@ import {resolve,join,relative,isAbsolute,sep,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {cropRGBA,resizeRGBA} from './index.mjs';
-import {decodeArchive,loadPrivateGamePalette,replaceSingleSpriteEntry} from './overlay.mjs';
+import {decodeArchive,loadPrivateGamePalette,replaceOneSpriteFrameEntry} from './overlay.mjs';
+import {inspectSpriteFrames} from './sprite-frames.mjs';
 import {rgbaToIndexed,indexedToRGBA,encodeSprite,decodeSprite} from '../../packages/asset-core/index.mjs';
 
 const {PNG}=pngjs;
@@ -54,12 +55,15 @@ export function verifyMuseumEntry(metadata,index=ENTRY_INDEX){
 }
 
 /** Pure conversion; uses the real DOS palette and preserves old draw anchor. */
-export function makeReplacement({atlasBytes,palette,previousPayload,direction='se'}){
+export function makeReplacement({atlasBytes,palette,previousPayload,direction='se',frameIndex=0}){
  if(!Object.hasOwn(framePosition,direction))throw Error('Unsupported source view');
  const png=PNG.sync.read(Buffer.from(atlasBytes),{checkCRC:true});
  if(png.width!==768||png.height!==192)
   throw Error('Unexpected telemetry source atlas dimensions');
- const previous=decodeSprite(previousPayload);
+ const parsed=inspectSpriteFrames(previousPayload);
+ if(!Number.isInteger(frameIndex)||frameIndex<0||frameIndex>=parsed.frameCount)
+  throw Error('Requested frame is not present in the original sprite');
+ const previous=parsed.frames[frameIndex].decoded;
  if(previous.width>255||previous.height>255)
   throw Error('Original DOS sprite exceeds indexed format limits');
  if(previous.width<12||previous.height<12)
@@ -81,6 +85,7 @@ export function makeReplacement({atlasBytes,palette,previousPayload,direction='s
  const quantized=indexedToRGBA(decoded.pixels,palette);
  return {
   payload:newPayload,
+  frameCount:parsed.frameCount,changedFrame:frameIndex,
   originalFrame:{width:previous.width,height:previous.height,
     offsetX:previous.offsetX,offsetY:previous.offsetY},
   preview:imageBuffer({width:previous.width,height:previous.height,rgba:quantized}),
@@ -89,7 +94,7 @@ export function makeReplacement({atlasBytes,palette,previousPayload,direction='s
  };
 }
 
-export async function createProbe({privateBase,outputDir,direction='se'}){
+export async function createProbe({privateBase,outputDir,direction='se',frameIndex=0}){
  if(!privateBase)throw Error('--private-base requires an owner-local DOS game');
  const base=resolve(privateBase);
  const dest=safeOutput(outputDir);
@@ -109,8 +114,10 @@ export async function createProbe({privateBase,outputDir,direction='se'}){
  if(oldArchive.entries.length<=ENTRY_INDEX)throw Error('Private archive missing sprite 58');
  const originalEntries=oldArchive.entries.map(entry=>Buffer.from(entry?.content||[]));
  const previousPayload=new Uint8Array(oldArchive.entries[ENTRY_INDEX].content);
- const replacement=makeReplacement({atlasBytes,palette,previousPayload,direction});
- const changed=replaceSingleSpriteEntry(oldArchive,ENTRY_INDEX,replacement.payload);
+ const replacement=makeReplacement({
+  atlasBytes,palette,previousPayload,direction,frameIndex
+ });
+ const changed=replaceOneSpriteFrameEntry(oldArchive,ENTRY_INDEX,replacement.payload,frameIndex);
  const packed=Buffer.from(oldArchive.toArrayBuffer());
  const rebuilt=decodeArchive(packed);
  if(rebuilt.entries.length!==oldArchive.entries.length)
@@ -134,6 +141,7 @@ export async function createProbe({privateBase,outputDir,direction='se'}){
   status:'prepared; pending actual private DOS game visibility and art review',
   source:'versioned-original-blender-telemetry-atlas',scene,
   targetDescription:'Door padlock (Forger\'s house)',direction,
+  changedFrame:frameIndex,frameCount:changed.frameCount,
   nativeGeometry:changed,
   ...replacement.measurements,
   retainedDecodedHqrEntries:unchanged,
@@ -155,11 +163,13 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const base=option(process.argv,'--private-base');
  const out=option(process.argv,'--out');
  const direction=option(process.argv,'--direction')||'se';
+ const rawFrame=option(process.argv,'--frame');
+ const frameIndex=rawFrame===null?0:Number(rawFrame);
  if(!base||!out){
   console.error('Usage: node adapters/lba-dos/museum-sprite-probe.mjs --private-base /private/DOS/game --out output/r06-museum-58 --direction se');
   process.exitCode=2;
  }else{
-  createProbe({privateBase:base,outputDir:out,direction})
+  createProbe({privateBase:base,outputDir:out,direction,frameIndex})
    .then(report=>process.stdout.write(JSON.stringify(report,null,2)+'\n'))
    .catch(error=>{console.error('Private DOS sprite probe: '+error.message);process.exitCode=1});
  }
