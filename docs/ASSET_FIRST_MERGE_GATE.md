@@ -5,6 +5,26 @@ Date: 2026-11-14. Active development branch:
 after validating the js-dos 8.5.4 private DOS emulator with the
 original commercial LBA1 installation.
 
+## Architecture correction — DOS-native scene runtime (2026-11-14)
+
+**Current target:** the original DOS runtime within js-dos 8.5.4,
+using original authored sprites/animations, indexed palette export,
+sprite/brick/scene HQR overlays and a script-aware entry-scene
+preflight. The recent JavaScript workshop/game reconstruction was
+rejected by the project owner and has been removed from this branch.
+The independent Canvas prototype remains a previous experiment,
+**not** an alternative implementation of the original game.
+
+The publicly distributable, no-LBA-installation objective remains
+subject to an appropriately licensed DOS engine and entirely cleared
+replacement game resources. Retaining a patched commercial
+`RELENT.EXE` in private tests does not establish release permission.
+See [scripted cinematic entry gates](R05_SCENE_ENTRY_CINEMATICS.md).
+
+Sections below retain prior exploration of the independent public
+renderer for historical context. Where they conflict with the
+architecture decision above, they are superseded.
+
 ## Decision
 
 ## Product definition: reusable open-source portfolio creator
@@ -27,9 +47,10 @@ Success means a new user can:
 5. Retain editable recipes, scene JSON and art masters for later updates.
 
 The author's personal portfolio is the **reference example and quality
-benchmark**, not the only consumer of the pipeline. The historic
-js-dos LBA work is an **optional owner-local compatibility/research
-adapter**, never a mandatory dependency for other creators.
+benchmark**, not the only consumer of the pipeline. The DOS engine is the **chosen behavior/rendering target** for the current
+private authoring experiments, with js-dos as the browser host. Its
+commercial executable and original data cannot be shipped to users
+without an independently valid redistribution basis.
 
 No monetization does not automatically license third-party commercial
 game content for redistribution. However, the broad isometric adventure
