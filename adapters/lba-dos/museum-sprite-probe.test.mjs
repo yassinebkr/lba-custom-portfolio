@@ -49,7 +49,7 @@ test('R06 fail-closed rejects undocumented frames, unsupported dimensions and mi
   const corrupt=Uint8Array.from(old());
   corrupt[0]=8; // multiframe pointer unsupported until verified
   assert.throws(()=>makeReplacement({atlasBytes:source,palette,
-    previousPayload:corrupt}),/single-frame/);
+    previousPayload:corrupt}),/Unsupported sprite frame offset/);
 });
 
 test('R06 genuine HQR packer produces a private overlay and leaves every other entry intact',async()=>{
@@ -96,4 +96,25 @@ test('R06 genuine HQR packer produces a private overlay and leaves every other e
     await assert.rejects(createProbe({privateBase:base,outputDir:out}),
       /EEXIST/,'existing private trial must never be silently overwritten');
   }finally{await rm(tmp,{recursive:true,force:true})}
+});
+
+test('R06 actual original Blender artwork can replace just the first frame in a multi-frame DOS sprite',async()=>{
+ const source=await atlas();
+ const make=(width,height,x,y,color)=>encodeSprite({
+  width,height,offsetX:x,offsetY:y,pixels:new Uint8Array(width*height).fill(color)
+ });
+ const first=make(40,45,-15,-34,12).subarray(4);
+ const second=make(48,50,-20,-38,13).subarray(4);
+ const raw=new Uint8Array(8+first.length+second.length);
+ const v=new DataView(raw.buffer);
+ v.setUint32(0,8,true);v.setUint32(4,8+first.length,true);
+ raw.set(first,8);raw.set(second,8+first.length);
+ const converted=makeReplacement({atlasBytes:source,palette,previousPayload:raw,frameIndex:0});
+ assert.equal(converted.frameCount,2);
+ assert.equal(converted.changedFrame,0);
+ assert.deepEqual(converted.originalFrame,{width:40,height:45,offsetX:-15,offsetY:-34});
+ assert.ok(converted.measurements.opaquePixels>80);
+ assert.throws(()=>makeReplacement({
+  atlasBytes:source,palette,previousPayload:raw,frameIndex:2
+ }),/not present/);
 });
