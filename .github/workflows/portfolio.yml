@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/portfolio-studio-j1-j8
+      - fix/r05-1-runtime-probes
     paths:
       - 'apps/portfolio/**'
       - 'packages/asset-core/**'
