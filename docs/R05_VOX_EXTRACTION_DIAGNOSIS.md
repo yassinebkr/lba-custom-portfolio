@@ -1,58 +1,61 @@
-# R05.6 — Diagnostic VOX sous js-dos 8.5.4
+# R05.6 — Diagnosing VOX archive extraction in js-dos 8.5.4
 
-Date : 2026-11-14. Note de travail. **Aucune bande vocale GOG n'est versionnée, diffusée ni hébergée.**
+Research date: 2026-11-14. **No copyrighted game audio, VOX banks, or
+owner GOG bundles are checked in, served, or published.**
 
-## Éléments observés
+## Evidence reported by the owner
 
-Le bundle de voix de l'utilisateur mesure **39,5 Mio sur disque**,
-**44,8 Mio une fois extrait**, avec **12 banques VOX pour 32,1 Mio**
-non compressés ; la plus grande banque fait **10 101 Kio**. Ces
-valeurs sont très inférieures au plafond de 512 Mio accepté par notre
-importateur. Un blocage durable ne peut donc pas être expliqué
-uniquement par ce plafond de taille.
+The voice bundle occupies **39.5 MiB compressed** and **44.8 MiB
+unpacked**. It contains 12 VOX banks, totaling **32.1 MiB unpacked**,
+and its largest bank is **10,101 KiB**.
 
-Le backend js-dos 8 emploie le code WebAssembly `zip_to_fs` du projet
-`caiiiycuk/emulators`, qui alloue une copie complète de l'archive
-compressée en mémoire WASM, puis extrait les entrées en fichiers
-émulés. Cette chaîne implique plusieurs copies en mémoire, mais
-aucune mesure de dépassement mémoire n'a été fournie.
+This is well below the current 512 MiB ZIP import limit. The size
+alone is insufficient to diagnose a permanent stall or out-of-memory
+condition.
 
-Sources :
+The js-dos 8 bundle extraction code copies the compressed ZIP into
+WebAssembly memory and expands ZIP entries into emulated filesystem
+storage. Multiple simultaneous copies can materially exceed the
+nominal 44.8 MiB uncompressed size. This is a plausible source of
+resource pressure, not evidence that available memory was exhausted.
+
+Upstream source:
 - https://github.com/caiiiycuk/emulators/blob/8.xx/src/libzip/libzip.ts
 - https://github.com/caiiiycuk/emulators/blob/8.xx/native/libzip/jsdos-libzip.c
 - https://github.com/caiiiycuk/js-dos/blob/8.xx/src/host/bundle-storage.ts
 
-Le message « Extracting local game files… » appartient au code 6.22
-historique ; le navigateur 8 possède ses propres phases. Un simple
-libellé ne prouve pas le backend réellement utilisé. Depuis la
-promotion locale, le **lecteur principal est `/` (8.5.4)** et la
-régression 6.22 est sur `/v6-local.html`.
+The literal UI string "Extracting local game files…" comes from the
+legacy 6.22 importer; a loading label alone cannot establish which
+backend the owner was running. On this experimental branch, the
+primary local `/` portfolio route now starts js-dos 8.5.4, while
+`/v6-local.html` preserves the old 6.22 reference.
 
-## Expérience contrôlée à deux archives
+## Controlled one-bank experiments
 
-Après avoir mis à jour la branche, conserver exactement :
-- `RELENT.EXE`, les archives HQR, les sauvegardes S001…S007 ;
-- le backend js-dos 8.5.4 DOSBox Worker ;
-- le pilote validé **W_SB16.DLL (16 bits stéréo)** ;
-- le même `LBA.ISO`, sans nouveau CDDA.
+Hold these variables fixed:
+- js-dos 8.5.4 DOSBox Worker backend;
+- original **W_SB16.DLL 16-bit stereo**, already validated for clarity
+  and correct left/right direction;
+- identical patched RELENT.EXE, scene assets, HQR files and S003 save;
+- identical data-only LBA.ISO and startup commands.
 
-Changer seulement **combien de banques VOX sont décompressées**.
-Les profils `smallest` et `largest` choisissent automatiquement une
-seule banque par taille de fichier non compressé. Les noms précis
-sélectionnés apparaissent dans la sortie JSON.
+Change **only the amount and identity of added voice data**.
+The two optional converter profiles select one bank by its *original
+uncompressed file size*. The JSON output includes the chosen filename
+and byte count.
 
 ~~~bash
 cd ~/Documents/lba-custom-portfolio
 VOX="/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows/VOX"
 
-# Une seule petite banque : contrôle minimal du chemin VOX
+# Smallest original English VOX bank: minimum extraction control
 python3 scripts/runtime/prepare-jsdos8-bundle.py \
   --input output/r05-probes/r05-sb16-8.jsdos \
   --wave-driver W_SB16.DLL \
   --voices-dir "$VOX" --voice-profile smallest \
   --out output/r05-probes/r05-v8-vox-smallest.jsdos
 
-# Une seule grande banque : isoler l'effet d'une entrée de ~10 Mio
+# Largest English VOX bank: per-file size control
 python3 scripts/runtime/prepare-jsdos8-bundle.py \
   --input output/r05-probes/r05-sb16-8.jsdos \
   --wave-driver W_SB16.DLL \
@@ -60,28 +63,32 @@ python3 scripts/runtime/prepare-jsdos8-bundle.py \
   --out output/r05-probes/r05-v8-vox-largest.jsdos
 ~~~
 
-Importer **une archive à la fois** depuis
-`http://127.0.0.1:8765/`, en cliquant sur « Stop emulator » et en
-rechargeant la page entre les essais si nécessaire. L'archive sans
-voix avec pilote 16 bits
-`r05-v8-sb16-16bit.jsdos` est le témoin déjà validé.
+Import one archive at a time through
+`http://127.0.0.1:8765/`, using Stop emulator and a fresh page
+reload between tests if needed. The already approved voice-free
+`r05-v8-sb16-16bit.jsdos` is the baseline. Keep the existing full
+voice archive as the third comparison case.
 
-Le lecteur indique maintenant les phases horodatées, un avertissement
-après 30 secondes sans initialisation, et conserve un rapport accessible
-par « Copy diagnostics » ou via
-`JSON.stringify(window.r05V8DiagnosticReport(), null, 2)`.
-Les avertissements ne prouvent pas un manque de mémoire.
+The main v8 player now records elapsed times for its startup phases,
+and reports a *warning* if the backend has not reached ready state
+after 30 seconds. The warning is **not** proof of memory exhaustion.
 
-| Résultat | Interprétation |
-| --- | --- |
-| Les deux mini-archives démarrent ; la complète reste bloquée | Effet cumulatif, budget mémoire/temps ou banque particulière dans les 10 restantes : à mesurer |
-| La petite démarre ; la grande bloque | Coût ou corruption de l'entrée la plus volumineuse : vérifier spécifiquement son extraction |
-| Les deux mini-archives bloquent ; le témoin sans voix démarre | Problème de compatibilité du chemin VOX, de configuration ou de structure du bundle, non expliqué par le seul volume |
-| Les trois archives démarrent ; pas de voix | La chaîne d'extraction est utilisable, mais la lecture des banques par LBA ou le dialogue déclenché reste à diagnostiquer |
+For diagnostics click **Copy diagnostics**, or use:
 
-**Ne pas confondre démarrage et restitution des voix :** une mini-archive
-avec une seule banque ne contiendra normalement pas toutes les répliques.
-On mesure d'abord l'extraction, ensuite l'audio parlé.
+~~~javascript
+JSON.stringify(window.r05V8DiagnosticReport(), null, 2)
+~~~
 
-Conserver les archives GOG et tous les bundles dans `output/` ignoré
-par Git. Ne pas fusionner avec `main` avant une validation utilisateur.
+| Observation | What it suggests | Next decision |
+| --- | --- | --- |
+| Smallest and largest load, full archive stalls | Cumulative memory/runtime cost or another VOX entry | Investigate total overhead or isolate a remaining bank |
+| Smallest loads, largest stalls | Largest VOX entry is a candidate blocker | Inspect that entry's CRC/extraction |
+| Both one-bank archives stall, voice-free baseline boots | Voice path/configuration/backend interaction, not just total size | Check bundle startup and native logs |
+| All archives boot but speech remains silent | Extraction is not the playback blocker | Inspect correct language/bank and dialogue triggers |
+
+A one-bank bundle does **not** prove that every original dialogue
+line can play. Its immediate acceptance criterion is boot and
+extraction, not complete spoken audio.
+
+Do not infer that these archive tests establish voice playback, and
+do not merge to main until owner-observed guest behavior is validated.
