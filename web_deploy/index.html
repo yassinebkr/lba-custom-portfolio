@@ -153,6 +153,9 @@
         #runtime-controls { position: absolute; left: 14px; top: 10px; display: flex; gap: 8px; z-index: 210; }
         #runtime-controls button { padding: 5px 9px; border: 1px solid #475665; background: #111a25; color: #e2faff; border-radius: 4px; cursor: pointer; }
         #runtime-controls button:disabled { opacity: .45; cursor: default; }
+        #volume-control { position: absolute; top: 52px; right: 14px; width: min(210px, 48vw); z-index: 210; display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: #111b21e8; border: 1px solid #475665; border-radius: 7px; color: #e2faff; font-size: .77rem; }
+        #volume-control input[type="range"] { min-width: 55px; width: 100%; accent-color: #00eeee; cursor: pointer; }
+        #volume-value { min-width: 3.2ch; text-align: right; font-variant-numeric: tabular-nums; }
         #player-status { position: absolute; bottom: 6px; left: 14px; right: 14px; color: #9fd1db; font-size: .75rem; z-index: 210; pointer-events: none; }
         #bundle-import a, .hint a { color: #5affed; }
 
@@ -253,7 +256,13 @@
     <div id="runtime-controls">
         <button id="stop" type="button" disabled>Stop emulator</button>
         <button id="copy-report" type="button">Copy diagnostics</button>
+        <button id="inspect-frame" type="button" disabled>Inspect screen</button>
     </div>
+    <label id="volume-control" for="volume-slider">
+        <span>Volume</span>
+        <input id="volume-slider" aria-label="Emulator audio volume" type="range" min="0" max="100" step="1" value="30">
+        <output id="volume-value" for="volume-slider">30%</output>
+    </label>
     <div id="jsdos-wrap">
         <div id="player" aria-label="js-dos 8.5.4 DOS game player"></div>
     </div>
