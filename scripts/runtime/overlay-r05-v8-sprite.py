@@ -62,7 +62,7 @@ def overlay(source: Path, patch_dir: Path, destination: Path) -> dict:
         names = archive.namelist()
         if len(names) != len(set(names)):
             raise ValueError("Duplicate ZIP paths")
-        required = ("RELENT.EXE", "SPRITES.HQR", "S003.LBA",
+        required = ("RELENT.EXE", "SPRITES.HQR", "RESS.HQR", "S003.LBA",
                     ".jsdos/dosbox.conf", "LBA.CFG", "LBA.ISO")
         missing = set(required) - set(names)
         if missing:
@@ -76,6 +76,8 @@ def overlay(source: Path, patch_dir: Path, destination: Path) -> dict:
         original_hqr = archive.read("SPRITES.HQR")
         if sha(original_hqr) != report.get("originalArchiveSHA256"):
             raise ValueError("Private DOS source archive differs from the source used for the overlay")
+        if sha(archive.read("RESS.HQR")) != report.get("paletteArchiveSHA256"):
+            raise ValueError("Private DOS palette differs from the source used for the sprite conversion")
         destination.parent.mkdir(parents=True, exist_ok=True)
         pending = destination.with_suffix(".tmp")
         if pending.is_symlink() or pending.exists():
