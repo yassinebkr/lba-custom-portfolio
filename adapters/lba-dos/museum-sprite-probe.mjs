@@ -160,8 +160,13 @@ export async function createProbe({privateBase,outputDir,direction='se',frameInd
   const output=Buffer.from(rebuilt.entries[i]?.content||[]);
   const prior=originalEntries[i];
   if(i===ENTRY_INDEX){
-   if(!output.equals(Buffer.from(replacement.payload)))
+   if(!output.equals(Buffer.from(oldArchive.entries[ENTRY_INDEX].content)))
     throw Error('Sprite replacement failed HQR repack verification');
+   const checked=inspectSpriteFrames(output);
+   const replaced=checked.frames[frameIndex].decoded;
+   const expected=decodeSprite(replacement.payload);
+   if(replaced.pixels.some((v,k)=>v!==expected.pixels[k]))
+    throw Error('Repacked HQR changed selected DOS sprite pixels');
   }else{
    if(!output.equals(prior))throw Error('Unrelated private HQR entry changed at '+i);
    unchanged++;
