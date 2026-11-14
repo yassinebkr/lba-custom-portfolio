@@ -1,8 +1,12 @@
 # R06.1 — First original asset rendered by the actual DOS engine
 
-**Status:** deterministic private overlay generation and synthetic CI checks
-implemented. **Original game visibility, frame quality and script compatibility
-still require owner-local manual acceptance.** No modified original game content
+**Status:** the first owner-local run exposed an incorrect single-frame
+assumption: actual sprite 58 failed with `Only single-frame sprite tables are
+supported`. The R06 adapter now supports a verified offset table of multiple
+native frames while replacing **only the selected frame** and preserving every
+other frame's bytes. The exact frame layout of the owner's real entry still
+requires inspection and in-game acceptance. **Original game visibility, frame
+quality and script compatibility remain unverified.** No modified original game content
 is committed or hosted.
 
 ## Objective
@@ -53,10 +57,13 @@ Actual logic reuses:
 The game source and the private original archive remain unmodified.
 The resulting HQR and the jsdos ZIP stay in Git-ignored `output/`.
 
-If the original index 58 is a multi-frame sprite, very small or uses
-a different geometry, the tool should refuse the replacement rather
-than silently destroy animation frames or recenter the sprite. We have
-not inspected the owner's actual entry structure in CI.
+A multi-frame entry with a validated leading `uint32[N]` table can now
+be rewritten safely: the new image replaces only frame `--frame 0`
+by default, all other native frames are retained byte-for-byte, and
+their offsets are recalculated if the replacement's encoded size changes.
+Malformed tables, unexpected row-RLE or dimensions below our minimum
+are **rejected**. This is not universal support for every possible
+legacy sprite variant; real source bytes are unavailable to CI.
 
 ## Reproduction on the owner's Debian machine
 
@@ -72,9 +79,14 @@ git merge --ff-only origin/fix/r05-1-runtime-probes
 BASE="/mnt/fast-ssd/Games/Heroic/tlba-classic/Speedrun/Windows"
 
 # New output directory; do not overwrite an earlier trial.
+# First inspect private format without modifying/writing any game files.
+node adapters/lba-dos/museum-sprite-probe.mjs \
+  --private-base "$BASE" --inspect
+
+# Only continue if the report lists validated native offset-table frames.
 node adapters/lba-dos/museum-sprite-probe.mjs \
   --private-base "$BASE" \
-  --direction se \
+  --direction se --frame 0 \
   --out output/r06-museum-58-se
 
 # The source must be the previously working private DOS v8 archive
@@ -107,9 +119,10 @@ does not prove the game renders it.
 
 ## Explicit acceptance gates
 
-1. The target exists as an actual single-frame sprite in the owner's
-   private DOS HQR. The adapter preserves the width, height, offsetX
-   and offsetY exactly, or refuses safely.
+1. The owner-local sprite entry must have a verified frame offset
+   table. The adapter preserves the target frame's width, height,
+   offsetX and offsetY exactly, retains all unmodified frames,
+   or refuses safely.
 2. All **other decoded sprite HQR entries** match the input; the
    complete ZIP differs only in the `SPRITES.HQR` data payload. The
    converter compares source SHA-256 to ensure the HQR came from
@@ -131,3 +144,21 @@ or original game archive.** A source engine compiled under its actual
 license and fully rights-cleared replacement resources remain a
 separate requirement before end users could deploy this as an
 independent open-source portfolio creator.
+
+## Owner report on first attempt and corrective control
+
+The first owner's command failed at sprite decoding with
+`Only single-frame sprite tables are supported` before producing
+`output/r06-museum-58-se`. Consequently the second Python ZIP
+overlay command failed because that folder was absent. This is a
+pipeline precondition bug, not evidence of a broken DOS emulator.
+
+On the updated branch, run `--inspect` first. It reports only the
+original entry's byte length, first offset, inferred frame count
+and geometry; it **never exports or uploads commercial sprite bytes**.
+If the format is unsupported, retain the diagnostic instead of
+guessing or overwriting the archive. If it is supported, one frame can
+be replaced while leaving the remaining frames intact. An animation
+might then alternate between original and replacement artwork; this
+is a deliberately bounded test of genuine DOS rendering, **not** a
+finished animated original prop.
