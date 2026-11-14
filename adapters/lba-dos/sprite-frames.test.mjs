@@ -30,7 +30,8 @@ test('two-frame DOS entry retains all bytes of untouched frame and moves the off
  assert.equal(new DataView(original.buffer).getUint32(0,true),8);
  const parsed=inspectSpriteFrames(original);
  assert.equal(parsed.frameCount,2);
- const newFrame=make(24,30,-12,-23,44);
+ const gradient=Uint8Array.from({length:24*30},(_,i)=>1+(i%180));
+ const newFrame=encodeSprite({width:24,height:30,offsetX:-12,offsetY:-23,pixels:gradient});
  const out=replaceSpriteFrame(original,newFrame,0);
  assert.equal(out.frameCount,2);
  const after=inspectSpriteFrames(out.payload);
