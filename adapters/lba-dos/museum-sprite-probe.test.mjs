@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir,mkdtemp,rm} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {decodeSprite,encodeSprite} from '../../packages/asset-core/index.mjs';
-import {ENTRY_INDEX,verifyMuseumEntry,makeReplacement,createProbe} from './museum-sprite-probe.mjs';
+import {ENTRY_INDEX,verifyMuseumEntry,makeReplacement,createProbe,inspectPrivateMuseumSprite} from './museum-sprite-probe.mjs';
 import hqrPackage from '@lbalab/hqr';
 const {HQR,HQREntry,CompressionType}=hqrPackage;
+import {inspectSpriteFrames} from './sprite-frames.mjs';
 
 const root=resolve(new URL('../..',import.meta.url).pathname);
 const atlas=()=>readFile(resolve(root,'apps/portfolio/sprite-demo/compare/192px-lanczos-160.png'));
@@ -47,7 +48,7 @@ test('R06 fail-closed rejects undocumented frames, unsupported dimensions and mi
   assert.throws(()=>makeReplacement({atlasBytes:Buffer.from('not-png'),
     palette,previousPayload:old()}));
   const corrupt=Uint8Array.from(old());
-  corrupt[0]=8; // multiframe pointer unsupported until verified
+  corrupt[0]=8; // invalid two-frame table (no second valid offset)
   assert.throws(()=>makeReplacement({atlasBytes:source,palette,
     previousPayload:corrupt}),/Invalid sprite frame offset|Unsupported sprite frame offset/);
 });
@@ -117,4 +118,49 @@ test('R06 actual original Blender artwork can replace just the first frame in a 
  assert.throws(()=>makeReplacement({
   atlasBytes:source,palette,previousPayload:raw,frameIndex:2
  }),/not present/);
+});
+
+test('R06 owner-local read-only inspector and overlay preserve untouched multi-frame sprite',async()=>{
+ await mkdir(join(root,'output'),{recursive:true});
+ const dir=await mkdtemp(join(root,'output','r06-multiframe-'));
+ const base=join(dir,'source'),out=join(dir,'converted');
+ try{
+  await mkdir(base,{recursive:true});
+  const pal=new HQR();
+  pal.entries.push(new HQREntry(palette.buffer.slice(0),CompressionType.NONE));
+  await writeFile(join(base,'RESS.HQR'),Buffer.from(pal.toArrayBuffer()));
+  const sprites=new HQR();
+  const mk=(w,h,x,y,color)=>encodeSprite({width:w,height:h,offsetX:x,offsetY:y,pixels:new Uint8Array(w*h).fill(color)});
+  const f0=mk(40,45,-15,-34,22).subarray(4);
+  const f1=mk(42,47,-19,-35,32).subarray(4);
+  const original=new Uint8Array(8+f0.length+f1.length);
+  new DataView(original.buffer).setUint32(0,8,true);
+  new DataView(original.buffer).setUint32(4,8+f0.length,true);
+  original.set(f0,8);original.set(f1,8+f0.length);
+  for(let i=0;i<65;i++){
+   const content=i===58?original:mk(12,14,-3,-6,12);
+   sprites.entries.push(new HQREntry(
+    content.buffer.slice(content.byteOffset,content.byteOffset+content.byteLength),
+    CompressionType.NONE
+   ));
+  }
+  await writeFile(join(base,'SPRITES.HQR'),Buffer.from(sprites.toArrayBuffer()));
+  const inspection=await inspectPrivateMuseumSprite(base);
+  assert.equal(inspection.format,'validated native offset-table frames');
+  assert.equal(inspection.frameCount,undefined);
+  assert.equal(inspection.frames.length,2);
+  assert.deepEqual(inspection.frames.map(x=>[x.width,x.height]),[[40,45],[42,47]]);
+  const result=await createProbe({privateBase:base,outputDir:out,frameIndex:0});
+  assert.equal(result.frameCount,2);
+  assert.equal(result.changedFrame,0);
+  const buf=await readFile(join(out,'SPRITES.HQR'));
+  const after=HQR.fromArrayBuffer(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength));
+  const frames=inspectSpriteFrames(new Uint8Array(after.entries[58].content));
+  const before=inspectSpriteFrames(original);
+  assert.equal(frames.frameCount,2);
+  assert.deepEqual(frames.frames[1].bytes,before.frames[1].bytes);
+  assert.notDeepEqual(frames.frames[0].bytes,before.frames[0].bytes);
+  assert.deepEqual(new Uint8Array(after.entries[57].content),
+                   new Uint8Array(sprites.entries[57].content));
+ }finally{await rm(dir,{recursive:true,force:true})}
 });
