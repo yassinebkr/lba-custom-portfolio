@@ -118,20 +118,23 @@ def door():
     return im
 
 
-def guide(direction: str):
+def guide(direction: str, stride: int = 0):
+    """Original workshop guide. A stride of -1/0/1 supplies authored walk poses."""
+    if stride not in (-1, 0, 1):
+        raise ValueError("Stride must be -1, 0 or 1")
     im=canvas();shadow(im,(87,214,170,238));d=ImageDraw.Draw(im)
     # boots, trousers and long work jacket
-    d.line([(109,176),(104,216)],fill="#334b61",width=15)
-    d.line([(146,176),(155,216)],fill="#334b61",width=15)
-    d.ellipse((91,210,116,225),fill="#1c2933")
-    d.ellipse((145,208,172,224),fill="#1c2933")
+    d.line([(109,176),(104+stride*12,216-stride*3)],fill="#334b61",width=15)
+    d.line([(146,176),(155-stride*12,216+stride*3)],fill="#334b61",width=15)
+    d.ellipse((91+stride*12,210-stride*3,116+stride*12,225-stride*3),fill="#1c2933")
+    d.ellipse((145-stride*12,208+stride*3,172-stride*12,224+stride*3),fill="#1c2933")
     polygon(d,[(106,109),(143,105),(164,180),(98,184)],"#69848c","#c4d2cb",3)
     polygon(d,[(109,111),(130,125),(122,181),(101,181)],"#8baab0")
     polygon(d,[(130,125),(147,109),(163,181),(122,181)],"#4b6673")
     # arm pose direction
     arm_offset={"NE":(-10,-4),"NW":(10,-4),"SE":(-4,6),"SW":(4,6)}[direction]
-    d.line([(106,125),(91+arm_offset[0],161+arm_offset[1])],fill="#536f7b",width=16)
-    d.line([(153,122),(167+arm_offset[0],162+arm_offset[1])],fill="#58717c",width=15)
+    d.line([(106,125),(91+arm_offset[0]-stride*5,161+arm_offset[1]+stride*5)],fill="#536f7b",width=16)
+    d.line([(153,122),(167+arm_offset[0]+stride*5,162+arm_offset[1]-stride*5)],fill="#58717c",width=15)
     d.ellipse((82+arm_offset[0],150+arm_offset[1],99+arm_offset[0],168+arm_offset[1]),fill="#d1a47e")
     d.ellipse((160+arm_offset[0],152+arm_offset[1],177+arm_offset[0],170+arm_offset[1]),fill="#d1a47e")
     d.ellipse((105,65,151,121),fill="#d4a785",outline="#775744",width=2)
