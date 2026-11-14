@@ -1,7 +1,17 @@
 # DOS portfolio reconstruction and visual verification roadmap
 
 Status (2026-11-14): **R05 DOS boot, Museum S003 save, 16-bit stereo sound effects and separate English VOX playback are owner-confirmed under js-dos 8.5.4.** CD-DA music, the Adeline MIDI jingle and the v8 death/terminal-Game-Over path are still open. A right-side host-volume slider (30% initial level) and a non-image black-frame diagnostic have been added. See [R05.7 evidence and death protocol](R05_85_VOLUME_GAMEOVER.md).
-Branch: `feature/portfolio-studio-j1-j8`.
+Branch: `fix/r05-1-runtime-probes` (isolated, not merged).
+
+**Current implementation boundary:** retain the original DOS game
+engine inside js-dos 8.5.4 and apply original assets through the
+existing HQR/scene adapters. The rejected experimental JS workshop
+scene has been withdrawn. Two historical INTROD/DRAGON3 startup-call
+patches are verified at conversion time, but life/track scripts may
+still invoke `LM_PLAY_FLA` or `TM_PLAY_FLA` at scene entry.
+Review [scene-entry cinematic gate](R05_SCENE_ENTRY_CINEMATICS.md)
+before selecting a new room. Do not NOP unknown scene opcodes
+without preserving script length and semantics.
 Scope: reconstruction from a clean, lawfully obtained game installation, separate authoring and runtime products, reproducible evidence and reviewed GitHub Pages previews.
 
 ## Current baseline
