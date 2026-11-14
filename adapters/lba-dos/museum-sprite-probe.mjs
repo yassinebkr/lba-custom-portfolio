@@ -94,6 +94,39 @@ export function makeReplacement({atlasBytes,palette,previousPayload,direction='s
  };
 }
 
+/**
+ * Read-only diagnostic when the owner's private sprite layout differs
+ * from synthetic CI fixtures. Emits only sizes, geometry and offsets.
+ */
+export async function inspectPrivateMuseumSprite(privateBase){
+ if(!privateBase)throw Error('--private-base is required');
+ const base=resolve(privateBase);
+ const stats=await lstat(base);
+ if(!stats.isDirectory()||stats.isSymbolicLink())throw Error('Unsafe private game directory');
+ const archive=decodeArchive(await readFile(join(base,'SPRITES.HQR')));
+ const entry=archive.entries[ENTRY_INDEX];
+ if(!entry?.content||entry.content.byteLength<4)
+  throw Error('Sprite 58 missing or empty');
+ const data=new Uint8Array(entry.content);
+ const firstOffset=new DataView(data.buffer,data.byteOffset,data.byteLength).getUint32(0,true);
+ const info={sceneIndex,entryIndex:ENTRY_INDEX,bytes:data.byteLength,firstOffset,
+   guessedFrameCount:Number.isInteger(firstOffset/4)&&firstOffset>=4&&
+     firstOffset<=data.length?firstOffset/4:null};
+ try{
+  const parsed=inspectSpriteFrames(data);
+  info.format='validated native offset-table frames';
+  info.frames=parsed.frames.map(f=>({
+   index:f.index,offset:f.offset,encodedBytes:f.bytes.length,
+   width:f.decoded.width,height:f.decoded.height,
+   offsetX:f.decoded.offsetX,offsetY:f.decoded.offsetY
+  }));
+ }catch(error){
+  info.format='unsupported or unverified; no changes permitted';
+  info.diagnostic=String(error.message);
+ }
+ return info;
+}
+
 export async function createProbe({privateBase,outputDir,direction='se',frameIndex=0}){
  if(!privateBase)throw Error('--private-base requires an owner-local DOS game');
  const base=resolve(privateBase);
@@ -165,8 +198,13 @@ if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
  const direction=option(process.argv,'--direction')||'se';
  const rawFrame=option(process.argv,'--frame');
  const frameIndex=rawFrame===null?0:Number(rawFrame);
- if(!base||!out){
-  console.error('Usage: node adapters/lba-dos/museum-sprite-probe.mjs --private-base /private/DOS/game --out output/r06-museum-58 --direction se');
+ if(process.argv.includes('--inspect')){
+  inspectPrivateMuseumSprite(base)
+   .then(result=>process.stdout.write(JSON.stringify(result,null,2)+'\n'))
+   .catch(error=>{console.error('Private DOS sprite inspection: '+error.message);process.exitCode=1});
+ }else if(!base||!out){
+  console.error('Usage: node adapters/lba-dos/museum-sprite-probe.mjs --private-base /private/DOS/game --out output/r06-museum-58 --direction se [--frame 0]');
+  console.error('Read-only: append --inspect with --private-base (no --out needed)');
   process.exitCode=2;
  }else{
   createProbe({privateBase:base,outputDir:out,direction,frameIndex})
