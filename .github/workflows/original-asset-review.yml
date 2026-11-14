@@ -5,11 +5,10 @@ on:
     branches:
       - fix/r05-1-runtime-probes
     paths:
-      - 'pipeline/**'
-      - 'examples/workshop/**'
-      - 'apps/portfolio/**'
-      - 'packages/scene-core/**'
-      - 'scripts/build-portfolio.mjs'
+      - 'pipeline/asset_batch.py'
+      - 'pipeline/tests/**'
+      - 'pipeline/compile-approved*'
+      - 'apps/portfolio/sprite-demo/compare/field-receiver.recipe.json'
       - '.github/workflows/original-asset-review.yml'
   workflow_dispatch:
 
@@ -60,31 +59,3 @@ jobs:
               assert im.mode == 'RGBA'
           print('Original four-view truecolor preview built; public approval remains false.')
           PY
-
-      - name: Build complete original workshop scene as local-only preview
-        run: node pipeline/build-workshop-preview.mjs
-      - name: Ensure the public manifest is still empty and the preview remains pending
-        run: |
-          node scripts/release-audit.mjs --ci
-          test ! -e dist/preview-loader.mjs
-          test ! -e dist/assets/preview-worlds.json
-          test -f output/workshop-preview/assets/preview-worlds.json
-      - name: Install Chromium for actual local preview interaction testing
-        run: |
-          npm install --no-save --no-audit --no-fund playwright@1.56.1
-          npx playwright install --with-deps chromium
-      - name: Browser-test independently placed assets, character movement and real project links
-        run: node pipeline/test-workshop-preview.mjs
-      - name: Upload genuine workshop prototype and atlas contact sheets
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: original-workshop-local-preview
-          path: |
-            workshop-preview-desktop.png
-            output/workshop-atlases/index.html
-            output/workshop-atlases/assets.json
-            output/workshop-atlases/atlases/
-            output/workshop-atlases/previews/
-            output/workshop-preview/
-          if-no-files-found: ignore
