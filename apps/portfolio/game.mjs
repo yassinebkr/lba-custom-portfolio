@@ -1,7 +1,7 @@
 import {loadApprovedWorld} from './approved-runtime.mjs';
 import {scene,newGame,move,nearest,inspect} from './rules.mjs';
 import {ROOMS} from './rooms.mjs';
-let game=newGame(ROOMS[0]);let approvedWorld=null;let playerFacing='se';
+let game=newGame(ROOMS[0]);let approvedWorld=null;let playerFacing='se';let walkUntil=0;
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const info=document.getElementById('info'),msg=document.getElementById('status');
 const list=document.getElementById('list');
@@ -42,17 +42,21 @@ function player(){
  ctx.fillStyle='#e3bf9b';ctx.beginPath();ctx.arc(q.x,q.y-34,9,0,7);ctx.fill();
  ctx.fillStyle='#293d49';ctx.fillRect(q.x-7,q.y-41,14,5);
 }
-function render(){
- if(approvedWorld&&approvedWorld.roomId===game.map.id){
-  ctx.fillStyle='#101e29';ctx.fillRect(0,0,canvas.width,canvas.height);
-  approvedWorld.paint(ctx,game.player,performance.now(),playerFacing);return;
- }
+function drawFloor(){
  ctx.fillStyle='#101e29';ctx.fillRect(0,0,canvas.width,canvas.height);
  for(let depth=0;depth<game.map.width+game.map.depth-1;depth++)
   for(let x=0;x<game.map.width;x++){const z=depth-x;if(z<0||z>=game.map.depth)continue;
-    const q=pos(x,z);const edge=x===0||z===0||x===game.map.width-1||z===game.map.depth-1;
+    const q=pos(x,z),edge=x===0||z===0||x===game.map.width-1||z===game.map.depth-1;
     tile(q.x,q.y,edge?'#3a515d':(x+z)%2?'#304650':'#364d56');
   }
+}
+function render(){
+ drawFloor();
+ if(approvedWorld&&approvedWorld.roomId===game.map.id){
+  const now=performance.now();
+  approvedWorld.paint(ctx,game.player,now,playerFacing,now<walkUntil?'walk':'idle');
+  return;
+ }
  const elements=game.map.projects.map(p=>({depth:p.x+p.z,item:p})).concat({depth:game.player.x+game.player.z,item:null});
  elements.sort((a,b)=>a.depth-b.depth);
  for(const el of elements)el.item?station(el.item):player();
@@ -71,8 +75,20 @@ function show(p){
  render();
 }
 function navigate(dx,dz){
- if(move(game,dx,dz)){playerFacing=dx>0?'se':dx<0?'nw':dz>0?'sw':'ne';const near=nearest(game);msg.textContent=near?'Near '+near.label+' — press E to inspect.':'Move toward an exhibit.';render();}
- else msg.textContent='Blocked: try another direction.';
+ // The authored world uses independent collision footprints, including
+ // furniture not represented by project-interaction hotspots.
+ const next=game.player.x+dx+':'+(game.player.z+dz);
+ if(approvedWorld?.blockedCells?.has(next)){
+  msg.textContent='Furniture blocks the way; walk around it.';
+  return;
+ }
+ if(move(game,dx,dz)){
+  playerFacing=dx>0?'se':dx<0?'nw':dz>0?'sw':'ne';
+  walkUntil=performance.now()+560;
+  const near=nearest(game);
+  msg.textContent=near?'Near '+near.label+' — press E to inspect.':'Move toward an exhibit.';
+  render();
+ }else msg.textContent='Blocked: try another direction.';
 }
 function interact(){const near=nearest(game);if(near){inspect(game,near.id);show(near);}else msg.textContent='Move closer to an exhibit.';}
 function populateList(){
@@ -86,7 +102,7 @@ function populateList(){
 const nav=document.getElementById('room-nav');
 const roomLabel=document.querySelector('.stage .bar');
 function openRoom(room){
- game=newGame(room);approvedWorld=null;playerFacing='se';
+ game=newGame(room);approvedWorld=null;playerFacing='se';walkUntil=0;
  info.replaceChildren();
  const heading=document.createElement('p');heading.className='eyebrow';heading.textContent='ROOM INTRODUCTION';
  const title=document.createElement('h2');title.textContent=room.name;
