@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** M5: allowlisted GitHub Pages build, never the complete builder or legacy assets. */
+/** M5: rights-gated original-art Pages build; excludes the private DOS test player. */
 import {readFile,writeFile,rm,mkdir} from 'node:fs/promises';
 import {resolve,join,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -7,11 +7,6 @@ import {validateApprovedManifest} from '../packages/public-manifest/index.mjs';
 import {validateScene} from '../packages/scene-core/scene.mjs';
 const root=resolve(new URL('..',import.meta.url).pathname),dist=join(root,'dist');
 const entries=[
- ['web_deploy/index.html','web_deploy/index.html'],
- ['web_deploy/local-bundle.mjs','web_deploy/local-bundle.mjs'],
- ['web_deploy/vendor/jsdos622/js-dos.js','web_deploy/vendor/jsdos622/js-dos.js'],
- ['web_deploy/vendor/jsdos622/wdosbox.js','web_deploy/vendor/jsdos622/wdosbox.js'],
- ['web_deploy/vendor/jsdos622/wdosbox.wasm.js','web_deploy/vendor/jsdos622/wdosbox.wasm.js'],
  ['apps/portfolio/index.html','index.html'],
  ['apps/portfolio/game.mjs','game.mjs'],
  ['apps/portfolio/rules.mjs','rules.mjs'],
@@ -47,7 +42,7 @@ for(const [source,target] of entries){
    if(!text.includes(a))throw Error('Source module import no longer matches: '+a);
    text=text.replace(a,b);
   }
-  if(!target.startsWith('web_deploy/') && /\.HQR|\.jsdos|RELENT\.EXE/i.test(text))throw Error('Proprietary game dependency in public runtime');
+  if(/\.HQR|\.jsdos|RELENT\.EXE/i.test(text))throw Error('Proprietary game dependency in public runtime');
   data=Buffer.from(text);
  }
  if(target==='sprite-demo/telemetry-receiver.png' &&
