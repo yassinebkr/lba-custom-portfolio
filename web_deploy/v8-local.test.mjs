@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {comparisonOptions,setupV8Test,volumeToGain,sampleFrameBrightness,DEFAULT_VOLUME_PERCENT} from './v8-local.mjs';
+import {comparisonOptions,setupV8Test,volumeToGain,sampleFrameBrightness,sampleFrameDifference,DEFAULT_VOLUME_PERCENT} from './v8-local.mjs';
 
 test('v8 comparison is DOSBox worker-only with local private blob URL and no auto saves',()=>{
  const fn=()=>{};
@@ -41,4 +41,14 @@ test('sampled DOSBox image reports only aggregate brightness, no frame contents'
    width:2,height:2,sampledPixels:4,darkFraction:0.5,brightFraction:0.25
  });
  assert.throws(()=>sampleFrameBrightness({width:2,height:2,data:new Uint8Array(4)}),/Unsupported/);
+});
+
+test('two DOS frames can distinguish frozen black buffer from changing frame',()=>{
+ const mk=(a,b,c,d)=>({width:2,height:2,data:new Uint8ClampedArray([
+   a,a,a,255,b,b,b,255,c,c,c,255,d,d,d,255
+ ])});
+ assert.equal(sampleFrameDifference(mk(0,0,0,0),mk(0,0,0,0)),0);
+ assert.equal(sampleFrameDifference(mk(0,0,0,0),mk(0,0,80,0)),0.25);
+ assert.equal(sampleFrameDifference(mk(0,0,0,0),mk(0,10,11,0)),0);
+ assert.throws(()=>sampleFrameDifference(mk(0,0,0,0),{width:1,height:2,data:new Uint8Array(8)}),/incompatible/);
 });
