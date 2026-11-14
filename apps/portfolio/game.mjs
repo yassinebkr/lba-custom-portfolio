@@ -50,11 +50,34 @@ function drawFloor(){
     tile(q.x,q.y,edge?'#3a515d':(x+z)%2?'#304650':'#364d56');
   }
 }
+function drawProjectMarkers(){
+ const closest=nearest(game);
+ for(const exhibit of game.map.projects){
+  const q=pos(exhibit.x,exhibit.z);
+  const near=closest?.id===exhibit.id;
+  const selected=game.active===exhibit.id;
+  ctx.save();
+  ctx.strokeStyle=selected?'#ffe6ab':near?'#9dfbeb':'#6b999b';
+  ctx.lineWidth=selected||near?3:1.5;
+  ctx.beginPath();ctx.ellipse(q.x,q.y+7,28,11,0,0,Math.PI*2);ctx.stroke();
+  ctx.font='600 12px system-ui';ctx.textAlign='center';
+  const label=exhibit.label,wide=ctx.measureText(label).width+18;
+  const top=q.y-139;
+  ctx.fillStyle='rgba(8,20,28,.91)';
+  ctx.fillRect(q.x-wide/2,top,wide,23);
+  ctx.strokeStyle=near?'#82e3d8':'#47616c';
+  ctx.lineWidth=1;ctx.strokeRect(q.x-wide/2,top,wide,23);
+  ctx.fillStyle=near?'#d8fff4':'#e8f1ed';
+  ctx.fillText(label,q.x,top+16);
+  ctx.restore();
+ }
+}
 function render(){
  drawFloor();
  if(approvedWorld&&approvedWorld.roomId===game.map.id){
   const now=performance.now();
   approvedWorld.paint(ctx,game.player,now,playerFacing,now<walkUntil?'walk':'idle');
+  drawProjectMarkers();
   return;
  }
  const elements=game.map.projects.map(p=>({depth:p.x+p.z,item:p})).concat({depth:game.player.x+game.player.z,item:null});
