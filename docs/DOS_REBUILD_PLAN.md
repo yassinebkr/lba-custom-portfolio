@@ -1,6 +1,6 @@
 # DOS portfolio reconstruction and visual verification roadmap
 
-Status: **R05 real LBA1 boot owner-confirmed (2026-11-13); R05.1 audio, scene-save behavior and death recovery remain under validation**.
+Status (2026-11-14): **R05 DOS boot, Museum S003 save, 16-bit stereo sound effects and separate English VOX playback are owner-confirmed under js-dos 8.5.4.** CD-DA music, the Adeline MIDI jingle and the v8 death/terminal-Game-Over path are still open. A right-side host-volume slider (30% initial level) and a non-image black-frame diagnostic have been added. See [R05.7 evidence and death protocol](R05_85_VOLUME_GAMEOVER.md).
 Branch: `feature/portfolio-studio-j1-j8`.
 Scope: reconstruction from a clean, lawfully obtained game installation, separate authoring and runtime products, reproducible evidence and reviewed GitHub Pages previews.
 
@@ -73,6 +73,8 @@ flowchart LR
 - Do not begin cinematic authoring before art quality validation in R06. The launch page's visual redesign is a separate UI gate; preserve its local-file privacy behavior during any redesign.
 
 **Acceptance:** audible SFX from a real validated DOS driver, a scene-specific save load with controllable Twinsen, and a reproducible game-over outcome without permanent black screen. Mark each sub-gate independently; no synthetic test counts as audible playback or navigable gameplay.
+
+**Owner gate update (2026-11-14):** S003 loads, the v8 16-bit driver produces correct spatial SFX, and authentic English VOX speech is audible with all 12 banks in a *separate* test bundle. Combined 16-bit/VOX interaction, CDDA transport and MIDI jingle are not yet validated. The owner currently observes a black screen after death under v8, so **R05.1 is not accepted**. Never call the old 6.22 checkpoint result proof that v8 terminal Game Over works. The exact on-death framebuffer, clover count and responsive guest state must be checked first.
 
 ### R06 — Compare source art and the real DOS rendering path
 
