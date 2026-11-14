@@ -21,6 +21,9 @@
     #status {color:#b5dae3; min-height:48px}
     #player {width:100%; min-height:590px; border:1px solid #354459; border-radius:12px; overflow:hidden; background:#000}
     .note {font-size:0.85rem; max-width:750px;}
+    .volume-control {display:flex; align-items:center; gap:10px; margin-left:auto; padding:8px 10px; border:1px solid #354459; border-radius:8px; background:#162638; font-size:.9rem; max-width:240px;}
+    #volume-slider {width:120px; accent-color:#79cfdd;}
+    #volume-value {min-width:3ch; font-variant-numeric:tabular-nums;}
     code {background:#1e2b3b;padding:2px 4px;border-radius:4px}
   </style>
 </head>
@@ -42,6 +45,11 @@
     <input id="bundle" type="file" accept=".jsdos" hidden>
     <button id="stop" type="button" class="secondary" disabled>Stop emulation</button>
     <button id="copy-report" type="button" class="secondary">Copy diagnostic report</button>
+    <button id="inspect-frame" type="button" class="secondary" disabled>Inspect screen</button>
+    <label class="volume-control" for="volume-slider">Volume
+      <input id="volume-slider" type="range" min="0" max="100" step="1" value="30" aria-label="Emulator audio volume">
+      <output id="volume-value" for="volume-slider">30%</output>
+    </label>
   </div>
   <p id="status" role="status" aria-live="polite">Checking pinned local runtime assets…</p>
   <div id="player" aria-label="js-dos 8 experimental player"></div>
