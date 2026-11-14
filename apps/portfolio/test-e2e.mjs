@@ -1,7 +1,6 @@
 /** Browser acceptance smoke for the public static bundle under a GitHub Pages project subpath. */
 import { chromium } from 'playwright';
 import {createServer} from 'node:http';
-import {spawnSync} from 'node:child_process';
 import {readFile} from 'node:fs/promises';
 import {join, extname} from 'node:path';
 import assert from 'node:assert/strict';
@@ -14,8 +13,8 @@ const server=createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost:'+PORT);
   if(!url.pathname.startsWith(base)){res.writeHead(404);return res.end();}
   const requested=url.pathname.slice(base.length)||'index.html';
-  const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested==='web_deploy/'?'web_deploy/index.html':requested;
-  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|web_deploy\/(?:index\.html|local-bundle\.mjs|vendor\/jsdos622\/(?:js-dos|wdosbox|wdosbox\.wasm)\.js)|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
+  const name=requested==='sprite-demo/'?'sprite-demo/index.html':requested;
+  if(!/^(?:index\.html|game\.mjs|rules\.mjs|rooms\.mjs|approved-runtime\.mjs|modules\/(?:asset-core|scene-core|public-manifest)\.mjs|assets\/approved-worlds\.json|assets\/atlases\/[a-z0-9-]+\.png|sprite-demo\/(?:index\.html|compare\.html|compare\.css|compare\.mjs|scene-lab\.html|scene-lab\.css|scene-lab\.mjs|telemetry-receiver\.png|scene\/(?:background\.png|foreground\.png|layout\.json)|compare\/(?:matrix\.json|source-(?:ne|nw|sw|se)\.png|(?:192|224|256)px-(?:lanczos|box)-(?:96|160|256|truecolor)\.png)))$/.test(name)){res.writeHead(404);return res.end();}
   try{
     const file=await readFile(new URL(name,ROOT));
     res.writeHead(200,{'content-type':types[extname(name)],'cache-control':'no-store'});
@@ -117,108 +116,9 @@ try{
   assert.deepEqual(errors,[],'V7 must not cause uncaught browser errors');
 
 
-  // R04 public Pages route: local ZIP selection, failure recovery and import UI.
-  const dosPreview=await page.goto('http://127.0.0.1:'+PORT+base+'web_deploy/');
-  assert.equal(dosPreview.status(),200,'DOS import route served under Pages project subpath');
-  assert.equal(await page.locator('#bundle-import').isVisible(),true);
-  await page.screenshot({path:'dos-import-desktop.png',fullPage:true});
-  await page.locator('#bundle-file').setInputFiles({
-    name:'bad.jsdos',mimeType:'application/octet-stream',buffer:Buffer.from('not a ZIP')
-  });
-  await page.waitForFunction(()=>document.querySelector('#bundle-status').textContent.includes('Import failed'));
-  assert.equal(await page.locator('#bundle-import').isVisible(),true,'invalid files keep importer visible');
-  await page.waitForFunction(()=>typeof window.Dos==='function',null,{timeout:10000});
-  await page.evaluate(()=>{
-    window.__dosSmoke={mainCalls:0,extractions:0,blobUrl:''};
-    window.Dos=(_canvas,_options)=>({
-      ready(callback){
-        callback({
-          extract:async url=>{
-            window.__dosSmoke.blobUrl=url;
-            const response=await fetch(url);
-            const bytes=new Uint8Array(await response.arrayBuffer());
-            if(bytes[0]!==80||bytes[1]!==75)throw Error('ZIP signature missing');
-            window.__dosSmoke.extractions++;
-          },
-          fs:{analyzePath:()=>({exists:true})}
-        },commands=>{
-          window.__dosSmoke.commands=commands;
-          window.__dosSmoke.mainCalls++;
-        });
-      }
-    });
-  });
-  await page.locator('#bundle-file').setInputFiles({
-    name:'local-test.jsdos',
-    mimeType:'application/octet-stream',
-    buffer:Buffer.from([0x50,0x4b,0x03,0x04,0,0,0,0])
-  });
-  await page.waitForFunction(()=>window.__dosSmoke.mainCalls===1);
-  assert.equal(await page.locator('#bundle-import').isVisible(),false,'hide import only after success');
-  assert.equal(await page.locator('#game-overlay').isVisible(),true);
-  assert.deepEqual(await page.evaluate(()=>window.__dosSmoke.commands),[
-    '-c','imgmount d LBA.ISO -t iso','-c','RELENT.EXE'
-  ]);
-  assert.match(await page.evaluate(()=>window.__dosSmoke.blobUrl),/^blob:/);
-  assert.deepEqual(errors,[],'DOS import route reports no uncaught browser exceptions');
-
-  // R04 integration: the unmodified js-dos 6.22 ZIP extractor reads a real
-  // synthetic local archive. The DOS main callback is intercepted to prevent
-  // execution of placeholder executable bytes.
-  const zipCode=[
-    'import io, sys, zipfile',
-    'data = io.BytesIO()',
-    'with zipfile.ZipFile(data, "w", zipfile.ZIP_STORED) as archive:',
-    '    archive.writestr(".jsdos/", b"")',
-    '    archive.writestr(".jsdos/dosbox.conf", "[cpu]\\ncycles=auto\\n")',
-    '    archive.writestr("RELENT.EXE", b"synthetic placeholder")',
-    '    archive.writestr("LBA.ISO", b"synthetic placeholder")',
-    'sys.stdout.buffer.write(data.getvalue())'
-  ].join('\n');
-  const zip=spawnSync('python3',['-c',zipCode],{maxBuffer:1048576});
-  assert.equal(zip.status,0,zip.stderr?.toString()||'ZIP fixture failed');
-  assert.equal(zip.stdout[0],0x50);
-  const actual=await browser.newPage();
-  const actualErrors=[];
-  actual.on('pageerror',error=>actualErrors.push(error.message));
-  await actual.goto('http://127.0.0.1:'+PORT+base+'web_deploy/');
-  await actual.waitForFunction(()=>typeof window.Dos==='function');
-  await actual.evaluate(()=>{
-    const realDos=window.Dos;
-    window.Dos=(canvas,options)=>{
-      const realInstance=realDos(canvas,options);
-      return {
-        ready(cb){
-          return realInstance.ready((fs,_main)=>{
-            cb(fs,commands=>{
-              window.__actualZip={commands,hasExecutable:fs.fs.analyzePath('/RELENT.EXE').exists,
-                hasIso:fs.fs.analyzePath('/LBA.ISO').exists};
-            });
-          });
-        }
-      };
-    };
-  });
-  await actual.locator('#bundle-file').setInputFiles({
-    name:'synthetic-local.jsdos',mimeType:'application/octet-stream',buffer:zip.stdout
-  });
-  await actual.waitForFunction(
-    ()=>Boolean(window.__actualZip) || document.querySelector('#bundle-status')?.textContent.includes('Import failed'),
-    null,{timeout:45000}
-  );
-  const actualResult=await actual.evaluate(()=>({
-    status:document.querySelector('#bundle-status').textContent,
-    info:window.__actualZip || null,
-    hidden:document.querySelector('#bundle-import').hidden
-  }));
-  assert.ok(actualResult.info,'Actual js-dos 6.22 ZIP extraction failed: '+actualResult.status+
-    ' | page errors: '+actualErrors.join(', '));
-  assert.equal(actualResult.info.hasExecutable,true);
-  assert.equal(actualResult.info.hasIso,true);
-  assert.equal(actualResult.hidden,true,'import hides after actual js-dos extraction');
-  assert.deepEqual(actualErrors,[],'js-dos extraction has no browser exceptions');
-  console.log('Actual js-dos 6.22 local blob ZIP extraction passed');
-  await actual.close();
+  // No private DOSBox route ships in the approved original-art artifact.
+  const privateRoute=await page.goto('http://127.0.0.1:'+PORT+base+'web_deploy/');
+  assert.equal(privateRoute.status(),404,'Private DOS emulator must not be published');
 
   const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobileResponse=await mobile.goto('http://127.0.0.1:'+PORT+base);
