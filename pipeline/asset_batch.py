@@ -134,8 +134,36 @@ def render_fixed_frames(sources: list[Image.Image], size: tuple[int, int], paddi
     return frames
 
 
-def shared_palette(atlas: Image.Image, colors: int) -> Image.Image:
-    """Quantize opaque RGB samples jointly; preserve alpha instead of black fringes."""
+def render_fixed_crop_frames(sources: list[Image.Image], size: tuple[int, int],
+                             padding: int, crop: tuple[int, int, int, int]) -> list[Image.Image]:
+    """Keep original camera framing identical across all directions.
+
+    Unlike foreground bounding-box normalization, the same source-space crop
+    preserves a Blender object's global position, scale and camera origin.
+    """
+    left, top, right, bottom = crop
+    if any(image.width < right or image.height < bottom for image in sources):
+        raise RecipeError("style.fixedCropPx exceeds at least one source frame")
+    width, height = size
+    usable_w, usable_h = width - 2 * padding, height - 2 * padding
+    if usable_w < 1 or usable_h < 1:
+        raise RecipeError("Fixed crop leaves no room for pixels")
+    crop_w, crop_h = right - left, bottom - top
+    scale = min(usable_w / crop_w, usable_h / crop_h)
+    dest_w, dest_h = max(1, round(crop_w * scale)), max(1, round(crop_h * scale))
+    frames = []
+    for source in sources:
+        clipped = source.crop(crop).resize((dest_w, dest_h), Image.Resampling.LANCZOS)
+        frame = Image.new("RGBA", size, (0, 0, 0, 0))
+        frame.alpha_composite(clipped, ((width - dest_w) // 2, (height - dest_h) // 2))
+        frames.append(frame)
+    return frames
+
+
+def shared_palette(atlas: Image.Image, colors: int | str) -> Image.Image:
+    """Quantize jointly when requested; otherwise preserve the full RGBA render."""
+    if colors == "truecolor":
+        return atlas.copy()
     a = atlas.getchannel("A")
     rgb = Image.new("RGB", atlas.size, (38, 42, 46))
     rgb.paste(atlas.convert("RGB"), mask=a)
@@ -185,8 +213,17 @@ def build(recipe_path: Path, destination: Path) -> dict:
         raise RecipeError("style is required")
     width = integer(style.get("width"), 32, 256, "style.width")
     height = integer(style.get("height"), 32, 256, "style.height")
-    colors = integer(style.get("colors"), 8, 256, "style.colors")
+    palette_setting = style.get("colors")
+    colors = ("truecolor" if palette_setting == "truecolor" else
+              integer(palette_setting, 8, 256, "style.colors"))
     padding = integer(style.get("padding", 4), 0, 24, "style.padding")
+    crop = style.get("fixedCropPx")
+    if crop is not None:
+        if (not isinstance(crop, list) or len(crop) != 4 or
+            any(type(v) is not int or v < 0 or v > 4096 for v in crop) or
+            crop[2] <= crop[0] or crop[3] <= crop[1]):
+            raise RecipeError("style.fixedCropPx must be [left,top,right,bottom] within source bounds")
+        crop = tuple(crop)
     if padding*2 >= min(width, height):
         raise RecipeError("style.padding consumes all usable frame space")
     key = style.get("backgroundKey")
@@ -234,7 +271,11 @@ def build(recipe_path: Path, destination: Path) -> dict:
     (destination/"previews").mkdir(exist_ok=True)
     output = {"schemaVersion": 1, "project":spec["project"], "style":style, "assets":[]}
     for item, frame_data, images in prepared:
-        frames = render_fixed_frames(images, (width,height), padding)
+        frames = (
+            render_fixed_crop_frames(images, (width,height), padding, crop)
+            if crop is not None else
+            render_fixed_frames(images, (width,height), padding)
+        )
         columns = min(len(frames), MAX_COLS)
         rows = math.ceil(len(frames)/MAX_COLS)
         atlas = Image.new("RGBA", (columns*width, rows*height), (0,0,0,0))
