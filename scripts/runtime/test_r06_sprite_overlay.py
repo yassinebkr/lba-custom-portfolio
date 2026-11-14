@@ -56,6 +56,7 @@ class FirstMuseumSpriteTest(unittest.TestCase):
         report = {
             "scene": {"sceneIndex": 43, "entryIndex": 58, "sharedScenes": [1, 43]},
             "originalArchiveSHA256": hashlib.sha256(self.entries["SPRITES.HQR"]).hexdigest(),
+            "paletteArchiveSHA256": hashlib.sha256(self.entries["RESS.HQR"]).hexdigest(),
             "privateOverlaySHA256": hashlib.sha256(modified).hexdigest(),
         }
         (self.patch / "report.json").write_text(json.dumps(report))
@@ -78,6 +79,14 @@ class FirstMuseumSpriteTest(unittest.TestCase):
         report["originalArchiveSHA256"] = "0" * 64
         (self.patch/"report.json").write_text(json.dumps(report))
         with self.assertRaisesRegex(ValueError, "source archive differs"):
+            probe.overlay(self.source,self.patch,self.destination)
+        self.assertFalse(self.destination.exists())
+
+    def test_palette_mismatch_refuses_private_sprite_overlay(self):
+        report = json.loads((self.patch/"report.json").read_text())
+        report["paletteArchiveSHA256"] = "0"*64
+        (self.patch/"report.json").write_text(json.dumps(report))
+        with self.assertRaisesRegex(ValueError, "palette differs"):
             probe.overlay(self.source,self.patch,self.destination)
         self.assertFalse(self.destination.exists())
 
