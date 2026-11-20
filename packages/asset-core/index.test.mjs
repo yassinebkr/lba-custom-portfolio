@@ -12,6 +12,19 @@ const roundTrip=(w,h,pixels,offsetX=-7,offsetY=11)=>{
 test('original indexed RLE encoding retains offsets, transparency and literal runs',()=>{
  roundTrip(11,7,p(11,7,(x,y)=>y===0?0:x<4?22:(x+y)%2?8:9));
 });
+test('R06: native LBA1 row-RLE type 1 is literal, and types 2/3 repeat one color',()=>{
+ // Independent binary specimens following the TwinE native sprite decoder.
+ const literalAndRepeat=Uint8Array.from([3,1,254,250,2,0x40,5,0x81,7]);
+ assert.deepEqual(decodeBrick(literalAndRepeat),{
+  width:3,height:1,offsetX:-2,offsetY:-6,pixels:Uint8Array.from([5,7,7])
+ });
+ const repeatType3=Uint8Array.from([4,1,0,0,1,0xc3,12]);
+ assert.deepEqual(decodeBrick(repeatType3).pixels,Uint8Array.from([12,12,12,12]));
+ const encoded=encodeBrick({width:3,height:1,pixels:Uint8Array.from([5,7,9])});
+ assert.deepEqual(encoded,Uint8Array.from([3,1,0,0,1,0x42,5,7,9]),
+  'new DOS exports must encode literal color runs with type 1 (0x40)');
+});
+
 test('minimum/maximum dimensions and long run boundaries',()=>{
  roundTrip(1,1,new Uint8Array([0]),-128,127);
  roundTrip(255,255,p(255,255,(x,y)=>(x*13+y*7)%17),127,-128);
