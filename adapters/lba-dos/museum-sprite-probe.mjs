@@ -121,11 +121,13 @@ export async function inspectPrivateMuseumSprite(privateBase){
  const info={sceneIndex,entryIndex:ENTRY_INDEX,bytes:data.byteLength,firstOffset,
    secondOffset,secondOffsetDistanceToEnd:secondOffset===null?null:data.length-secondOffset,
    frame0Header:frameHeader,
-   guessedFrameCount:Number.isInteger(firstOffset/4)&&firstOffset>=4&&
+   tableEntryCount:Number.isInteger(firstOffset/4)&&firstOffset>=4&&
      firstOffset<=data.length?firstOffset/4:null};
  try{
   const parsed=inspectSpriteFrames(data);
-  info.format='validated native offset-table frames';
+  info.format='validated native sprite frame data';
+  info.layout=parsed.layout;
+  info.frameCount=parsed.frameCount;
   info.frames=parsed.frames.map(f=>({
    index:f.index,offset:f.offset,encodedBytes:f.bytes.length,
    width:f.decoded.width,height:f.decoded.height,
