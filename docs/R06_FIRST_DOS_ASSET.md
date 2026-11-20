@@ -95,6 +95,36 @@ No code bypasses unsupported bytes or mutates the owner's installed game.
 Owner-local image rendering, visibility and DOS engine compatibility remain
 unverified until the next real installation run.
 
+## R06.1c — Owner report: terminal offset, not a second frame
+
+The next owner-local inspection (20 November 2026) reported:
+
+```json
+{"bytes":906,"firstOffset":8,"secondOffset":898,
+ "secondOffsetDistanceToEnd":8,"frame0Header":{"width":79,"height":47,
+ "offsetX":0,"offsetY":0},"diagnostic":"Sprite frame 0 is not a supported DOS row-RLE frame: Truncated indexed row"}
+```
+
+This gives `secondOffset + headerBytes = 898 + 8 = 906`. In ScummVM
+`SpriteData::loadFromStream`, the condition
+`offset2 + offsetData >= stream.size()` means that no second sprite is
+loaded. The earlier adapter mistakenly treated the two table words as
+two playable frames and truncated frame 0 at byte 898.
+
+The adapter now has an intentionally narrow native format
+`single-frame-end-offset` that preserves the 8-byte header and accepts
+only an exact full RLE decode from byte 8 through EOF. A corresponding
+writer recomputes the terminal offset after changing the one frame.
+Synthetic HQR regression tests check the one-frame interpretation,
+byte-exact decoded pixels, terminal offset, preservation of other HQR
+entries, and refusal of incomplete data.
+
+The new inspector reports `tableEntryCount`, `frameCount`, and
+`layout` distinctly. The owner must run `--inspect` again against
+the private 906-byte source. If it is not accepted, **do not** run
+the overlay step; collect its new diagnostic. Neither the real sprite
+pixels nor actual in-game visibility have been independently validated.
+
 ## Reproduction on the owner's Debian machine
 
 ```bash
