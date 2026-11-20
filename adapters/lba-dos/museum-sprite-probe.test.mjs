@@ -146,8 +146,9 @@ test('R06 owner-local read-only inspector and overlay preserve untouched multi-f
   }
   await writeFile(join(base,'SPRITES.HQR'),Buffer.from(sprites.toArrayBuffer()));
   const inspection=await inspectPrivateMuseumSprite(base);
-  assert.equal(inspection.format,'validated native offset-table frames');
-  assert.equal(inspection.frameCount,undefined);
+  assert.equal(inspection.format,'validated native sprite frame data');
+  assert.equal(inspection.layout,'offset-table');
+  assert.equal(inspection.frameCount,2);
   assert.equal(inspection.frames.length,2);
   assert.deepEqual(inspection.frames.map(x=>[x.width,x.height]),[[40,45],[42,47]]);
   const result=await createProbe({privateBase:base,outputDir:out,frameIndex:0});
@@ -161,6 +162,56 @@ test('R06 owner-local read-only inspector and overlay preserve untouched multi-f
   assert.deepEqual(frames.frames[1].bytes,before.frames[1].bytes);
   assert.notDeepEqual(frames.frames[0].bytes,before.frames[0].bytes);
   assert.deepEqual(new Uint8Array(after.entries[57].content),
+                   new Uint8Array(sprites.entries[57].content));
+ }finally{await rm(dir,{recursive:true,force:true})}
+});
+
+test('R06 actual owner-like end-offset header is one frame and repacks safely',async()=>{
+ await mkdir(join(root,'output'),{recursive:true});
+ const dir=await mkdtemp(join(root,'output','r06-terminal-'));
+ const base=join(dir,'source'),out=join(dir,'converted');
+ try{
+  await mkdir(base,{recursive:true});
+  const ress=new HQR();
+  ress.entries.push(new HQREntry(palette.buffer.slice(0),CompressionType.NONE));
+  await writeFile(join(base,'RESS.HQR'),Buffer.from(ress.toArrayBuffer()));
+  const sprites=new HQR();
+  const sample=encodeSprite({width:79,height:47,offsetX:0,offsetY:0,
+   pixels:Uint8Array.from({length:79*47},(_,i)=>i%17===0?0:11)});
+  const raw=sample.subarray(4);
+  const native=new Uint8Array(8+raw.length);
+  new DataView(native.buffer).setUint32(0,8,true);
+  new DataView(native.buffer).setUint32(4,raw.length,true);
+  native.set(raw,8);
+  const other=encodeSprite({width:12,height:14,offsetX:-3,offsetY:-6,
+   pixels:new Uint8Array(12*14).fill(12)});
+  for(let i=0;i<65;i++){
+   const payload=i===58?native:other;
+   sprites.entries.push(new HQREntry(
+    payload.buffer.slice(payload.byteOffset,payload.byteOffset+payload.byteLength),
+    CompressionType.NONE
+   ));
+  }
+  await writeFile(join(base,'SPRITES.HQR'),Buffer.from(sprites.toArrayBuffer()));
+  const inspection=await inspectPrivateMuseumSprite(base);
+  assert.equal(inspection.firstOffset,8);
+  assert.equal(inspection.secondOffset,native.length-8);
+  assert.equal(inspection.tableEntryCount,2);
+  assert.equal(inspection.layout,'single-frame-end-offset');
+  assert.equal(inspection.frameCount,1);
+  assert.deepEqual(inspection.frames.map(x=>[x.width,x.height]),[[79,47]]);
+  const result=await createProbe({privateBase:base,outputDir:out,frameIndex:0});
+  assert.equal(result.frameCount,1);
+  const packed=await readFile(join(out,'SPRITES.HQR'));
+  const rebuilt=HQR.fromArrayBuffer(packed.buffer.slice(
+   packed.byteOffset,packed.byteOffset+packed.byteLength));
+  const changed=new Uint8Array(rebuilt.entries[58].content);
+  const parsed=inspectSpriteFrames(changed);
+  assert.equal(parsed.layout,'single-frame-end-offset');
+  assert.equal(parsed.frameCount,1);
+  assert.equal(new DataView(changed.buffer,changed.byteOffset,changed.byteLength).getUint32(4,true),changed.length-8);
+  assert.deepEqual([parsed.frames[0].decoded.width,parsed.frames[0].decoded.height],[79,47]);
+  assert.deepEqual(new Uint8Array(rebuilt.entries[57].content),
                    new Uint8Array(sprites.entries[57].content));
  }finally{await rm(dir,{recursive:true,force:true})}
 });
