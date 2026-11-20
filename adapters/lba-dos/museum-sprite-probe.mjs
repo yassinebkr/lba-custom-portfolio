@@ -108,8 +108,19 @@ export async function inspectPrivateMuseumSprite(privateBase){
  if(!entry?.content||entry.content.byteLength<4)
   throw Error('Sprite 58 missing or empty');
  const data=new Uint8Array(entry.content);
- const firstOffset=new DataView(data.buffer,data.byteOffset,data.byteLength).getUint32(0,true);
+ const view=new DataView(data.buffer,data.byteOffset,data.byteLength);
+ const firstOffset=view.getUint32(0,true);
+ const secondOffset=data.byteLength>=8?view.getUint32(4,true):null;
+ // The first offset indicates the size of the table, not necessarily
+ // the number of playable frames (a subsequent offset may be a sentinel).
+ const frameHeader=firstOffset>=8&&firstOffset+4<=data.length?{
+   width:data[firstOffset],height:data[firstOffset+1],
+   offsetX:(data[firstOffset+2]<<24)>>24,
+   offsetY:(data[firstOffset+3]<<24)>>24
+ }:null;
  const info={sceneIndex,entryIndex:ENTRY_INDEX,bytes:data.byteLength,firstOffset,
+   secondOffset,secondOffsetDistanceToEnd:secondOffset===null?null:data.length-secondOffset,
+   frame0Header:frameHeader,
    guessedFrameCount:Number.isInteger(firstOffset/4)&&firstOffset>=4&&
      firstOffset<=data.length?firstOffset/4:null};
  try{
