@@ -35,7 +35,7 @@ export function encodeRow(row){
    x++;length++;
   }
   if(length===0)throw Error('Empty literal segment');
-  chunks.push([0xc0|(length-1),...row.subarray(start,start+length)]);
+  chunks.push([0x40|(length-1),...row.subarray(start,start+length)]);
  }
  if(chunks.length>255)throw Error('Indexed row has too many segments');
  bytes[0]=chunks.length;
@@ -63,13 +63,13 @@ function decodeRows(buf,position,width,height){
    const header=buf[p++],n=(header&63)+1,type=header&0xc0;
    if(x+n>width)throw Error('Indexed segment extends beyond row');
    if(type===0){x+=n;continue;}
-   if(type===0x80){
-    if(p>=buf.length)throw Error('Truncated RLE color');
-    pixels.fill(buf[p++],y*width+x,y*width+x+n);x+=n;continue;
+   if(type===0x40){
+    if(p+n>buf.length)throw Error('Truncated literal data');
+    pixels.set(buf.subarray(p,p+n),y*width+x);p+=n;x+=n;continue;
    }
-   if(type===0x40)throw Error('Reserved indexed segment opcode');
-   if(p+n>buf.length)throw Error('Truncated literal data');
-   pixels.set(buf.subarray(p,p+n),y*width+x);p+=n;x+=n;
+   // Native LBA1 accepts both type 2 (0x80) and type 3 (0xc0) as color repeats.
+   if(p>=buf.length)throw Error('Truncated RLE color');
+   pixels.fill(buf[p++],y*width+x,y*width+x+n);x+=n;
   }
   if(x!==width)throw Error('Indexed row does not cover entire width');
  }
