@@ -25,6 +25,36 @@ test('one-frame sprite is supported with the familiar four-byte table',()=>{
  assert.equal(modified.frameCount,1);
  assert.deepEqual(modified.payload,make(24,30,-12,-23,23));
 });
+test('native two-word LBA1 header with terminal offset is one complete frame',()=>{
+ const pixels=Uint8Array.from({length:79*47},(_,i)=>i%11===0?0:1+(i%200));
+ const single=encodeSprite({width:79,height:47,offsetX:0,offsetY:0,pixels});
+ const raw=single.subarray(4);
+ const native=new Uint8Array(8+raw.length);
+ const view=new DataView(native.buffer);
+ view.setUint32(0,8,true);
+ view.setUint32(4,raw.length,true); // relative-to-header terminal offset
+ native.set(raw,8);
+ const parsed=inspectSpriteFrames(native);
+ assert.equal(parsed.layout,'single-frame-end-offset');
+ assert.equal(parsed.frameCount,1);
+ assert.equal(parsed.tableBytes,8);
+ assert.deepEqual(parsed.frames[0].bytes,raw);
+ assert.deepEqual(parsed.frames[0].decoded.pixels,pixels);
+ assert.equal(parsed.frames[0].decoded.width,79);
+ assert.equal(parsed.frames[0].decoded.height,47);
+ const replacement=make(79,47,0,0,14);
+ const changed=replaceSpriteFrame(native,replacement,0);
+ const after=inspectSpriteFrames(changed.payload);
+ assert.equal(after.layout,'single-frame-end-offset');
+ assert.equal(after.frameCount,1);
+ assert.equal(new DataView(changed.payload.buffer).getUint32(4,true),changed.payload.length-8,
+  'terminal offset must follow the new compressed payload size');
+ assert.deepEqual(after.frames[0].decoded.pixels,decodeSprite(replacement).pixels);
+ assert.throws(()=>replaceSpriteFrame(native,replacement,1),/outside/);
+ const truncated=native.subarray(0,native.length-1);
+ assert.throws(()=>inspectSpriteFrames(truncated),/Sprite frame|Invalid sprite|Truncated/);
+});
+
 test('two-frame DOS entry retains all bytes of untouched frame and moves the offset table safely',()=>{
  const original=multi(make(24,30,-12,-23,7),make(32,34,-20,-21,8));
  assert.equal(new DataView(original.buffer).getUint32(0,true),8);
