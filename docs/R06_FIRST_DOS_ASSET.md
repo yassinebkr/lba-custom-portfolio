@@ -65,6 +65,36 @@ Malformed tables, unexpected row-RLE or dimensions below our minimum
 are **rejected**. This is not universal support for every possible
 legacy sprite variant; real source bytes are unavailable to CI.
 
+## R06.1b — Native DOS RLE correction (20 November 2026)
+
+The owner's real entry 58 inspection returned 906 decoded HQR bytes, an
+initial offset of 8, and a failure named `Reserved indexed segment opcode`.
+Comparison against ScummVM's independent TwinE sprite decoder identified a
+real defect in our shared indexed codec:
+
+| High bits of a segment opcode | Native meaning |
+| --- | --- |
+| `0x00` | transparent run |
+| `0x40` | literal palette indices |
+| `0x80` | repeat a single palette index |
+| `0xc0` | repeat a single palette index |
+
+Previously the exporter used `0xc0` for literal runs, while the decoder
+rejected `0x40`. Both sides have been corrected and binary-specimen tests
+added. Existing synthetic round-trips alone could not expose this error.
+
+An initial offset of 8 does **not** independently prove two playable frames:
+the second offset may act as a sentinel. The read-only inspector now prints
+`secondOffset`, `secondOffsetDistanceToEnd` and `frame0Header`. If the
+codec fix exposes a different table/terminator mismatch, stop before creating
+an overlay and verify the actual structure against an independent decoder.
+No code bypasses unsupported bytes or mutates the owner's installed game.
+
+**Reference implementation:**
+[ScummVM TwinE sprite parser](https://github.com/scummvm/scummvm/blob/master/engines/twine/parser/sprite.cpp).
+Owner-local image rendering, visibility and DOS engine compatibility remain
+unverified until the next real installation run.
+
 ## Reproduction on the owner's Debian machine
 
 ```bash
